@@ -1,0 +1,713 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 77;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		B22104E42F20F580002672E4 /* StoreKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = B24022212EED789700CDE033 /* StoreKit.framework */; };
+		B22104E72F20F582002672E4 /* HealthKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = B27DDA162EEF07D70047CE53 /* HealthKit.framework */; };
+		B22104E92F20F583002672E4 /* WatchConnectivity.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = B2F86E432EED7C1E009F03C0 /* WatchConnectivity.framework */; };
+		B2F8D1402F49F26A00F6535E /* GoogleMobileAds in Frameworks */ = {isa = PBXBuildFile; productRef = B2F8D13F2F49F26A00F6535E /* GoogleMobileAds */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXContainerItemProxy section */
+		B2484AA22EEC79A7009D604B /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = B2484A852EEC79A2009D604B /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = B2484A8C2EEC79A2009D604B;
+			remoteInfo = "GoFit.Ai - live Healthy";
+		};
+		B2484AAC2EEC79A7009D604B /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = B2484A852EEC79A2009D604B /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = B2484A8C2EEC79A2009D604B;
+			remoteInfo = "GoFit.Ai - live Healthy";
+		};
+/* End PBXContainerItemProxy section */
+
+/* Begin PBXCopyFilesBuildPhase section */
+		B2F1DFC62F068105002E1B7B /* Embed Foundation Extensions */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = "";
+			dstSubfolderSpec = 13;
+			files = (
+			);
+			name = "Embed Foundation Extensions";
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXCopyFilesBuildPhase section */
+
+/* Begin PBXFileReference section */
+		B24022212EED789700CDE033 /* StoreKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = StoreKit.framework; path = System/Library/Frameworks/StoreKit.framework; sourceTree = SDKROOT; };
+		B2484A8D2EEC79A2009D604B /* GoFit.Ai - live Healthy.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "GoFit.Ai - live Healthy.app"; sourceTree = BUILT_PRODUCTS_DIR; };
+		B2484AA12EEC79A7009D604B /* GoFit.Ai - live HealthyTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = "GoFit.Ai - live HealthyTests.xctest"; sourceTree = BUILT_PRODUCTS_DIR; };
+		B2484AAB2EEC79A7009D604B /* GoFit.Ai - live HealthyUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = "GoFit.Ai - live HealthyUITests.xctest"; sourceTree = BUILT_PRODUCTS_DIR; };
+		B27DDA162EEF07D70047CE53 /* HealthKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = HealthKit.framework; path = System/Library/Frameworks/HealthKit.framework; sourceTree = SDKROOT; };
+		B2F1DFB62F068104002E1B7B /* AuthenticationServices.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AuthenticationServices.framework; path = System/Library/Frameworks/AuthenticationServices.framework; sourceTree = SDKROOT; };
+		B2F86E432EED7C1E009F03C0 /* WatchConnectivity.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = WatchConnectivity.framework; path = System/Library/Frameworks/WatchConnectivity.framework; sourceTree = SDKROOT; };
+/* End PBXFileReference section */
+
+/* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
+		B2484AB32EEC79A7009D604B /* Exceptions for "GoFit.Ai - live Healthy" folder in "GoFit.Ai - live Healthy" target */ = {
+			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+			membershipExceptions = (
+				Info.plist,
+			);
+			target = B2484A8C2EEC79A2009D604B /* GoFit.Ai - live Healthy */;
+		};
+/* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
+
+/* Begin PBXFileSystemSynchronizedRootGroup section */
+		B2484A8F2EEC79A2009D604B /* GoFit.Ai - live Healthy */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			exceptions = (
+				B2484AB32EEC79A7009D604B /* Exceptions for "GoFit.Ai - live Healthy" folder in "GoFit.Ai - live Healthy" target */,
+			);
+			path = "GoFit.Ai - live Healthy";
+			sourceTree = "<group>";
+		};
+		B2484AA42EEC79A7009D604B /* GoFit.Ai - live HealthyTests */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			path = "GoFit.Ai - live HealthyTests";
+			sourceTree = "<group>";
+		};
+		B2484AAE2EEC79A7009D604B /* GoFit.Ai - live HealthyUITests */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			path = "GoFit.Ai - live HealthyUITests";
+			sourceTree = "<group>";
+		};
+		B2F1DFB82F068104002E1B7B /* gofit */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			path = gofit;
+			sourceTree = "<group>";
+		};
+/* End PBXFileSystemSynchronizedRootGroup section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		B2484A8A2EEC79A2009D604B /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				B2F8D1402F49F26A00F6535E /* GoogleMobileAds in Frameworks */,
+				B22104E72F20F582002672E4 /* HealthKit.framework in Frameworks */,
+				B22104E42F20F580002672E4 /* StoreKit.framework in Frameworks */,
+				B22104E92F20F583002672E4 /* WatchConnectivity.framework in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		B2484A9E2EEC79A7009D604B /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		B2484AA82EEC79A7009D604B /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXGroup section */
+		B24022202EED789700CDE033 /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+				B27DDA162EEF07D70047CE53 /* HealthKit.framework */,
+				B2F86E432EED7C1E009F03C0 /* WatchConnectivity.framework */,
+				B24022212EED789700CDE033 /* StoreKit.framework */,
+				B2F1DFB62F068104002E1B7B /* AuthenticationServices.framework */,
+			);
+			name = Frameworks;
+			sourceTree = "<group>";
+		};
+		B2484A842EEC79A2009D604B = {
+			isa = PBXGroup;
+			children = (
+				B2484A8F2EEC79A2009D604B /* GoFit.Ai - live Healthy */,
+				B2484AA42EEC79A7009D604B /* GoFit.Ai - live HealthyTests */,
+				B2484AAE2EEC79A7009D604B /* GoFit.Ai - live HealthyUITests */,
+				B2F1DFB82F068104002E1B7B /* gofit */,
+				B24022202EED789700CDE033 /* Frameworks */,
+				B2484A8E2EEC79A2009D604B /* Products */,
+			);
+			sourceTree = "<group>";
+		};
+		B2484A8E2EEC79A2009D604B /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				B2484A8D2EEC79A2009D604B /* GoFit.Ai - live Healthy.app */,
+				B2484AA12EEC79A7009D604B /* GoFit.Ai - live HealthyTests.xctest */,
+				B2484AAB2EEC79A7009D604B /* GoFit.Ai - live HealthyUITests.xctest */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		B2484A8C2EEC79A2009D604B /* GoFit.Ai - live Healthy */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = B2484AB42EEC79A7009D604B /* Build configuration list for PBXNativeTarget "GoFit.Ai - live Healthy" */;
+			buildPhases = (
+				B2484A892EEC79A2009D604B /* Sources */,
+				B2484A8A2EEC79A2009D604B /* Frameworks */,
+				B2484A8B2EEC79A2009D604B /* Resources */,
+				B2F1DFC62F068105002E1B7B /* Embed Foundation Extensions */,
+				B29FB6572F4DB7F700F503E8 /* ShellScript */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			fileSystemSynchronizedGroups = (
+				B2484A8F2EEC79A2009D604B /* GoFit.Ai - live Healthy */,
+			);
+			name = "GoFit.Ai - live Healthy";
+			packageProductDependencies = (
+				B2F8D13F2F49F26A00F6535E /* GoogleMobileAds */,
+			);
+			productName = "GoFit.Ai - live Healthy";
+			productReference = B2484A8D2EEC79A2009D604B /* GoFit.Ai - live Healthy.app */;
+			productType = "com.apple.product-type.application";
+		};
+		B2484AA02EEC79A7009D604B /* GoFit.Ai - live HealthyTests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = B2484AB92EEC79A7009D604B /* Build configuration list for PBXNativeTarget "GoFit.Ai - live HealthyTests" */;
+			buildPhases = (
+				B2484A9D2EEC79A7009D604B /* Sources */,
+				B2484A9E2EEC79A7009D604B /* Frameworks */,
+				B2484A9F2EEC79A7009D604B /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				B2484AA32EEC79A7009D604B /* PBXTargetDependency */,
+			);
+			fileSystemSynchronizedGroups = (
+				B2484AA42EEC79A7009D604B /* GoFit.Ai - live HealthyTests */,
+			);
+			name = "GoFit.Ai - live HealthyTests";
+			packageProductDependencies = (
+			);
+			productName = "GoFit.Ai - live HealthyTests";
+			productReference = B2484AA12EEC79A7009D604B /* GoFit.Ai - live HealthyTests.xctest */;
+			productType = "com.apple.product-type.bundle.unit-test";
+		};
+		B2484AAA2EEC79A7009D604B /* GoFit.Ai - live HealthyUITests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = B2484ABC2EEC79A7009D604B /* Build configuration list for PBXNativeTarget "GoFit.Ai - live HealthyUITests" */;
+			buildPhases = (
+				B2484AA72EEC79A7009D604B /* Sources */,
+				B2484AA82EEC79A7009D604B /* Frameworks */,
+				B2484AA92EEC79A7009D604B /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				B2484AAD2EEC79A7009D604B /* PBXTargetDependency */,
+			);
+			fileSystemSynchronizedGroups = (
+				B2484AAE2EEC79A7009D604B /* GoFit.Ai - live HealthyUITests */,
+			);
+			name = "GoFit.Ai - live HealthyUITests";
+			packageProductDependencies = (
+			);
+			productName = "GoFit.Ai - live HealthyUITests";
+			productReference = B2484AAB2EEC79A7009D604B /* GoFit.Ai - live HealthyUITests.xctest */;
+			productType = "com.apple.product-type.bundle.ui-testing";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		B2484A852EEC79A2009D604B /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				BuildIndependentTargetsInParallel = 1;
+				LastSwiftUpdateCheck = 1620;
+				LastUpgradeCheck = 1620;
+				TargetAttributes = {
+					B2484A8C2EEC79A2009D604B = {
+						CreatedOnToolsVersion = 16.2;
+					};
+					B2484AA02EEC79A7009D604B = {
+						CreatedOnToolsVersion = 16.2;
+						TestTargetID = B2484A8C2EEC79A2009D604B;
+					};
+					B2484AAA2EEC79A7009D604B = {
+						CreatedOnToolsVersion = 16.2;
+						TestTargetID = B2484A8C2EEC79A2009D604B;
+					};
+				};
+			};
+			buildConfigurationList = B2484A882EEC79A2009D604B /* Build configuration list for PBXProject "GoFit.Ai - live Healthy" */;
+			developmentRegion = en;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				en,
+				Base,
+			);
+			mainGroup = B2484A842EEC79A2009D604B;
+			minimizedProjectReferenceProxies = 1;
+			packageReferences = (
+				B2F8D13E2F49F1CC00F6535E /* XCRemoteSwiftPackageReference "swift-package-manager-google-mobile-ads" */,
+			);
+			preferredProjectObjectVersion = 77;
+			productRefGroup = B2484A8E2EEC79A2009D604B /* Products */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				B2484A8C2EEC79A2009D604B /* GoFit.Ai - live Healthy */,
+				B2484AA02EEC79A7009D604B /* GoFit.Ai - live HealthyTests */,
+				B2484AAA2EEC79A7009D604B /* GoFit.Ai - live HealthyUITests */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXResourcesBuildPhase section */
+		B2484A8B2EEC79A2009D604B /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		B2484A9F2EEC79A7009D604B /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		B2484AA92EEC79A7009D604B /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXResourcesBuildPhase section */
+
+/* Begin PBXShellScriptBuildPhase section */
+		B29FB6572F4DB7F700F503E8 /* ShellScript */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+			);
+			inputPaths = (
+			);
+			outputFileListPaths = (
+			);
+			outputPaths = (
+				"$(DWARF_DSYM_FOLDER_PATH)/$(DWARF_DSYM_FILE_NAME)",
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "#!/bin/bash\nset -e\n\nif [ \"${CONFIGURATION}\" == \"Release\" ]; then\n  echo \"🔎 [dSYM Copy Script] Starting expanded search for Google framework dSYMs...\"\n  echo \"📁 DWARF_DSYM_FOLDER_PATH: ${DWARF_DSYM_FOLDER_PATH}\"\n  echo \"📁 BUILT_PRODUCTS_DIR: ${BUILT_PRODUCTS_DIR}\"\n  echo \"📁 BUILD_DIR: ${BUILD_DIR}\"\n  echo \"📁 DERIVED_DATA_DIR: ${DERIVED_DATA_DIR:-}\"\n  echo \"📁 HOME: ${HOME}\"\n\n  # Aggressive search roots (covers DerivedData, SwiftPM caches, archives, and build intermediates)\n  SEARCH_ROOTS=(\n    \"${BUILT_PRODUCTS_DIR}\"\n    \"${BUILD_DIR}\"\n    \"${BUILD_DIR}/SourcePackages\"\n    \"${BUILD_DIR}/../SourcePackages\"\n    \"${DERIVED_DATA_DIR:-}/SourcePackages\"\n    \"${DERIVED_DATA_DIR:-}/Build/Products\"\n    \"${HOME}/Library/Developer/Xcode/DerivedData\"\n    \"${HOME}/Library/Caches/org.swift.swiftpm\"\n    \"${HOME}/.swiftpm\"\n    \"${BUILD_DIR}/.build\"\n    \"${BUILD_DIR}/Intermediates.noindex\"\n    \"${HOME}/Library/Developer/Xcode/Archives\"\n  )\n\n  for FRAMEWORK_NAME in \"GoogleMobileAds\" \"UserMessagingPlatform\"; do\n    echo \"\\n🔍 Searching for ${FRAMEWORK_NAME} dSYM packages...\"\n    FOUND=0\n\n    for ROOT in \"${SEARCH_ROOTS[@]}\"; do\n      [ -n \"${ROOT}\" ] || continue\n      [ -d \"${ROOT}\" ] || continue\n      echo \"  Checking: ${ROOT}\"\n\n      # 1) Exact .framework.dSYM\n      FOUND_PATH=$(find \"${ROOT}\" -type d -name \"${FRAMEWORK_NAME}.framework.dSYM\" 2>/dev/null | head -n 1 || true)\n      if [ -n \"${FOUND_PATH}\" ]; then\n        echo \"  ✅ Found framework dSYM at: ${FOUND_PATH}\"\n        cp -r \"${FOUND_PATH}\" \"${DWARF_DSYM_FOLDER_PATH}/\"\n        FOUND=1; break\n      fi\n\n      # 2) Any dSYM containing the framework name (covers slightly renamed bundles)\n      FOUND_PATH=$(find \"${ROOT}\" -type d -name \"*${FRAMEWORK_NAME}*.dSYM\" 2>/dev/null | head -n 1 || true)\n      if [ -n \"${FOUND_PATH}\" ]; then\n        echo \"  ✅ Found named dSYM at: ${FOUND_PATH}\"\n        cp -r \"${FOUND_PATH}\" \"${DWARF_DSYM_FOLDER_PATH}/\"\n        FOUND=1; break\n      fi\n\n      # 3) Search inside .xcframework directories for embedded dSYMs\n      XC_DSYM=$(find \"${ROOT}\" -type d -name \"*.xcframework\" -print0 2>/dev/null | xargs -0 -I {} find {} -type d -name \"*.dSYM\" -print 2>/dev/null | grep -i \"${FRAMEWORK_NAME}\" | head -n 1 || true)\n      if [ -n \"${XC_DSYM}\" ]; then\n        echo \"  ✅ Found dSYM inside xcframework at: ${XC_DSYM}\"\n        cp -r \"${XC_DSYM}\" \"${DWARF_DSYM_FOLDER_PATH}/\"\n        FOUND=1; break\n      fi\n\n      # 4) Fallback: any dSYM in the root (useful for host-level caches)\n      FOUND_PATH=$(find \"${ROOT}\" -type d -name \"*.dSYM\" 2>/dev/null | head -n 1 || true)\n      if [ -n \"${FOUND_PATH}\" ]; then\n        echo \"  ⚠️ Found unrelated dSYM (copying to archive): ${FOUND_PATH}\"\n        cp -r \"${FOUND_PATH}\" \"${DWARF_DSYM_FOLDER_PATH}/\"\n        FOUND=1; break\n      fi\n    done\n\n    if [ ${FOUND} -eq 0 ]; then\n      echo \"  ⚠️ ${FRAMEWORK_NAME} dSYM not found (may be normal for SPM binary packages).\"\n    fi\n  done\n\n  echo \"\\n✅ dSYM copy phase completed\"\nfi\n";
+		};
+/* End PBXShellScriptBuildPhase section */
+
+/* Begin PBXSourcesBuildPhase section */
+		B2484A892EEC79A2009D604B /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		B2484A9D2EEC79A7009D604B /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		B2484AA72EEC79A7009D604B /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin PBXTargetDependency section */
+		B2484AA32EEC79A7009D604B /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = B2484A8C2EEC79A2009D604B /* GoFit.Ai - live Healthy */;
+			targetProxy = B2484AA22EEC79A7009D604B /* PBXContainerItemProxy */;
+		};
+		B2484AAD2EEC79A7009D604B /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = B2484A8C2EEC79A2009D604B /* GoFit.Ai - live Healthy */;
+			targetProxy = B2484AAC2EEC79A7009D604B /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
+
+/* Begin XCBuildConfiguration section */
+		B2484AB52EEC79A7009D604B /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				"ASSETCATALOG_COMPILER_APPICON_NAME[sdk=iphoneos*]" = AppIcon;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				ASSETCATALOG_COMPILER_INCLUDE_ALL_APPICON_ASSETS = YES;
+				CODE_SIGN_ENTITLEMENTS = "GoFit.Ai - live Healthy/GoFit_Ai___live_Healthy.entitlements";
+				CODE_SIGN_IDENTITY = "Apple Development";
+				CODE_SIGN_STYLE = Automatic;
+				COPY_PHASE_STRIP = NO;
+				CURRENT_PROJECT_VERSION = 3;
+				DEVELOPMENT_ASSET_PATHS = "\"GoFit.Ai - live Healthy/Preview Content\"";
+				DEVELOPMENT_TEAM = 48TGY734WW;
+				ENABLE_PREVIEWS = YES;
+				ENABLE_TESTABILITY = NO;
+				ENABLE_USER_SCRIPT_SANDBOXING = NO;
+				GENERATE_INFOPLIST_FILE = NO;
+				INFOPLIST_FILE = "GoFit.Ai - live Healthy/Info.plist";
+				INFOPLIST_KEY_CFBundleDisplayName = GoFit.AI;
+				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.healthcare-fitness";
+				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
+				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
+				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
+				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				INFOPLIST_KEY_WKRunsIndependentlyOfCompanionApp = YES;
+				INFOPLIST_KEY_WKWatchOnly = NO;
+				IPHONEOS_DEPLOYMENT_TARGET = 18.0;
+				"IPHONEOS_DEPLOYMENT_TARGET[sdk=iphoneos*]" = 18.0;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				MARKETING_VERSION = 1.2.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.rakshit.gofitai;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				PROVISIONING_PROFILE_SPECIFIER = "";
+				STRIP_INSTALLED_PRODUCT = NO;
+				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
+				SUPPORTS_MACCATALYST = NO;
+				SUPPORTS_MAC_DESIGNED_FOR_IPHONE_IPAD = NO;
+				SUPPORTS_XR_DESIGNED_FOR_IPHONE_IPAD = NO;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = 1;
+			};
+			name = Debug;
+		};
+		B2484AB62EEC79A7009D604B /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				"ASSETCATALOG_COMPILER_APPICON_NAME[sdk=iphoneos*]" = AppIcon;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				ASSETCATALOG_COMPILER_INCLUDE_ALL_APPICON_ASSETS = YES;
+				CODE_SIGN_ENTITLEMENTS = "GoFit.Ai - live Healthy/GoFit.Ai - live HealthyRelease.entitlements";
+				CODE_SIGN_IDENTITY = "Apple Development";
+				CODE_SIGN_STYLE = Automatic;
+				COPY_PHASE_STRIP = NO;
+				CURRENT_PROJECT_VERSION = 3;
+				DEVELOPMENT_ASSET_PATHS = "\"GoFit.Ai - live Healthy/Preview Content\"";
+				DEVELOPMENT_TEAM = 48TGY734WW;
+				ENABLE_PREVIEWS = YES;
+				ENABLE_TESTABILITY = NO;
+				ENABLE_USER_SCRIPT_SANDBOXING = NO;
+				GENERATE_INFOPLIST_FILE = NO;
+				INFOPLIST_FILE = "GoFit.Ai - live Healthy/Info.plist";
+				INFOPLIST_KEY_CFBundleDisplayName = GoFit.AI;
+				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.healthcare-fitness";
+				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
+				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
+				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
+				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				INFOPLIST_KEY_WKRunsIndependentlyOfCompanionApp = YES;
+				INFOPLIST_KEY_WKWatchOnly = NO;
+				IPHONEOS_DEPLOYMENT_TARGET = 18.0;
+				"IPHONEOS_DEPLOYMENT_TARGET[sdk=iphoneos*]" = 18.0;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				MARKETING_VERSION = 1.2.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.rakshit.gofitai;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				PROVISIONING_PROFILE_SPECIFIER = "";
+				STRIP_INSTALLED_PRODUCT = NO;
+				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
+				SUPPORTS_MACCATALYST = NO;
+				SUPPORTS_MAC_DESIGNED_FOR_IPHONE_IPAD = NO;
+				SUPPORTS_XR_DESIGNED_FOR_IPHONE_IPAD = NO;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = 1;
+			};
+			name = Release;
+		};
+		B2484AB72EEC79A7009D604B /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_TESTABILITY = YES;
+				ENABLE_USER_SCRIPT_SANDBOXING = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu17;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"DEBUG=1",
+					"$(inherited)",
+				);
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				INFOPLIST_FILE = GofitAi/Info.plist;
+				IPHONEOS_DEPLOYMENT_TARGET = 18.2;
+				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
+				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
+				MTL_FAST_MATH = YES;
+				ONLY_ACTIVE_ARCH = YES;
+				PRODUCT_NAME = GofitAi/Info.plist;
+				SDKROOT = iphoneos;
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "DEBUG $(inherited)";
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+			};
+			name = Debug;
+		};
+		B2484AB82EEC79A7009D604B /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				ENABLE_NS_ASSERTIONS = NO;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_TESTABILITY = YES;
+				ENABLE_USER_SCRIPT_SANDBOXING = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu17;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				INFOPLIST_FILE = GofitAi/Info.plist;
+				IPHONEOS_DEPLOYMENT_TARGET = 18.2;
+				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
+				MTL_ENABLE_DEBUG_INFO = NO;
+				MTL_FAST_MATH = YES;
+				PRODUCT_NAME = GofitAi/Info.plist;
+				SDKROOT = iphoneos;
+				SWIFT_COMPILATION_MODE = wholemodule;
+				VALIDATE_PRODUCT = YES;
+			};
+			name = Release;
+		};
+		B2484ABA2EEC79A7009D604B /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 3;
+				DEVELOPMENT_TEAM = 48TGY734WW;
+				GENERATE_INFOPLIST_FILE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 18.2;
+				MARKETING_VERSION = 1.2.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.rakshit.gofitaiTests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = 1;
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/GoFit.Ai - live Healthy.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/GoFit.Ai - live Healthy";
+			};
+			name = Debug;
+		};
+		B2484ABB2EEC79A7009D604B /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 3;
+				DEVELOPMENT_TEAM = 48TGY734WW;
+				GENERATE_INFOPLIST_FILE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 18.2;
+				MARKETING_VERSION = 1.2.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.rakshit.gofitaiTests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = 1;
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/GoFit.Ai - live Healthy.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/GoFit.Ai - live Healthy";
+			};
+			name = Release;
+		};
+		B2484ABD2EEC79A7009D604B /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 3;
+				DEVELOPMENT_TEAM = 48TGY734WW;
+				GENERATE_INFOPLIST_FILE = YES;
+				MARKETING_VERSION = 1.2.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.rakshit.gofitaiUITests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = 1;
+				TEST_TARGET_NAME = "GoFit.Ai - live Healthy";
+			};
+			name = Debug;
+		};
+		B2484ABE2EEC79A7009D604B /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 3;
+				DEVELOPMENT_TEAM = 48TGY734WW;
+				GENERATE_INFOPLIST_FILE = YES;
+				MARKETING_VERSION = 1.2.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.rakshit.gofitaiUITests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = 1;
+				TEST_TARGET_NAME = "GoFit.Ai - live Healthy";
+			};
+			name = Release;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		B2484A882EEC79A2009D604B /* Build configuration list for PBXProject "GoFit.Ai - live Healthy" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				B2484AB72EEC79A7009D604B /* Debug */,
+				B2484AB82EEC79A7009D604B /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		B2484AB42EEC79A7009D604B /* Build configuration list for PBXNativeTarget "GoFit.Ai - live Healthy" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				B2484AB52EEC79A7009D604B /* Debug */,
+				B2484AB62EEC79A7009D604B /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		B2484AB92EEC79A7009D604B /* Build configuration list for PBXNativeTarget "GoFit.Ai - live HealthyTests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				B2484ABA2EEC79A7009D604B /* Debug */,
+				B2484ABB2EEC79A7009D604B /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		B2484ABC2EEC79A7009D604B /* Build configuration list for PBXNativeTarget "GoFit.Ai - live HealthyUITests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				B2484ABD2EEC79A7009D604B /* Debug */,
+				B2484ABE2EEC79A7009D604B /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+/* End XCConfigurationList section */
+
+/* Begin XCRemoteSwiftPackageReference section */
+		B2F8D13E2F49F1CC00F6535E /* XCRemoteSwiftPackageReference "swift-package-manager-google-mobile-ads" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/googleads/swift-package-manager-google-mobile-ads.git";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 13.0.0;
+			};
+		};
+/* End XCRemoteSwiftPackageReference section */
+
+/* Begin XCSwiftPackageProductDependency section */
+		B2F8D13F2F49F26A00F6535E /* GoogleMobileAds */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = B2F8D13E2F49F1CC00F6535E /* XCRemoteSwiftPackageReference "swift-package-manager-google-mobile-ads" */;
+			productName = GoogleMobileAds;
+		};
+/* End XCSwiftPackageProductDependency section */
+	};
+	rootObject = B2484A852EEC79A2009D604B /* Project object */;
+}

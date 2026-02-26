@@ -1,0 +1,958 @@
+import SwiftUI
+
+struct ProfileView: View {
+
+    @EnvironmentObject var auth: AuthViewModel
+    @EnvironmentObject var purchases: PurchaseManager
+    @StateObject private var healthKit = HealthKitService.shared
+    @StateObject private var notifications: NotificationService = NotificationService.shared
+
+    @State private var showingEditProfile = false
+    @State private var showingPaywall = false
+    @State private var showingDeleteAccount = false
+    @State private var showingExportData = false
+    @State private var showingChangePassword = false
+    @State private var showingShareProgress = false
+    @State private var showingTargetSettings = false
+    @State private var showingDietaryPreferences = false
+    @State private var showingWorkoutPreferences = false
+    @State private var showingImagePicker = false
+    @State private var selectedProfileImage: UIImage? = nil
+    @State private var isUploadingProfilePicture = false
+    @State private var showingAIConsent = false
+    @State private var showingMedicalCitations = false
+
+    @AppStorage("notificationsEnabled") private var notificationsEnabled: Bool = true
+    @State private var healthSyncEnabled = true
+    @AppStorage("unitsPreference") private var unitsPreference: String = "metric"
+    @AppStorage("darkModePreference") private var darkModePreference: String = "system"
+    @State private var isLoading = false
+    @State private var errorMessage: String?
+    @State private var showingError = false
+
+    enum UnitSystem: String, CaseIterable {
+        case metric = "Metric"
+        case imperial = "Imperial"
+    }
+    
+    enum DarkModePreference: String, CaseIterable {
+        case system = "System"
+        case light = "Light"
+        case dark = "Dark"
+    }
+    
+    private var currentUnits: UnitSystem {
+        UnitSystem(rawValue: unitsPreference.capitalized) ?? .metric
+    }
+    
+    private var currentDarkMode: DarkModePreference {
+        DarkModePreference(rawValue: darkModePreference.capitalized) ?? .system
+    }
+
+    var body: some View {
+        NavigationView {
+            ScrollView {
+                VStack(spacing: 0) {
+                    profileHeader
+                        .padding(.bottom, 24)
+
+                    quickStatsSection
+                        .padding(.horizontal, 20)
+                        .padding(.bottom, 24)
+
+                    VStack(spacing: 16) {
+                        accountSection
+                        targetsSection
+                        subscriptionSection
+                        healthSection
+                        preferencesSection
+                        privacySection
+                    }
+                    .padding(.horizontal, 20)
+                    .padding(.bottom, 32)
+                }
+            }
+            .background(Design.Colors.background)
+            .navigationTitle("Profile")
+            .navigationBarTitleDisplayMode(.large)
+            .overlay(loadingOverlay)
+            .sheet(isPresented: $showingEditProfile) {
+                EditProfileView().environmentObject(auth)
+            }
+            .sheet(isPresented: $showingPaywall) {
+                PaywallView().environmentObject(purchases)
+            }
+            .sheet(isPresented: $showingChangePassword) {
+                ChangePasswordView().environmentObject(auth)
+            }
+            .sheet(isPresented: $showingTargetSettings) {
+                TargetSettingsView().environmentObject(auth)
+            }
+            .sheet(isPresented: $showingDietaryPreferences) {
+                DietaryPreferencesEditorView().environmentObject(auth)
+            }
+            .sheet(isPresented: $showingWorkoutPreferences) {
+                WorkoutPreferenceSettingsView().environmentObject(auth)
+            }
+            .sheet(isPresented: $showingAIConsent) {
+                AIDataConsentView()
+            }
+            .sheet(isPresented: $showingMedicalCitations) {
+                MedicalCitationsView()
+            }
+            .onAppear {
+                // Refresh subscription status when profile appears
+                Task {
+                    await purchases.checkTrialAndSubscriptionStatus()
+                }
+            }
+            .onChange(of: purchases.subscriptionStatus) { oldValue, newValue in
+                // Refresh UI when subscription status changes
+            }
+            .onChange(of: purchases.trialDaysRemaining) { oldValue, newValue in
+                // Refresh UI when trial days remaining changes
+            }
+            .sheet(isPresented: $showingShareProgress) {
+                ShareProgressView(
+                    calories: "1,450", // TODO: Get actual calories from backend
+                    steps: healthKit.todaySteps,
+                    activeCalories: healthKit.todayActiveCalories,
+                    waterIntake: 0.0, // TODO: Get actual water intake
+                    heartRate: healthKit.restingHeartRate > 0 ? healthKit.restingHeartRate : nil
+                )
+                .environmentObject(auth)
+            }
+            .alert("Delete Account", isPresented: $showingDeleteAccount) {
+                Button("Cancel", role: .cancel) {}
+                Button("Delete", role: .destructive) { deleteAccount() }
+            } message: {
+                Text("This action cannot be undone.")
+            }
+            .alert("Error", isPresented: $showingError) {
+                Button("OK") { }
+            } message: {
+                Text(errorMessage ?? "An error occurred")
+            }
+            .sheet(isPresented: $showingExportData) {
+                // Export data loading sheet
+                VStack(spacing: 20) {
+                    if isLoading {
+                        ProgressView()
+                            .scaleEffect(1.5)
+                        Text("Exporting your data...")
+                            .font(.headline)
+                        Text("Please wait")
+                            .font(.caption)
+                            .foregroundColor(.secondary)
+                    } else {
+                        Image(systemName: "checkmark.circle.fill")
+                            .font(.system(size: Design.Scale.value(50, textStyle: .title1)))
+                            .foregroundColor(.green)
+                        Text("Data exported successfully!")
+                            .font(.headline)
+                    }
+                }
+                .padding(40)
+                .interactiveDismissDisabled(isLoading)
+            }
+            .onAppear {
+                healthKit.checkAuthorizationStatus()
+                healthSyncEnabled = healthKit.isAuthorized
+                
+                if healthKit.isAuthorized {
+                    healthKit.startPeriodicSync()
+                }
+            }
+            .onReceive(NotificationCenter.default.publisher(for: UIApplication.willEnterForegroundNotification)) { _ in
+                healthKit.checkAuthorizationStatus()
+                healthSyncEnabled = healthKit.isAuthorized
+                
+                if healthKit.isAuthorized {
+                    healthKit.startPeriodicSync()
+                }
+            }
+        }
+    }
+    
+    // MARK: - Health Section
+    private var healthSection: some View {
+        SettingsSection(title: "Health & Fitness") {
+            HStack {
+                SettingsRow(
+                    icon: "heart.fill",
+                    iconColor: .pink,
+                    title: "Apple Health",
+                    subtitle: healthKit.isAuthorized ? "Connected" : "Not Connected"
+                )
+                Spacer()
+                Toggle("", isOn: $healthSyncEnabled)
+                    .labelsHidden()
+            }
+            .onChange(of: healthSyncEnabled) { oldValue, newValue in
+                if newValue {
+                    Task {
+                        do {
+                            print("🔵 Requesting HealthKit authorization from ProfileView...")
+                            
+                            // First, refresh status in case user granted permissions in Settings
+                            healthKit.checkAuthorizationStatus()
+                            
+                            // If already authorized, skip request and start periodic sync
+                            if healthKit.isAuthorized {
+                                print("✅ HealthKit already authorized - starting periodic sync")
+                                await MainActor.run {
+                                    healthSyncEnabled = true
+                                }
+                                healthKit.startPeriodicSync()
+                                try? await healthKit.syncToBackend()
+                                return
+                            }
+                            
+                            // Request authorization if not already granted
+                            try await healthKit.requestAuthorization()
+                            
+                            // Re-check authorization status after requesting
+                            healthKit.checkAuthorizationStatus()
+                            
+                            // Update toggle state based on actual authorization
+                            await MainActor.run {
+                                healthSyncEnabled = healthKit.isAuthorized
+                            }
+                            
+                            // If permission was just granted, start periodic sync
+                            if healthKit.isAuthorized {
+                                print("✅ HealthKit permission granted in ProfileView - starting periodic sync")
+                                healthKit.startPeriodicSync()
+                                try? await healthKit.syncToBackend()
+                            } else {
+                                // Give user option to check Settings
+                                await MainActor.run {
+                                    errorMessage = "HealthKit authorization was not granted. Please enable it in Settings > Privacy & Security > Health, then return to the app."
+                                    showingError = true
+                                }
+                            }
+                        } catch {
+                            await MainActor.run {
+                                errorMessage = "Failed to connect to Apple Health: \(error.localizedDescription)"
+                                showingError = true
+                                healthSyncEnabled = false
+                            }
+                        }
+                    }
+                } else {
+                    // User disabled HealthKit sync
+                    // Note: We can't revoke authorization, but we can stop syncing
+                    print("ℹ️ User disabled HealthKit sync")
+                }
+            }
+
+            SettingsRow(
+                icon: "applewatch",
+                iconColor: .black,
+                title: "Apple Watch",
+                subtitle: "Sync activity data",
+                action: {
+                    Task { 
+                        try? await healthKit.syncToBackend()
+                    }
+                }
+            )
+        }
+    }
+
+    // MARK: - Loading Overlay
+    private var loadingOverlay: some View {
+        Group {
+            if isLoading {
+                Color.black.opacity(0.1)
+                    .ignoresSafeArea()
+                    .overlay(
+                        ProgressView()
+                            .padding()
+                            .background(Color(.systemBackground))
+                            .cornerRadius(12)
+                            .shadow(radius: 10)
+                    )
+            }
+        }
+    }
+
+    // MARK: - Profile Header
+    private var profileHeader: some View {
+        VStack(spacing: 16) {
+            Button {
+                showingImagePicker = true
+            } label: {
+                ZStack(alignment: .bottomTrailing) {
+                    if let profilePictureURL = auth.profilePictureURL, !profilePictureURL.isEmpty,
+                       let url = URL(string: profilePictureURL) {
+                        // Show profile picture from URL
+                        AsyncImage(url: url) { phase in
+                            switch phase {
+                            case .empty:
+                                Circle()
+                                    .fill(Design.Colors.primaryGradient)
+                                    .frame(width: Design.Scale.value(100, textStyle: .title1), height: Design.Scale.value(100, textStyle: .title1))
+                                    .overlay(
+                                        ProgressView()
+                                            .tint(.white)
+                                    )
+                            case .success(let image):
+                                image
+                                    .resizable()
+                                    .scaledToFill()
+                                    .frame(width: Design.Scale.value(100, textStyle: .title1), height: Design.Scale.value(100, textStyle: .title1))
+                                    .clipShape(Circle())
+                            case .failure:
+                                Circle()
+                                    .fill(Design.Colors.primaryGradient)
+                                    .frame(width: Design.Scale.value(100, textStyle: .title1), height: Design.Scale.value(100, textStyle: .title1))
+                                    .overlay(
+                                        Text(auth.name.prefix(1).uppercased())
+                                            .font(Design.Typography.title)
+                                            .foregroundColor(.white)
+                                    )
+                            @unknown default:
+                                Circle()
+                                    .fill(Design.Colors.primaryGradient)
+                                    .frame(width: Design.Scale.value(100, textStyle: .title1), height: Design.Scale.value(100, textStyle: .title1))
+                            }
+                        }
+                    } else if let selectedImage = selectedProfileImage {
+                        // Show selected image before upload
+                        Image(uiImage: selectedImage)
+                            .resizable()
+                            .scaledToFill()
+                            .frame(width: Design.Scale.value(100, textStyle: .title1), height: Design.Scale.value(100, textStyle: .title1))
+                            .clipShape(Circle())
+                    } else {
+                        // Show initials
+                        Circle()
+                            .fill(Design.Colors.primaryGradient)
+                            .frame(width: Design.Scale.value(100, textStyle: .title1), height: Design.Scale.value(100, textStyle: .title1))
+                            .overlay(
+                                Text(auth.name.prefix(1).uppercased())
+                                    .font(Design.Typography.title)
+                                    .foregroundColor(.white)
+                            )
+                    }
+                    
+                    // Camera icon overlay
+                    Image(systemName: "camera.fill")
+                        .font(.caption)
+                        .foregroundColor(.white)
+                        .padding(8)
+                        .background(Design.Colors.primary)
+                        .clipShape(Circle())
+                        .padding(4)
+                }
+            }
+            .disabled(isUploadingProfilePicture)
+
+            Text(auth.name.isEmpty ? "User" : auth.name)
+                .font(.title2)
+                .fontWeight(.bold)
+
+            Text(auth.email)
+                .font(.subheadline)
+                .foregroundColor(.secondary)
+
+            Button("Edit Profile") {
+                showingEditProfile = true
+            }
+            .buttonStyle(ScaleButtonStyle())
+        }
+        .padding(.top, 20)
+        .sheet(isPresented: $showingImagePicker) {
+            ImagePicker(selectedImage: $selectedProfileImage)
+                .onDisappear {
+                    if let image = selectedProfileImage {
+                        uploadProfilePicture(image)
+                    }
+                }
+        }
+    }
+
+    // MARK: - Quick Stats
+    private var quickStatsSection: some View {
+        VStack(spacing: 12) {
+            HStack(spacing: 12) {
+                StatCard(icon: "flame.fill", value: "1,450", label: "Calories", color: .orange)
+                StatCard(icon: "figure.walk", value: "\(healthKit.todaySteps)", label: "Steps", color: .green)
+                StatCard(icon: "timer", value: "12h", label: "Fasting", color: .purple)
+            }
+            
+            // Share Progress Button
+            Button {
+                showingShareProgress = true
+            } label: {
+                HStack {
+                    Image(systemName: "square.and.arrow.up.fill")
+                        .font(.title3)
+                    Text("Share My Progress")
+                        .font(Design.Typography.headline)
+                    Spacer()
+                    Image(systemName: "chevron.right")
+                        .font(.caption)
+                }
+                .foregroundColor(.white)
+                .padding()
+                .background(Design.Colors.primaryGradient)
+                .cornerRadius(16)
+            }
+        }
+    }
+
+    // MARK: - Account
+    private var accountSection: some View {
+        SettingsSection(title: "Account") {
+            SettingsRow(
+                icon: "person.fill",
+                iconColor: .blue,
+                title: "Personal Information",
+                action: { showingEditProfile = true }
+            )
+
+            SettingsRow(
+                icon: "lock.fill",
+                iconColor: .red,
+                title: "Change Password",
+                action: { showingChangePassword = true }
+            )
+
+            HStack {
+                SettingsRow(
+                    icon: "bell.fill",
+                    iconColor: .orange,
+                    title: "Notifications",
+                    subtitle: notifications.notificationsEnabled ? "Enabled" : "Disabled"
+                )
+                Spacer()
+                Toggle("", isOn: $notifications.notificationsEnabled)
+                    .labelsHidden()
+            }
+            .onChange(of: notifications.notificationsEnabled) { oldValue, newValue in
+                if newValue {
+                    notifications.requestAuthorization()
+                } else {
+                    UNUserNotificationCenter.current().removeAllPendingNotificationRequests()
+                }
+                // Persist the notification preference to UserDefaults
+                notifications.saveSettings()
+            }
+            
+            if notifications.notificationsEnabled {
+                VStack(spacing: 12) {
+                    HStack {
+                        SettingsRow(
+                            icon: "fork.knife",
+                            iconColor: .green,
+                            title: "Meal Reminders",
+                            subtitle: "Breakfast, lunch, dinner"
+                        )
+                        Spacer()
+                        Toggle("", isOn: $notifications.mealRemindersEnabled)
+                            .labelsHidden()
+                    }
+                    .onChange(of: notifications.mealRemindersEnabled) { oldValue, newValue in
+                        notifications.updateMealReminders(newValue)
+                    }
+                    
+                    HStack {
+                        SettingsRow(
+                            icon: "drop.fill",
+                            iconColor: .blue,
+                            title: "Water Reminders",
+                            subtitle: "Stay hydrated"
+                        )
+                        Spacer()
+                        Toggle("", isOn: $notifications.waterRemindersEnabled)
+                            .labelsHidden()
+                    }
+                    .onChange(of: notifications.waterRemindersEnabled) { oldValue, newValue in
+                        notifications.updateWaterReminders(newValue)
+                    }
+                    
+                    HStack {
+                        SettingsRow(
+                            icon: "figure.run",
+                            iconColor: .purple,
+                            title: "Workout Reminders",
+                            subtitle: "Stay active"
+                        )
+                        Spacer()
+                        Toggle("", isOn: $notifications.workoutRemindersEnabled)
+                            .labelsHidden()
+                    }
+                    .onChange(of: notifications.workoutRemindersEnabled) { oldValue, newValue in
+                        notifications.updateWorkoutReminders(newValue)
+                    }
+                }
+                .padding(.leading, 20)
+            }
+        }
+    }
+
+    // MARK: - Targets
+    private var targetsSection: some View {
+        SettingsSection(title: "Goals & Targets") {
+            SettingsRow(
+                icon: "target",
+                iconColor: .purple,
+                title: "Weight & Targets",
+                subtitle: "Update your goals and targets",
+                action: { showingTargetSettings = true }
+            )
+        }
+    }
+
+    // MARK: - Subscription
+    private var subscriptionSection: some View {
+        SettingsSection(title: "Subscription") {
+            // IMPORTANT:
+            // - `hasActiveSubscription` means "can access premium features" (could be backend trial OR StoreKit paid/trial).
+            // - UI must distinguish Premium vs Trial using `subscriptionStatus` + StoreKit `currentSubscription`.
+            //
+            // Premium (StoreKit) = subscriptionStatus == .active (even if it's an intro free trial period).
+            // Trial (backend/local) = subscriptionStatus == .trial.
+            if purchases.subscriptionStatus == .active {
+                let isStoreKitTrial = purchases.currentSubscription?.isInTrialPeriod ?? false
+                
+                VStack(alignment: .leading, spacing: Design.Spacing.xs) {
+                    HStack {
+                        Image(systemName: "crown.fill")
+                            .foregroundColor(.yellow)
+                            .font(.title3)
+                        Text("Premium Active")
+                            .font(Design.Typography.headline)
+                            .foregroundColor(.primary)
+                    }
+                    
+                    // Prefer backend's calculated endDate (proper 1 month/year renewal) over StoreKit's Sandbox-accelerated date
+                    let renewalDate = purchases.backendCalculatedEndDate ?? purchases.currentSubscription?.expirationDate
+                    
+                    if let expirationDate = renewalDate {
+                        if isStoreKitTrial {
+                            Text("Free trial active - Renews: \(formatDate(expirationDate))")
+                                .font(Design.Typography.caption)
+                                .foregroundColor(.secondary)
+                        } else {
+                            Text("Renews: \(formatDate(expirationDate))")
+                                .font(Design.Typography.caption)
+                                .foregroundColor(.secondary)
+                        }
+                    } else {
+                        if isStoreKitTrial {
+                            Text("Free trial active - You have full access to all premium features")
+                                .font(Design.Typography.caption)
+                                .foregroundColor(.secondary)
+                        } else {
+                            Text("You have full access to all premium features")
+                                .font(Design.Typography.caption)
+                                .foregroundColor(.secondary)
+                        }
+                    }
+                }
+                .padding(.vertical, Design.Spacing.xs)
+                
+            } else if purchases.subscriptionStatus == .trial {
+                // Backend/local trial (NOT a paid subscription)
+                VStack(alignment: .leading, spacing: Design.Spacing.sm) {
+                    HStack {
+                        Image(systemName: "gift.fill")
+                            .foregroundColor(Design.Colors.primary)
+                            .font(.title3)
+                        Text("Free Trial")
+                            .font(Design.Typography.headline)
+                            .foregroundColor(.primary)
+                    }
+                    
+                    // Bugfix: Only use backend trialDaysRemaining for backend trials.
+                    // Don't fall back to local getTrialDaysRemaining() as it returns 3-day local trial
+                    // which may have different duration than backend trial (e.g., 7 days).
+                    if let days = purchases.trialDaysRemaining, days > 0 {
+                        Text("\(days) day\(days == 1 ? "" : "s") left in your free trial")
+                            .font(Design.Typography.subheadline)
+                            .foregroundColor(.secondary)
+                    } else {
+                        Text("Your free trial is active")
+                            .font(Design.Typography.subheadline)
+                            .foregroundColor(.secondary)
+                    }
+                    
+                    Button {
+                        showingPaywall = true
+                    } label: {
+                        HStack {
+                            Text("Subscribe Now")
+                                .font(Design.Typography.subheadline)
+                                .fontWeight(.semibold)
+                            Spacer()
+                            Image(systemName: "arrow.right.circle.fill")
+                        }
+                        .foregroundColor(.white)
+                        .padding(.horizontal, Design.Spacing.md)
+                        .padding(.vertical, Design.Spacing.sm)
+                        .background(Design.Colors.primaryGradient)
+                        .cornerRadius(Design.Radius.medium)
+                    }
+                    .padding(.top, Design.Spacing.xs)
+                }
+                .padding(.vertical, Design.Spacing.xs)
+            } else if purchases.isTrialActive() {
+                // User is in trial period
+                VStack(alignment: .leading, spacing: Design.Spacing.sm) {
+                    HStack {
+                        Image(systemName: "gift.fill")
+                            .foregroundColor(Design.Colors.primary)
+                            .font(.title3)
+                        Text("Trial User")
+                            .font(Design.Typography.headline)
+                            .foregroundColor(.primary)
+                    }
+                    
+                    if let daysRemaining = purchases.getTrialDaysRemaining() {
+                        Text("\(daysRemaining) day\(daysRemaining == 1 ? "" : "s") left in your free trial")
+                            .font(Design.Typography.subheadline)
+                            .foregroundColor(.secondary)
+                    } else {
+                        Text("Free trial active")
+                            .font(Design.Typography.subheadline)
+                            .foregroundColor(.secondary)
+                    }
+                    
+                    Button {
+                        showingPaywall = true
+                    } label: {
+                        HStack {
+                            Text("Subscribe Now")
+                                .font(Design.Typography.subheadline)
+                                .fontWeight(.semibold)
+                            Spacer()
+                            Image(systemName: "arrow.right.circle.fill")
+                        }
+                        .foregroundColor(.white)
+                        .padding(.horizontal, Design.Spacing.md)
+                        .padding(.vertical, Design.Spacing.sm)
+                        .background(Design.Colors.primaryGradient)
+                        .cornerRadius(Design.Radius.medium)
+                    }
+                    .padding(.top, Design.Spacing.xs)
+                }
+                .padding(.vertical, Design.Spacing.xs)
+            } else {
+                // No subscription or trial expired
+                Button {
+                    showingPaywall = true
+                } label: {
+                    SettingsRow(
+                        icon: "crown.fill",
+                        iconColor: .yellow,
+                        title: "Upgrade to Premium",
+                        subtitle: "Unlock all features",
+                        showChevron: true
+                    )
+                }
+            }
+
+            SettingsRow(
+                icon: "arrow.clockwise",
+                iconColor: .blue,
+                title: "Restore Purchases",
+                action: {
+                    Task {
+                        isLoading = true
+                        try? await purchases.restorePurchases()
+                        isLoading = false
+                    }
+                }
+            )
+        }
+    }
+    
+    // MARK: - Helper Functions
+    private func formatDate(_ date: Date) -> String {
+        let formatter = DateFormatter()
+        formatter.dateStyle = .medium
+        formatter.timeStyle = .none
+        return formatter.string(from: date)
+    }
+
+
+    // MARK: - Preferences
+    private var preferencesSection: some View {
+        SettingsSection(title: "Preferences") {
+            // Dietary Preferences
+            SettingsRow(
+                icon: "leaf.fill",
+                iconColor: .green,
+                title: "Dietary Preferences",
+                subtitle: dietaryPreferencesSubtitle,
+                showChevron: true,
+                action: {
+                    showingDietaryPreferences = true
+                }
+            )
+            
+            // Workout Preferences
+            SettingsRow(
+                icon: "figure.run",
+                iconColor: .orange,
+                title: "Workout Preferences",
+                subtitle: workoutPreferencesSubtitle,
+                showChevron: true,
+                action: {
+                    showingWorkoutPreferences = true
+                }
+            )
+            
+            Menu {
+                Button("Metric") {
+                    unitsPreference = "metric"
+                }
+                Button("Imperial") {
+                    unitsPreference = "imperial"
+                }
+            } label: {
+                SettingsRow(
+                    icon: "ruler.fill",
+                    iconColor: .blue,
+                    title: "Units",
+                    subtitle: currentUnits.rawValue,
+                    showChevron: true
+                )
+            }
+
+            Menu {
+                Button("System") {
+                    darkModePreference = "system"
+                    updateColorScheme()
+                }
+                Button("Light") {
+                    darkModePreference = "light"
+                    updateColorScheme()
+                }
+                Button("Dark") {
+                    darkModePreference = "dark"
+                    updateColorScheme()
+                }
+            } label: {
+                SettingsRow(
+                    icon: "moon.fill",
+                    iconColor: .indigo,
+                    title: "Dark Mode",
+                    subtitle: currentDarkMode.rawValue,
+                    showChevron: true
+                )
+            }
+        }
+    }
+    
+    private var dietaryPreferencesSubtitle: String {
+        if auth.dietPrefs.isEmpty {
+            return "None selected"
+        } else {
+            let displayNames: [String: String] = [
+                "vegan": "Vegan",
+                "vegetarian": "Vegetarian",
+                "keto": "Keto",
+                "paleo": "Paleo",
+                "mediterranean": "Mediterranean",
+                "low_carb": "Low Carb"
+            ]
+            let names = auth.dietPrefs.compactMap { displayNames[$0] }
+            return names.joined(separator: ", ")
+        }
+    }
+    
+    private var workoutPreferencesSubtitle: String {
+        if let profile = LocalUserStore.shared.getProfile() {
+            let prefs = profile.workoutPreferences
+            if prefs.isEmpty {
+                return "None selected"
+            } else {
+                return prefs.prefix(2).joined(separator: ", ") + (prefs.count > 2 ? " +\(prefs.count - 2) more" : "")
+            }
+        }
+        return "None selected"
+    }
+
+    // MARK: - Privacy
+    private var privacySection: some View {
+        SettingsSection(title: "Privacy & Data") {
+            SettingsRow(
+                icon: "doc.text.fill",
+                iconColor: .blue,
+                title: "Medical Citations",
+                subtitle: "View health data sources",
+                showChevron: true,
+                action: { showingMedicalCitations = true }
+            )
+            
+            SettingsRow(
+                icon: "brain",
+                iconColor: .purple,
+                title: "AI Data Usage",
+                subtitle: "How we use AI services",
+                showChevron: true,
+                action: { showingAIConsent = true }
+            )
+            
+            SettingsRow(
+                icon: "hand.raised.fill",
+                iconColor: .green,
+                title: "Privacy Policy",
+                showChevron: true,
+                action: {
+                    if let url = URL(string: "https://gofit-ai-live-healthy-1.onrender.com/privacy") {
+                        UIApplication.shared.open(url)
+                    }
+                }
+            )
+            
+            SettingsRow(
+                icon: "square.and.arrow.up.fill",
+                iconColor: .blue,
+                title: "Export Data",
+                action: { 
+                    showingExportData = true
+                    exportData()
+                }
+            )
+
+            SettingsRow(
+                icon: "trash.fill",
+                iconColor: .red,
+                title: "Delete Account",
+                action: { showingDeleteAccount = true }
+            )
+
+            Button(role: .destructive) {
+                auth.logout()
+            } label: {
+                Text("Sign Out")
+                    .frame(maxWidth: .infinity)
+            }
+        }
+    }
+
+    // MARK: - Actions
+    private func deleteAccount() {
+        isLoading = true
+        Task {
+            do {
+                let _: EmptyResponse = try await NetworkManager.shared.request(
+                    "auth/account",
+                    method: "DELETE",
+                    body: nil
+                )
+                
+                await MainActor.run {
+                    isLoading = false
+                    auth.logout()
+                }
+            } catch {
+                await MainActor.run {
+                    isLoading = false
+                    errorMessage = "Failed to delete account: \(error.localizedDescription)"
+                    showingError = true
+                }
+            }
+        }
+    }
+
+    private func exportData() {
+        isLoading = true
+        showingExportData = true
+        Task {
+            do {
+                // Use dictionary request method for export data
+                let exportData = try await NetworkManager.shared.requestDictionary(
+                    "auth/export",
+                    method: "GET",
+                    body: nil
+                )
+                
+                // Convert to JSON string
+                let jsonData = try JSONSerialization.data(withJSONObject: exportData, options: .prettyPrinted)
+                let jsonString = String(data: jsonData, encoding: .utf8) ?? ""
+                
+                // Create file and share
+                await MainActor.run {
+                    isLoading = false
+                    showingExportData = false
+                    shareData(jsonString: jsonString)
+                }
+            } catch {
+                await MainActor.run {
+                    isLoading = false
+                    showingExportData = false
+                    errorMessage = "Failed to export data: \(error.localizedDescription)"
+                    showingError = true
+                }
+            }
+        }
+    }
+    
+    private func shareData(jsonString: String) {
+        let activityVC = UIActivityViewController(
+            activityItems: [jsonString],
+            applicationActivities: nil
+        )
+        
+        if let windowScene = UIApplication.shared.connectedScenes.first as? UIWindowScene,
+           let rootViewController = windowScene.windows.first?.rootViewController {
+            rootViewController.present(activityVC, animated: true)
+        }
+    }
+    
+    private func uploadProfilePicture(_ image: UIImage) {
+        isUploadingProfilePicture = true
+        
+        Task {
+            do {
+                // Convert image to base64
+                guard let imageData = image.jpegData(compressionQuality: 0.7) else {
+                    throw NSError(domain: "Image Error", code: -1, userInfo: [NSLocalizedDescriptionKey: "Failed to convert image"])
+                }
+                
+                let base64String = imageData.base64EncodedString()
+                let profilePictureURL = "data:image/jpeg;base64,\(base64String)"
+                
+                let body: [String: Any] = [
+                    "profilePictureURL": profilePictureURL
+                ]
+                
+                let bodyData = try JSONSerialization.data(withJSONObject: body, options: [])
+                
+                let response: [String: Any] = try await NetworkManager.shared.requestDictionary(
+                    "auth/profile-picture",
+                    method: "POST",
+                    body: bodyData
+                )
+                
+                await MainActor.run {
+                    if let pictureURL = response["profilePictureURL"] as? String {
+                        auth.profilePictureURL = pictureURL
+                        auth.saveLocalState()
+                    }
+                    isUploadingProfilePicture = false
+                    selectedProfileImage = nil
+                }
+            } catch {
+                await MainActor.run {
+                    isUploadingProfilePicture = false
+                    errorMessage = "Failed to upload profile picture: \(error.localizedDescription)"
+                    showingError = true
+                    selectedProfileImage = nil
+                }
+            }
+        }
+    }
+    
+    private func updateColorScheme() {
+        // Color scheme is handled by the app's environment
+        // The preference is stored and can be read by the root view
+        NotificationCenter.default.post(name: NSNotification.Name("ColorSchemeChanged"), object: nil)
+    }
+}

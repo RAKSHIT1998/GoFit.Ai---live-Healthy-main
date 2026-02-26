@@ -1,0 +1,165 @@
+import SwiftUI
+
+struct RootView: View {
+    @StateObject private var auth = AuthViewModel()
+    @StateObject private var purchases = PurchaseManager()
+    @StateObject private var healthKit = HealthKitService.shared
+    @EnvironmentObject var adManager: AdManager
+
+    @AppStorage("pendingFriendInviteId") private var pendingFriendInviteId: String = ""
+    
+    @State private var hasCheckedSubscriptionAfterLogin = false
+    @State private var hasShownInitialAd = false
+    
+    var body: some View {
+        Group {
+            if !auth.didFinishOnboarding {
+                OnboardingScreens()
+                    .environmentObject(auth)
+                    .environmentObject(purchases)
+            } else if !auth.isLoggedIn {
+                AuthView()
+                    .environmentObject(auth)
+                    .environmentObject(purchases)
+            } else {
+                // User is logged in - show main app or blocking paywall
+                // Only show blocking paywall if:
+                // 1. User is logged in (not a new signup showing onboarding paywall)
+                // 2. Subscription is required (trial expired and no subscription)
+                // 3. We've already checked subscription status (avoid showing immediately after login)
+                if hasCheckedSubscriptionAfterLogin && purchases.requiresSubscription {
+                    // Blocking paywall for existing users whose trial expired
+                    PaywallView()
+                        .environmentObject(purchases)
+                        .interactiveDismissDisabled()
+                } else {
+                    MainTabView()
+                        .environmentObject(auth)
+                        .environmentObject(purchases)
+                }
+            }
+        }
+        .onAppear {
+            // Connect AdManager to PurchaseManager
+            adManager.setPurchaseManager(purchases)
+            
+            purchases.loadProducts()
+            
+            // Check subscription and trial status on app launch
+            if auth.isLoggedIn {
+                Task {
+                    await purchases.updateSubscriptionStatus()
+                    await purchases.checkSubscriptionStatus()
+                    await purchases.checkTrialAndSubscriptionStatus()
+                    await MainActor.run {
+                        hasCheckedSubscriptionAfterLogin = true
+                    }
+                    
+                    // Show app open ad if user doesn't have subscription
+                    if !hasShownInitialAd && !purchases.hasActiveSubscription {
+                        // Delay ad slightly to let app fully load
+                        try? await Task.sleep(nanoseconds: 500_000_000) // 0.5 second
+                        adManager.showAppOpenAd()
+                        hasShownInitialAd = true
+                    }
+                }
+            }
+            
+            // Check HealthKit authorization and sync if logged in
+            if auth.isLoggedIn {
+                healthKit.checkAuthorizationStatus()
+                if healthKit.isAuthorized {
+                    healthKit.startPeriodicSync()
+                    Task {
+                        await healthKit.readTodayData()
+                        try? await healthKit.syncToBackend()
+                    }
+                }
+            }
+        }
+        .onChange(of: auth.isLoggedIn) { oldValue, newValue in
+            if newValue {
+                // When user logs in/signs up, initialize trial and check subscription
+                // Reset the flag to prevent premature paywall display
+                hasCheckedSubscriptionAfterLogin = false
+                hasShownInitialAd = false
+                
+                Task {
+                    // Give paywall time to show after signup if needed
+                    // Only check subscription status after a delay
+                    try? await Task.sleep(nanoseconds: 1_000_000_000) // 1 second
+                    
+                    await purchases.updateSubscriptionStatus()
+                    await purchases.checkSubscriptionStatus()
+                    await purchases.checkTrialAndSubscriptionStatus()
+                    
+                    await MainActor.run {
+                        hasCheckedSubscriptionAfterLogin = true
+                    }
+                    
+                    // Show app open ad if user doesn't have subscription
+                    if !hasShownInitialAd && !purchases.hasActiveSubscription {
+                        // Delay ad slightly to let app fully load
+                        try? await Task.sleep(nanoseconds: 500_000_000) // 0.5 second
+                        adManager.showAppOpenAd()
+                        hasShownInitialAd = true
+                    }
+                    
+                    healthKit.checkAuthorizationStatus()
+                    if healthKit.isAuthorized {
+                        healthKit.startPeriodicSync()
+                        await healthKit.readTodayData()
+                        try? await healthKit.syncToBackend()
+                    }
+                }
+
+                if !pendingFriendInviteId.isEmpty {
+                    FriendsService.shared.sendFriendRequest(to: pendingFriendInviteId) { _ in
+                        pendingFriendInviteId = ""
+                    }
+                }
+            } else {
+                // When user logs out, stop HealthKit sync and reset flag
+                hasCheckedSubscriptionAfterLogin = false
+                hasShownInitialAd = false
+                healthKit.stopPeriodicSync()
+            }
+        }
+        .onChange(of: purchases.subscriptionStatus) { oldValue, newValue in
+            // Bugfix: When subscription status changes (e.g., after purchase), immediately
+            // update requiresSubscription/showPaywall to dismiss blocking paywall.
+            // This is safe because checkTrialAndSubscriptionStatus() no longer calls
+            // updateSubscriptionStatus()/checkSubscriptionStatus(), so no infinite loop.
+            if auth.isLoggedIn && oldValue != newValue {
+                Task {
+                    await purchases.checkTrialAndSubscriptionStatus()
+                }
+            }
+        }
+        .onOpenURL { url in
+            handleInviteURL(url)
+        }
+    }
+
+    private func handleInviteURL(_ url: URL) {
+        let scheme = url.scheme?.lowercased()
+        let host = url.host?.lowercased()
+        let path = url.path.lowercased()
+
+        let isCustomScheme = (scheme == "gofitai" && host == "invite")
+        let isUniversalLink = (scheme == "https" && host == "gofit-ai-live-healthy-1.onrender.com" && (path == "/invite" || path == "/i"))
+
+        guard isCustomScheme || isUniversalLink else { return }
+
+        let components = URLComponents(url: url, resolvingAgainstBaseURL: false)
+        let inviterId = components?.queryItems?.first(where: { $0.name == "from" })?.value
+
+        guard let inviterId = inviterId, !inviterId.isEmpty else { return }
+
+        if auth.isLoggedIn {
+            FriendsService.shared.sendFriendRequest(to: inviterId) { _ in }
+        } else {
+            pendingFriendInviteId = inviterId
+        }
+    }
+}

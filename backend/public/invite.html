@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>GoFit.Ai Invite</title>
+  <style>
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+      background: #f6f7fb;
+      color: #111827;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+      margin: 0;
+      padding: 24px;
+    }
+    .card {
+      background: #fff;
+      border-radius: 16px;
+      padding: 28px;
+      max-width: 420px;
+      width: 100%;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.08);
+      text-align: center;
+    }
+    h1 { margin: 0 0 8px; font-size: 24px; }
+    p { color: #6b7280; }
+    .btn {
+      display: inline-block;
+      margin-top: 16px;
+      background: #3b82f6;
+      color: white;
+      padding: 12px 18px;
+      border-radius: 10px;
+      text-decoration: none;
+      font-weight: 600;
+    }
+    .link {
+      margin-top: 12px;
+      display: block;
+      color: #3b82f6;
+      text-decoration: none;
+      font-size: 14px;
+    }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <h1>You're invited to GoFit.Ai</h1>
+    <p>Tap the button below to open the app and connect as friends.</p>
+    <a id="openApp" class="btn" href="#">Open GoFit.Ai</a>
+    <a id="fallback" class="link" href="https://apps.apple.com/in/app/gofit-ai-live-healthy/id6758199913">Get the app</a>
+  </div>
+  <script>
+    const params = new URLSearchParams(window.location.search);
+    const from = params.get("from");
+    const deepLink = from ? `gofitai://invite?from=${encodeURIComponent(from)}` : "gofitai://invite";
+    const universalLink = from ? `https://gofit-ai-live-healthy-1.onrender.com/i?from=${encodeURIComponent(from)}` : "https://gofit-ai-live-healthy-1.onrender.com/i";
+    const appStoreLink = "https://apps.apple.com/in/app/gofit-ai-live-healthy/id6758199913";
+    const openBtn = document.getElementById("openApp");
+    const fallback = document.getElementById("fallback");
+    openBtn.href = universalLink;
+    fallback.href = appStoreLink;
+
+    // Open app on tap, fallback to App Store if not installed
+    openBtn.addEventListener("click", (e) => {
+      e.preventDefault();
+      const start = Date.now();
+      window.location.href = universalLink;
+      // Fallback: try custom scheme if universal link doesn't open (some in-app browsers)
+      setTimeout(() => {
+        window.location.href = deepLink;
+      }, 200);
+      setTimeout(() => {
+        if (Date.now() - start < 1500) {
+          window.location.href = appStoreLink;
+        }
+      }, 800);
+    });
+  </script>
+</body>
+</html>
