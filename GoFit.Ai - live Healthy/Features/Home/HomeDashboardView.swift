@@ -63,12 +63,16 @@ struct HomeDashboardView: View {
                         quickActionsSection
                             .delayedAppear(0.2)
                         
-                        // Daily motivational quote
-                        MotivationalQuoteCard()
+                        // Sleep Tracker Card
+                        SleepCard()
                             .delayedAppear(0.25)
                         
-                        healthMetricsSection
+                        // Daily motivational quote
+                        MotivationalQuoteCard()
                             .delayedAppear(0.3)
+                        
+                        healthMetricsSection
+                            .delayedAppear(0.35)
                         waterIntakeCard
                             .delayedAppear(0.4)
                         sugarMeterCard
