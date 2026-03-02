@@ -2,12 +2,13 @@ import SwiftUI
 import CoreLocation
 
 struct FriendsView: View {
-    @StateObject private var friendsService = FriendsService()
+    @StateObject private var friendsService = FriendsService.shared
     @EnvironmentObject private var auth: AuthViewModel
     @State private var searchText = ""
     @State private var selectedTab: FriendsTab = .friends
     @State private var showError = false
     @State private var errorMessage = ""
+    @State private var showInviteCopied = false
     
     enum FriendsTab {
         case friends
@@ -49,21 +50,23 @@ struct FriendsView: View {
                             .background(Design.Colors.cardBackground)
                             .cornerRadius(12)
 
-                            if let inviteURL = inviteLink {
-                                ShareLink(item: inviteURL, subject: Text("Add me on GoFit.Ai"), message: Text("Join me on GoFit.Ai and connect as friends: \(inviteURL.absoluteString)")) {
-                                    VStack(alignment: .center, spacing: 4) {
-                                        Image(systemName: "person.badge.plus")
-                                            .font(.headline)
-                                            .foregroundColor(.white)
-                                        Text("Invite")
-                                            .font(.caption)
-                                            .foregroundColor(.white)
-                                    }
-                                    .frame(maxWidth: .infinity)
-                                    .padding(12)
-                                    .background(Design.Colors.primary)
-                                    .cornerRadius(12)
+                            ShareLink(
+                                item: inviteShareText,
+                                subject: Text("Join me on GoFit.Ai!"),
+                                message: Text(inviteShareText)
+                            ) {
+                                VStack(alignment: .center, spacing: 4) {
+                                    Image(systemName: "person.badge.plus")
+                                        .font(.headline)
+                                        .foregroundColor(.white)
+                                    Text("Invite")
+                                        .font(.caption)
+                                        .foregroundColor(.white)
                                 }
+                                .frame(maxWidth: .infinity)
+                                .padding(12)
+                                .background(Design.Colors.primary)
+                                .cornerRadius(12)
                             }
                         }
                     }
@@ -189,9 +192,11 @@ struct FriendsView: View {
         }
     }
 
-    private var inviteLink: URL? {
-        guard let userId = auth.userId, !userId.isEmpty else { return nil }
-        return URL(string: "https://gofit-ai-live-healthy-1.onrender.com/invite?from=\(userId)")
+    private var inviteShareText: String {
+        let userId = auth.userId ?? ""
+        let username = auth.name.isEmpty ? "a friend" : auth.name
+        let deepLink = "gofitai://invite?from=\(userId)"
+        return "Hey! 💪 \(username) wants you to join GoFit.Ai — the AI-powered fitness app. Track meals, compete with friends, and crush your goals together!\n\nJoin here: \(deepLink)\n\nOr search for @\(auth.name) in the app!"
     }
 
 }
@@ -617,7 +622,7 @@ struct FriendDetailsView: View {
     let friend: Friend
     let currentUserId: String
     @EnvironmentObject private var auth: AuthViewModel
-    @StateObject private var friendsService = FriendsService()
+    @StateObject private var friendsService = FriendsService.shared
     @State private var friendStats: FriendStats?
     @State private var isLoading = true
     
