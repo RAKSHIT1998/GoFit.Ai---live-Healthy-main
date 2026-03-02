@@ -163,7 +163,7 @@ struct FriendsView: View {
                 
                 Spacer()
             }
-            .alert("Error", isPresented: $showError) {
+            .alert(errorMessage.lowercased().contains("fail") || errorMessage.lowercased().contains("error") ? "Error" : "Success", isPresented: $showError) {
                 Button("OK") { }
             } message: {
                 Text(errorMessage)
