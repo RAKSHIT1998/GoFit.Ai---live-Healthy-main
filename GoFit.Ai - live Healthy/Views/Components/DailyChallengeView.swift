@@ -410,7 +410,7 @@ struct DetailedChallengeRow: View {
                             .fill(Color.gray.opacity(0.2))
                         
                         RoundedRectangle(cornerRadius: 4)
-                            .fill(challenge.isCompleted ? Design.Colors.success : Design.Colors.primaryGradient)
+                            .fill(challenge.isCompleted ? AnyShapeStyle(Design.Colors.success) : AnyShapeStyle(Design.Colors.primaryGradient))
                             .frame(width: geo.size.width * challenge.progress)
                     }
                 }
