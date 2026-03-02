@@ -282,8 +282,9 @@ struct SleepTrackerView: View {
                     ForEach(stats.weeklyTrend) { day in
                         VStack(spacing: 4) {
                             // Bar
+                            let barFill: AnyShapeStyle = day.duration > 0 ? AnyShapeStyle(Design.Colors.primaryGradient) : AnyShapeStyle(Color.gray.opacity(0.2))
                             RoundedRectangle(cornerRadius: 4)
-                                .fill(day.duration > 0 ? Design.Colors.primaryGradient : Color.gray.opacity(0.2))
+                                .fill(barFill)
                                 .frame(width: 30, height: max(CGFloat(day.duration / sleepManager.sleepGoal) * 80, 10))
                             
                             // Day label

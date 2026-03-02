@@ -201,11 +201,7 @@ struct HomeDashboardView: View {
                         HapticManager.shared.lightTap()
                         
                         // Award points for logging a meal
-                        let (newAchievement, _) = streakManager.logMeal()
-                        if let achievement = newAchievement {
-                            celebrationMessage = "Achievement Unlocked!\n\(achievement.emoji) \(achievement.title)"
-                            showCelebration = true
-                        }
+                        streakManager.logMeal()
                     }
                     syncWatchMetrics(
                         calories: localTotals.calories,
