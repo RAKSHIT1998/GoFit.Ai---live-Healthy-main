@@ -175,12 +175,15 @@ class LogSharingService: NSObject, ObservableObject {
 
 // MARK: - Gamification Service
 
+/// Type alias to avoid ambiguity with StreakAchievement
+typealias SocialAchievement = Achievement
+
 @MainActor
 class GamificationService: NSObject, ObservableObject {
     @Published var stats: GamificationStats?
     @Published var leaderboard: [LeaderboardEntry] = []
     @Published var badges: [Badge] = []
-    @Published var achievements: [Achievement] = []
+    @Published var achievements: [SocialAchievement] = []
     @Published var streaks: [UserStreak] = []
     @Published var isLoading = false
     @Published var errorMessage: String?

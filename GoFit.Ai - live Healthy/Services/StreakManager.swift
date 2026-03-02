@@ -18,7 +18,7 @@ class StreakManager: ObservableObject {
     @Published var totalPoints: Int = 0
     @Published var todayPoints: Int = 0
     @Published var level: Int = 1
-    @Published var achievements: [Achievement] = []
+    @Published var achievements: [StreakAchievement] = []
     @Published var dailyGoalsCompleted: [DailyGoal] = []
     @Published var showCelebration: Bool = false
     @Published var celebrationMessage: String = ""
@@ -278,7 +278,7 @@ class StreakManager: ObservableObject {
 }
 
 // MARK: - Models
-struct Achievement: Codable, Identifiable {
+struct StreakAchievement: Codable, Identifiable {
     let id = UUID()
     let type: AchievementType
     let unlockedAt: Date

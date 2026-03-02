@@ -6,6 +6,7 @@
 //
 
 import Foundation
+import UIKit
 import Combine
 
 /// Manages background data prefetching to improve perceived app performance

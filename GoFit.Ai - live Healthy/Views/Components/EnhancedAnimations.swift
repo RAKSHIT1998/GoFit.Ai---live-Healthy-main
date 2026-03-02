@@ -8,7 +8,7 @@
 import SwiftUI
 
 // MARK: - Shimmer Loading Effect
-struct ShimmerModifier: ViewModifier {
+struct LoadingShimmerModifier: ViewModifier {
     @State private var phase: CGFloat = 0
     let isActive: Bool
     
@@ -43,8 +43,8 @@ struct ShimmerModifier: ViewModifier {
 }
 
 extension View {
-    func shimmer(isActive: Bool = true) -> some View {
-        modifier(ShimmerModifier(isActive: isActive))
+    func loadingShimmer(isActive: Bool = true) -> some View {
+        modifier(LoadingShimmerModifier(isActive: isActive))
     }
 }
 
@@ -64,12 +64,12 @@ struct SkeletonView: View {
         RoundedRectangle(cornerRadius: cornerRadius)
             .fill(Color.gray.opacity(0.2))
             .frame(width: width, height: height)
-            .shimmer()
+            .loadingShimmer()
     }
 }
 
 // MARK: - Pulse Animation
-struct PulseModifier: ViewModifier {
+struct ScalePulseModifier: ViewModifier {
     @State private var isPulsing = false
     let isActive: Bool
     
@@ -87,8 +87,8 @@ struct PulseModifier: ViewModifier {
 }
 
 extension View {
-    func pulse(isActive: Bool = true) -> some View {
-        modifier(PulseModifier(isActive: isActive))
+    func scalePulse(isActive: Bool = true) -> some View {
+        modifier(ScalePulseModifier(isActive: isActive))
     }
 }
 

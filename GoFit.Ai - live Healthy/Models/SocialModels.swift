@@ -509,7 +509,25 @@ struct GamificationStats: Codable {
 
     struct AchievementsInfo: Codable {
         let earned: Int
-        let details: [Achievement]
+        let details: [AchievementDetail]
+    }
+    
+    struct AchievementDetail: Codable {
+        let id: Int
+        let title: String
+        let description: String?
+        let iconUrl: String?
+        let earned: Bool
+        let earnedAt: String?
+        let progress: Int?
+        
+        enum CodingKeys: String, CodingKey {
+            case id, title, description
+            case iconUrl = "icon_url"
+            case earned
+            case earnedAt = "earned_at"
+            case progress
+        }
     }
 
     struct StreaksInfo: Codable {

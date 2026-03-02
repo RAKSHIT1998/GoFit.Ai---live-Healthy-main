@@ -19,29 +19,30 @@ struct RootView: View {
             // Main content
             Group {
                 if !auth.didFinishOnboarding {
-                OnboardingScreens()
-                    .environmentObject(auth)
-                    .environmentObject(purchases)
-            } else if !auth.isLoggedIn {
-                AuthView()
-                    .environmentObject(auth)
-                    .environmentObject(purchases)
-            } else {
-                // User is logged in - show main app or blocking paywall
-                // Only show blocking paywall if:
-                // 1. User is logged in (not a new signup showing onboarding paywall)
-                // 2. Subscription is required (trial expired and no subscription)
-                // 3. We've already checked subscription status (avoid showing immediately after login)
-                if hasCheckedSubscriptionAfterLogin && purchases.requiresSubscription {
-                    // Blocking paywall for existing users whose trial expired
-                    PaywallView()
-                        .environmentObject(purchases)
-                        .interactiveDismissDisabled()
-                } else {
-                    MainTabView()
+                    OnboardingScreens()
                         .environmentObject(auth)
                         .environmentObject(purchases)
-                        .environmentObject(streakManager)
+                } else if !auth.isLoggedIn {
+                    AuthView()
+                        .environmentObject(auth)
+                        .environmentObject(purchases)
+                } else {
+                    // User is logged in - show main app or blocking paywall
+                    // Only show blocking paywall if:
+                    // 1. User is logged in (not a new signup showing onboarding paywall)
+                    // 2. Subscription is required (trial expired and no subscription)
+                    // 3. We've already checked subscription status (avoid showing immediately after login)
+                    if hasCheckedSubscriptionAfterLogin && purchases.requiresSubscription {
+                        // Blocking paywall for existing users whose trial expired
+                        PaywallView()
+                            .environmentObject(purchases)
+                            .interactiveDismissDisabled()
+                    } else {
+                        MainTabView()
+                            .environmentObject(auth)
+                            .environmentObject(purchases)
+                            .environmentObject(streakManager)
+                    }
                 }
             }
             .opacity(showSplash ? 0 : 1)

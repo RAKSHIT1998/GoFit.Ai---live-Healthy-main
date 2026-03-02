@@ -341,7 +341,7 @@ struct DailyGoalRow: View {
 
 // MARK: - Motivational Quote Card
 struct MotivationalQuoteCard: View {
-    @State private var quote: MotivationalQuote = StreakManager.shared.getDailyQuote()
+    @State private var quote: MotivationalQuote = MotivationalQuote.dailyQuote()
     @State private var animateGradient = false
     
     var body: some View {
