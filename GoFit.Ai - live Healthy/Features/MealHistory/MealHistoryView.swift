@@ -27,8 +27,15 @@ struct MealHistoryView: View {
                         dailyContentView(log: todayLog)
                             .transition(.moveAndFade)
                     } else {
-                        emptyStateView
-                            .transition(.opacity)
+                        ScrollView {
+                            VStack(spacing: Design.Spacing.lg) {
+                                // Still show body log even with no meals
+                                BodyLogCard(date: selectedDate)
+                                
+                                emptyStateView
+                            }
+                        }
+                        .transition(.opacity)
                     }
                 }
             }
@@ -60,6 +67,10 @@ struct MealHistoryView: View {
             VStack(spacing: Design.Spacing.lg) {
                 quickSummaryCard(log: log)
                     .delayedAppear(0)
+                
+                // Body Progress (weight + photo)
+                BodyLogCard(date: selectedDate)
+                    .delayedAppear(0.05)
                 
                 if !log.meals.isEmpty {
                     mealsQuickView(log: log)

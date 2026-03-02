@@ -13,7 +13,6 @@ struct HomeDashboardView: View {
     @State private var showingWorkout = false
     @State private var showingLiquidLog = false
     @State private var showingShareProgress = false
-    @State private var showingDailyPhotoLog = false
     @State private var showCelebration = false
     @State private var celebrationMessage = ""
 
@@ -160,10 +159,6 @@ struct HomeDashboardView: View {
                     heartRate: healthKit.restingHeartRate > 0 ? healthKit.restingHeartRate : nil
                 )
                 .environmentObject(auth)
-            }
-            .sheet(isPresented: $showingDailyPhotoLog) {
-                DailyPhotoLogView()
-                    .environmentObject(auth)
             }
             .onAppear {
                 withAnimation(Design.Animation.spring) {
@@ -457,37 +452,8 @@ struct HomeDashboardView: View {
                 .buttonStyle(SmoothButtonStyle())
             }
 
-            Button {
-                HapticManager.shared.mediumTap()
-                withAnimation(.easeInOut(duration: 0.2)) {
-                    showingDailyPhotoLog = true
-                }
-            } label: {
-                HStack(spacing: 12) {
-                    Image(systemName: "person.crop.square.filled.and.at.rectangle")
-                        .font(.title2)
-                        .foregroundColor(.white)
-                        .frame(width: 50, height: 50)
-                        .background(Design.Colors.primary)
-                        .clipShape(Circle())
-                    VStack(alignment: .leading, spacing: 4) {
-                        Text("Daily Photo")
-                            .font(Design.Typography.headline)
-                            .foregroundColor(.primary)
-                        Text("Log your daily photo")
-                            .font(Design.Typography.caption)
-                            .foregroundColor(.secondary)
-                    }
-                    Spacer()
-                    Image(systemName: "chevron.right")
-                        .foregroundColor(.secondary)
-                }
-                .padding(Design.Spacing.md)
-                .background(Design.Colors.cardBackground)
-                .cornerRadius(16)
-                .shadow(color: Color.primary.opacity(0.06), radius: 8, x: 0, y: 2)
+                .buttonStyle(SmoothButtonStyle())
             }
-            .buttonStyle(SmoothButtonStyle())
         }
     }
 

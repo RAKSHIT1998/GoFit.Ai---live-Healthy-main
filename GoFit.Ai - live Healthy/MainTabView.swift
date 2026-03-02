@@ -20,9 +20,9 @@ struct MainTabView: View {
                 }
                 .tag(1)
             
-            WorkoutSuggestionsView()
+            FitMatchView()
                 .tabItem {
-                    Label("Workouts", systemImage: selectedTab == 2 ? "figure.walk.circle.fill" : "figure.walk.circle")
+                    Label("Discover", systemImage: selectedTab == 2 ? "sparkles" : "sparkles")
                 }
                 .tag(2)
             
