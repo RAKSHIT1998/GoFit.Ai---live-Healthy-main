@@ -117,7 +117,10 @@ class DailyChallengeManager: ObservableObject {
             // Check if just completed
             if challenges[i].isCompleted {
                 // Award points
-                StreakManager.shared.awardPoints(challenges[i].pointsReward)
+                let points = challenges[i].pointsReward
+                Task { @MainActor in
+                    StreakManager.shared.awardPoints(points)
+                }
             }
         }
         saveChallenges()

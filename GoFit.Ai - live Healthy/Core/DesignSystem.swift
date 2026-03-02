@@ -51,6 +51,9 @@ struct AppDesign {
         static let water = Color(red: 0.2, green: 0.7, blue: 1.0) // Sky Blue
         static let steps = Color(red: 0.2, green: 0.85, blue: 0.4) // Green
         static let heart = Color(red: 1.0, green: 0.2, blue: 0.3) // Red
+        static let success = Color(red: 0.2, green: 0.8, blue: 0.4) // Success Green
+        static let warning = Color(red: 1.0, green: 0.7, blue: 0.0) // Warning Orange
+        static let error = Color(red: 1.0, green: 0.3, blue: 0.3) // Error Red
     }
     
     // Typography - Consistent, Modern Scale

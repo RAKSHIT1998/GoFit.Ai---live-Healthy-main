@@ -199,7 +199,9 @@ class SleepManager: ObservableObject {
         calculateWeeklyStats()
         
         // Award points for logging sleep
-        StreakManager.shared.awardPoints(15)
+        Task { @MainActor in
+            StreakManager.shared.awardPoints(15)
+        }
         
         // Sync to HealthKit if authorized
         Task {
