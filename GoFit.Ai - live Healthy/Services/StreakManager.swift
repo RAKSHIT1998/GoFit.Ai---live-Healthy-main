@@ -179,7 +179,7 @@ class StreakManager: ObservableObject {
     func unlockAchievement(_ achievement: AchievementType) {
         guard !achievements.contains(where: { $0.type == achievement }) else { return }
         
-        let newAchievement = Achievement(type: achievement, unlockedAt: Date())
+        let newAchievement = StreakAchievement(type: achievement, unlockedAt: Date())
         achievements.append(newAchievement)
         saveData()
         
@@ -225,7 +225,7 @@ class StreakManager: ObservableObject {
         level = max(1, (totalPoints / 500) + 1)
         
         if let data = UserDefaults.standard.data(forKey: achievementsKey),
-           let decoded = try? JSONDecoder().decode([Achievement].self, from: data) {
+           let decoded = try? JSONDecoder().decode([StreakAchievement].self, from: data) {
             achievements = decoded
         }
     }
