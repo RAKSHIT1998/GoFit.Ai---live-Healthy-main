@@ -7,12 +7,12 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		075392019C96806B8670F3F0 /* libPods-GoFit.Ai - live HealthyUITests.a in Frameworks */ = {isa = PBXBuildFile; fileRef = E0C07CC247A56C2CEA232535 /* libPods-GoFit.Ai - live HealthyUITests.a */; };
-		B08B44AFB7050A2E13067957 /* libPods-GoFit.Ai - live Healthy.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 00CA571851EC30EBFF780BA9 /* libPods-GoFit.Ai - live Healthy.a */; };
+		69F3F2289758B12F4864B0EF /* libPods-GoFit.Ai - live HealthyTests.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 33A9154CD478DCD7EDAFC9BD /* libPods-GoFit.Ai - live HealthyTests.a */; };
+		A7473473CF925D63412D9DC7 /* libPods-GoFit.Ai - live Healthy.a in Frameworks */ = {isa = PBXBuildFile; fileRef = E547A901353C1C2C7CD5E955 /* libPods-GoFit.Ai - live Healthy.a */; };
 		B22104E42F20F580002672E4 /* StoreKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = B24022212EED789700CDE033 /* StoreKit.framework */; };
 		B22104E72F20F582002672E4 /* HealthKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = B27DDA162EEF07D70047CE53 /* HealthKit.framework */; };
 		B22104E92F20F583002672E4 /* WatchConnectivity.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = B2F86E432EED7C1E009F03C0 /* WatchConnectivity.framework */; };
-		E4732EC96B47A86C2F5AD75A /* libPods-GoFit.Ai - live HealthyTests.a in Frameworks */ = {isa = PBXBuildFile; fileRef = D926F0FCE741887F9256C073 /* libPods-GoFit.Ai - live HealthyTests.a */; };
+		D755276AC30B9C70459BBD87 /* libPods-GoFit.Ai - live HealthyUITests.a in Frameworks */ = {isa = PBXBuildFile; fileRef = C2CD24A1598AEB538B8C7B38 /* libPods-GoFit.Ai - live HealthyUITests.a */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -46,11 +46,12 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
-		00CA571851EC30EBFF780BA9 /* libPods-GoFit.Ai - live Healthy.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libPods-GoFit.Ai - live Healthy.a"; sourceTree = BUILT_PRODUCTS_DIR; };
-		2CD08DF8886F5BB69A589C71 /* Pods-GoFit.Ai - live Healthy.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-GoFit.Ai - live Healthy.release.xcconfig"; path = "Target Support Files/Pods-GoFit.Ai - live Healthy/Pods-GoFit.Ai - live Healthy.release.xcconfig"; sourceTree = "<group>"; };
-		38D0FCC451CDC50C2CD0ACEE /* Pods-GoFit.Ai - live HealthyUITests.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-GoFit.Ai - live HealthyUITests.release.xcconfig"; path = "Target Support Files/Pods-GoFit.Ai - live HealthyUITests/Pods-GoFit.Ai - live HealthyUITests.release.xcconfig"; sourceTree = "<group>"; };
-		3B36A7B5082A1359879A449A /* Pods-GoFit.Ai - live HealthyTests.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-GoFit.Ai - live HealthyTests.debug.xcconfig"; path = "Target Support Files/Pods-GoFit.Ai - live HealthyTests/Pods-GoFit.Ai - live HealthyTests.debug.xcconfig"; sourceTree = "<group>"; };
-		75F13E898A603CEA14BDA297 /* Pods-GoFit.Ai - live HealthyUITests.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-GoFit.Ai - live HealthyUITests.debug.xcconfig"; path = "Target Support Files/Pods-GoFit.Ai - live HealthyUITests/Pods-GoFit.Ai - live HealthyUITests.debug.xcconfig"; sourceTree = "<group>"; };
+		33A9154CD478DCD7EDAFC9BD /* libPods-GoFit.Ai - live HealthyTests.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libPods-GoFit.Ai - live HealthyTests.a"; sourceTree = BUILT_PRODUCTS_DIR; };
+		37B56753DACF3242B5C03111 /* Pods-GoFit.Ai - live Healthy.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-GoFit.Ai - live Healthy.debug.xcconfig"; path = "Target Support Files/Pods-GoFit.Ai - live Healthy/Pods-GoFit.Ai - live Healthy.debug.xcconfig"; sourceTree = "<group>"; };
+		6665E4F3BAD462AA0678EE95 /* Pods-GoFit.Ai - live HealthyTests.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-GoFit.Ai - live HealthyTests.release.xcconfig"; path = "Target Support Files/Pods-GoFit.Ai - live HealthyTests/Pods-GoFit.Ai - live HealthyTests.release.xcconfig"; sourceTree = "<group>"; };
+		95B7A4B29FC84246DF05FD24 /* Pods-GoFit.Ai - live HealthyUITests.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-GoFit.Ai - live HealthyUITests.release.xcconfig"; path = "Target Support Files/Pods-GoFit.Ai - live HealthyUITests/Pods-GoFit.Ai - live HealthyUITests.release.xcconfig"; sourceTree = "<group>"; };
+		9E78B93E39EBF407CD58E958 /* Pods-GoFit.Ai - live Healthy.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-GoFit.Ai - live Healthy.release.xcconfig"; path = "Target Support Files/Pods-GoFit.Ai - live Healthy/Pods-GoFit.Ai - live Healthy.release.xcconfig"; sourceTree = "<group>"; };
+		A5F8B3E0548361D67461D062 /* Pods-GoFit.Ai - live HealthyTests.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-GoFit.Ai - live HealthyTests.debug.xcconfig"; path = "Target Support Files/Pods-GoFit.Ai - live HealthyTests/Pods-GoFit.Ai - live HealthyTests.debug.xcconfig"; sourceTree = "<group>"; };
 		B24022212EED789700CDE033 /* StoreKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = StoreKit.framework; path = System/Library/Frameworks/StoreKit.framework; sourceTree = SDKROOT; };
 		B2484A8D2EEC79A2009D604B /* GoFit.Ai - live Healthy.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "GoFit.Ai - live Healthy.app"; sourceTree = BUILT_PRODUCTS_DIR; };
 		B2484AA12EEC79A7009D604B /* GoFit.Ai - live HealthyTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = "GoFit.Ai - live HealthyTests.xctest"; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -58,10 +59,9 @@
 		B27DDA162EEF07D70047CE53 /* HealthKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = HealthKit.framework; path = System/Library/Frameworks/HealthKit.framework; sourceTree = SDKROOT; };
 		B2F1DFB62F068104002E1B7B /* AuthenticationServices.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AuthenticationServices.framework; path = System/Library/Frameworks/AuthenticationServices.framework; sourceTree = SDKROOT; };
 		B2F86E432EED7C1E009F03C0 /* WatchConnectivity.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = WatchConnectivity.framework; path = System/Library/Frameworks/WatchConnectivity.framework; sourceTree = SDKROOT; };
-		B9458C82636848FB60C7E2E1 /* Pods-GoFit.Ai - live HealthyTests.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-GoFit.Ai - live HealthyTests.release.xcconfig"; path = "Target Support Files/Pods-GoFit.Ai - live HealthyTests/Pods-GoFit.Ai - live HealthyTests.release.xcconfig"; sourceTree = "<group>"; };
-		D926F0FCE741887F9256C073 /* libPods-GoFit.Ai - live HealthyTests.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libPods-GoFit.Ai - live HealthyTests.a"; sourceTree = BUILT_PRODUCTS_DIR; };
-		DE99ADEC25A38D9B1C1EFF0B /* Pods-GoFit.Ai - live Healthy.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-GoFit.Ai - live Healthy.debug.xcconfig"; path = "Target Support Files/Pods-GoFit.Ai - live Healthy/Pods-GoFit.Ai - live Healthy.debug.xcconfig"; sourceTree = "<group>"; };
-		E0C07CC247A56C2CEA232535 /* libPods-GoFit.Ai - live HealthyUITests.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libPods-GoFit.Ai - live HealthyUITests.a"; sourceTree = BUILT_PRODUCTS_DIR; };
+		C2CD24A1598AEB538B8C7B38 /* libPods-GoFit.Ai - live HealthyUITests.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libPods-GoFit.Ai - live HealthyUITests.a"; sourceTree = BUILT_PRODUCTS_DIR; };
+		D7F8F99F068950C35357765F /* Pods-GoFit.Ai - live HealthyUITests.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-GoFit.Ai - live HealthyUITests.debug.xcconfig"; path = "Target Support Files/Pods-GoFit.Ai - live HealthyUITests/Pods-GoFit.Ai - live HealthyUITests.debug.xcconfig"; sourceTree = "<group>"; };
+		E547A901353C1C2C7CD5E955 /* libPods-GoFit.Ai - live Healthy.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libPods-GoFit.Ai - live Healthy.a"; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
@@ -114,7 +114,7 @@
 				B22104E72F20F582002672E4 /* HealthKit.framework in Frameworks */,
 				B22104E42F20F580002672E4 /* StoreKit.framework in Frameworks */,
 				B22104E92F20F583002672E4 /* WatchConnectivity.framework in Frameworks */,
-				B08B44AFB7050A2E13067957 /* libPods-GoFit.Ai - live Healthy.a in Frameworks */,
+				A7473473CF925D63412D9DC7 /* libPods-GoFit.Ai - live Healthy.a in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -122,7 +122,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				E4732EC96B47A86C2F5AD75A /* libPods-GoFit.Ai - live HealthyTests.a in Frameworks */,
+				69F3F2289758B12F4864B0EF /* libPods-GoFit.Ai - live HealthyTests.a in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -130,22 +130,22 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				075392019C96806B8670F3F0 /* libPods-GoFit.Ai - live HealthyUITests.a in Frameworks */,
+				D755276AC30B9C70459BBD87 /* libPods-GoFit.Ai - live HealthyUITests.a in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
-		670692E4A59C311423DD409B /* Pods */ = {
+		46C2F688A1F2C2C7732700FE /* Pods */ = {
 			isa = PBXGroup;
 			children = (
-				DE99ADEC25A38D9B1C1EFF0B /* Pods-GoFit.Ai - live Healthy.debug.xcconfig */,
-				2CD08DF8886F5BB69A589C71 /* Pods-GoFit.Ai - live Healthy.release.xcconfig */,
-				3B36A7B5082A1359879A449A /* Pods-GoFit.Ai - live HealthyTests.debug.xcconfig */,
-				B9458C82636848FB60C7E2E1 /* Pods-GoFit.Ai - live HealthyTests.release.xcconfig */,
-				75F13E898A603CEA14BDA297 /* Pods-GoFit.Ai - live HealthyUITests.debug.xcconfig */,
-				38D0FCC451CDC50C2CD0ACEE /* Pods-GoFit.Ai - live HealthyUITests.release.xcconfig */,
+				37B56753DACF3242B5C03111 /* Pods-GoFit.Ai - live Healthy.debug.xcconfig */,
+				9E78B93E39EBF407CD58E958 /* Pods-GoFit.Ai - live Healthy.release.xcconfig */,
+				A5F8B3E0548361D67461D062 /* Pods-GoFit.Ai - live HealthyTests.debug.xcconfig */,
+				6665E4F3BAD462AA0678EE95 /* Pods-GoFit.Ai - live HealthyTests.release.xcconfig */,
+				D7F8F99F068950C35357765F /* Pods-GoFit.Ai - live HealthyUITests.debug.xcconfig */,
+				95B7A4B29FC84246DF05FD24 /* Pods-GoFit.Ai - live HealthyUITests.release.xcconfig */,
 			);
 			name = Pods;
 			path = Pods;
@@ -158,9 +158,9 @@
 				B2F86E432EED7C1E009F03C0 /* WatchConnectivity.framework */,
 				B24022212EED789700CDE033 /* StoreKit.framework */,
 				B2F1DFB62F068104002E1B7B /* AuthenticationServices.framework */,
-				00CA571851EC30EBFF780BA9 /* libPods-GoFit.Ai - live Healthy.a */,
-				D926F0FCE741887F9256C073 /* libPods-GoFit.Ai - live HealthyTests.a */,
-				E0C07CC247A56C2CEA232535 /* libPods-GoFit.Ai - live HealthyUITests.a */,
+				E547A901353C1C2C7CD5E955 /* libPods-GoFit.Ai - live Healthy.a */,
+				33A9154CD478DCD7EDAFC9BD /* libPods-GoFit.Ai - live HealthyTests.a */,
+				C2CD24A1598AEB538B8C7B38 /* libPods-GoFit.Ai - live HealthyUITests.a */,
 			);
 			name = Frameworks;
 			sourceTree = "<group>";
@@ -174,7 +174,7 @@
 				B2F1DFB82F068104002E1B7B /* gofit */,
 				B24022202EED789700CDE033 /* Frameworks */,
 				B2484A8E2EEC79A2009D604B /* Products */,
-				670692E4A59C311423DD409B /* Pods */,
+				46C2F688A1F2C2C7732700FE /* Pods */,
 			);
 			sourceTree = "<group>";
 		};
@@ -195,13 +195,13 @@
 			isa = PBXNativeTarget;
 			buildConfigurationList = B2484AB42EEC79A7009D604B /* Build configuration list for PBXNativeTarget "GoFit.Ai - live Healthy" */;
 			buildPhases = (
-				D9BE35ABA1C64A6AA1B61A50 /* [CP] Check Pods Manifest.lock */,
+				A4CA06D34764EDBCAB78BEE4 /* [CP] Check Pods Manifest.lock */,
 				B2484A892EEC79A2009D604B /* Sources */,
 				B2484A8A2EEC79A2009D604B /* Frameworks */,
 				B2484A8B2EEC79A2009D604B /* Resources */,
 				B2F1DFC62F068105002E1B7B /* Embed Foundation Extensions */,
 				B29FB6572F4DB7F700F503E8 /* ShellScript */,
-				B5083406C1A50D35742B5F21 /* [CP] Copy Pods Resources */,
+				2DA30ADB419F5329048F3814 /* [CP] Copy Pods Resources */,
 			);
 			buildRules = (
 			);
@@ -219,7 +219,7 @@
 			isa = PBXNativeTarget;
 			buildConfigurationList = B2484AB92EEC79A7009D604B /* Build configuration list for PBXNativeTarget "GoFit.Ai - live HealthyTests" */;
 			buildPhases = (
-				412653C7C40193F09D2C0B6A /* [CP] Check Pods Manifest.lock */,
+				DA2587E4BE1B0D5265FF7871 /* [CP] Check Pods Manifest.lock */,
 				B2484A9D2EEC79A7009D604B /* Sources */,
 				B2484A9E2EEC79A7009D604B /* Frameworks */,
 				B2484A9F2EEC79A7009D604B /* Resources */,
@@ -241,7 +241,7 @@
 			isa = PBXNativeTarget;
 			buildConfigurationList = B2484ABC2EEC79A7009D604B /* Build configuration list for PBXNativeTarget "GoFit.Ai - live HealthyUITests" */;
 			buildPhases = (
-				C1D5AC66C1E94D5A8F0838F8 /* [CP] Check Pods Manifest.lock */,
+				F2D973EA600FCF273F4A2354 /* [CP] Check Pods Manifest.lock */,
 				B2484AA72EEC79A7009D604B /* Sources */,
 				B2484AA82EEC79A7009D604B /* Frameworks */,
 				B2484AA92EEC79A7009D604B /* Resources */,
@@ -328,7 +328,24 @@
 /* End PBXResourcesBuildPhase section */
 
 /* Begin PBXShellScriptBuildPhase section */
-		412653C7C40193F09D2C0B6A /* [CP] Check Pods Manifest.lock */ = {
+		2DA30ADB419F5329048F3814 /* [CP] Copy Pods Resources */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+				"${PODS_ROOT}/Target Support Files/Pods-GoFit.Ai - live Healthy/Pods-GoFit.Ai - live Healthy-resources-${CONFIGURATION}-input-files.xcfilelist",
+			);
+			name = "[CP] Copy Pods Resources";
+			outputFileListPaths = (
+				"${PODS_ROOT}/Target Support Files/Pods-GoFit.Ai - live Healthy/Pods-GoFit.Ai - live Healthy-resources-${CONFIGURATION}-output-files.xcfilelist",
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "\"${PODS_ROOT}/Target Support Files/Pods-GoFit.Ai - live Healthy/Pods-GoFit.Ai - live Healthy-resources.sh\"\n";
+			showEnvVarsInLog = 0;
+		};
+		A4CA06D34764EDBCAB78BEE4 /* [CP] Check Pods Manifest.lock */ = {
 			isa = PBXShellScriptBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -343,7 +360,7 @@
 			outputFileListPaths = (
 			);
 			outputPaths = (
-				"$(DERIVED_FILE_DIR)/Pods-GoFit.Ai - live HealthyTests-checkManifestLockResult.txt",
+				"$(DERIVED_FILE_DIR)/Pods-GoFit.Ai - live Healthy-checkManifestLockResult.txt",
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
@@ -368,24 +385,29 @@
 			shellPath = /bin/sh;
 			shellScript = "#!/bin/bash\nset -e\n\nif [ \"${CONFIGURATION}\" == \"Release\" ]; then\n  echo \"🔎 [dSYM Copy Script] Starting expanded search for Google framework dSYMs...\"\n  echo \"📁 DWARF_DSYM_FOLDER_PATH: ${DWARF_DSYM_FOLDER_PATH}\"\n  echo \"📁 BUILT_PRODUCTS_DIR: ${BUILT_PRODUCTS_DIR}\"\n  echo \"📁 BUILD_DIR: ${BUILD_DIR}\"\n  echo \"📁 DERIVED_DATA_DIR: ${DERIVED_DATA_DIR:-}\"\n  echo \"📁 HOME: ${HOME}\"\n\n  # Aggressive search roots (covers DerivedData, SwiftPM caches, archives, and build intermediates)\n  SEARCH_ROOTS=(\n    \"${BUILT_PRODUCTS_DIR}\"\n    \"${BUILD_DIR}\"\n    \"${BUILD_DIR}/SourcePackages\"\n    \"${BUILD_DIR}/../SourcePackages\"\n    \"${DERIVED_DATA_DIR:-}/SourcePackages\"\n    \"${DERIVED_DATA_DIR:-}/Build/Products\"\n    \"${HOME}/Library/Developer/Xcode/DerivedData\"\n    \"${HOME}/Library/Caches/org.swift.swiftpm\"\n    \"${HOME}/.swiftpm\"\n    \"${BUILD_DIR}/.build\"\n    \"${BUILD_DIR}/Intermediates.noindex\"\n    \"${HOME}/Library/Developer/Xcode/Archives\"\n  )\n\n  for FRAMEWORK_NAME in \"GoogleMobileAds\" \"UserMessagingPlatform\"; do\n    echo \"\\n🔍 Searching for ${FRAMEWORK_NAME} dSYM packages...\"\n    FOUND=0\n\n    for ROOT in \"${SEARCH_ROOTS[@]}\"; do\n      [ -n \"${ROOT}\" ] || continue\n      [ -d \"${ROOT}\" ] || continue\n      echo \"  Checking: ${ROOT}\"\n\n      # 1) Exact .framework.dSYM\n      FOUND_PATH=$(find \"${ROOT}\" -type d -name \"${FRAMEWORK_NAME}.framework.dSYM\" 2>/dev/null | head -n 1 || true)\n      if [ -n \"${FOUND_PATH}\" ]; then\n        echo \"  ✅ Found framework dSYM at: ${FOUND_PATH}\"\n        cp -r \"${FOUND_PATH}\" \"${DWARF_DSYM_FOLDER_PATH}/\"\n        FOUND=1; break\n      fi\n\n      # 2) Any dSYM containing the framework name (covers slightly renamed bundles)\n      FOUND_PATH=$(find \"${ROOT}\" -type d -name \"*${FRAMEWORK_NAME}*.dSYM\" 2>/dev/null | head -n 1 || true)\n      if [ -n \"${FOUND_PATH}\" ]; then\n        echo \"  ✅ Found named dSYM at: ${FOUND_PATH}\"\n        cp -r \"${FOUND_PATH}\" \"${DWARF_DSYM_FOLDER_PATH}/\"\n        FOUND=1; break\n      fi\n\n      # 3) Search inside .xcframework directories for embedded dSYMs\n      XC_DSYM=$(find \"${ROOT}\" -type d -name \"*.xcframework\" -print0 2>/dev/null | xargs -0 -I {} find {} -type d -name \"*.dSYM\" -print 2>/dev/null | grep -i \"${FRAMEWORK_NAME}\" | head -n 1 || true)\n      if [ -n \"${XC_DSYM}\" ]; then\n        echo \"  ✅ Found dSYM inside xcframework at: ${XC_DSYM}\"\n        cp -r \"${XC_DSYM}\" \"${DWARF_DSYM_FOLDER_PATH}/\"\n        FOUND=1; break\n      fi\n\n      # 4) Fallback: any dSYM in the root (useful for host-level caches)\n      FOUND_PATH=$(find \"${ROOT}\" -type d -name \"*.dSYM\" 2>/dev/null | head -n 1 || true)\n      if [ -n \"${FOUND_PATH}\" ]; then\n        echo \"  ⚠️ Found unrelated dSYM (copying to archive): ${FOUND_PATH}\"\n        cp -r \"${FOUND_PATH}\" \"${DWARF_DSYM_FOLDER_PATH}/\"\n        FOUND=1; break\n      fi\n    done\n\n    if [ ${FOUND} -eq 0 ]; then\n      echo \"  ⚠️ ${FRAMEWORK_NAME} dSYM not found (may be normal for SPM binary packages).\"\n    fi\n  done\n\n  echo \"\\n✅ dSYM copy phase completed\"\nfi\n";
 		};
-		B5083406C1A50D35742B5F21 /* [CP] Copy Pods Resources */ = {
+		DA2587E4BE1B0D5265FF7871 /* [CP] Check Pods Manifest.lock */ = {
 			isa = PBXShellScriptBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
 			);
 			inputFileListPaths = (
-				"${PODS_ROOT}/Target Support Files/Pods-GoFit.Ai - live Healthy/Pods-GoFit.Ai - live Healthy-resources-${CONFIGURATION}-input-files.xcfilelist",
 			);
-			name = "[CP] Copy Pods Resources";
+			inputPaths = (
+				"${PODS_PODFILE_DIR_PATH}/Podfile.lock",
+				"${PODS_ROOT}/Manifest.lock",
+			);
+			name = "[CP] Check Pods Manifest.lock";
 			outputFileListPaths = (
-				"${PODS_ROOT}/Target Support Files/Pods-GoFit.Ai - live Healthy/Pods-GoFit.Ai - live Healthy-resources-${CONFIGURATION}-output-files.xcfilelist",
+			);
+			outputPaths = (
+				"$(DERIVED_FILE_DIR)/Pods-GoFit.Ai - live HealthyTests-checkManifestLockResult.txt",
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "\"${PODS_ROOT}/Target Support Files/Pods-GoFit.Ai - live Healthy/Pods-GoFit.Ai - live Healthy-resources.sh\"\n";
+			shellScript = "diff \"${PODS_PODFILE_DIR_PATH}/Podfile.lock\" \"${PODS_ROOT}/Manifest.lock\" > /dev/null\nif [ $? != 0 ] ; then\n    # print error to STDERR\n    echo \"error: The sandbox is not in sync with the Podfile.lock. Run 'pod install' or update your CocoaPods installation.\" >&2\n    exit 1\nfi\n# This output is used by Xcode 'outputs' to avoid re-running this script phase.\necho \"SUCCESS\" > \"${SCRIPT_OUTPUT_FILE_0}\"\n";
 			showEnvVarsInLog = 0;
 		};
-		C1D5AC66C1E94D5A8F0838F8 /* [CP] Check Pods Manifest.lock */ = {
+		F2D973EA600FCF273F4A2354 /* [CP] Check Pods Manifest.lock */ = {
 			isa = PBXShellScriptBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -401,28 +423,6 @@
 			);
 			outputPaths = (
 				"$(DERIVED_FILE_DIR)/Pods-GoFit.Ai - live HealthyUITests-checkManifestLockResult.txt",
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-			shellPath = /bin/sh;
-			shellScript = "diff \"${PODS_PODFILE_DIR_PATH}/Podfile.lock\" \"${PODS_ROOT}/Manifest.lock\" > /dev/null\nif [ $? != 0 ] ; then\n    # print error to STDERR\n    echo \"error: The sandbox is not in sync with the Podfile.lock. Run 'pod install' or update your CocoaPods installation.\" >&2\n    exit 1\nfi\n# This output is used by Xcode 'outputs' to avoid re-running this script phase.\necho \"SUCCESS\" > \"${SCRIPT_OUTPUT_FILE_0}\"\n";
-			showEnvVarsInLog = 0;
-		};
-		D9BE35ABA1C64A6AA1B61A50 /* [CP] Check Pods Manifest.lock */ = {
-			isa = PBXShellScriptBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			inputFileListPaths = (
-			);
-			inputPaths = (
-				"${PODS_PODFILE_DIR_PATH}/Podfile.lock",
-				"${PODS_ROOT}/Manifest.lock",
-			);
-			name = "[CP] Check Pods Manifest.lock";
-			outputFileListPaths = (
-			);
-			outputPaths = (
-				"$(DERIVED_FILE_DIR)/Pods-GoFit.Ai - live Healthy-checkManifestLockResult.txt",
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
@@ -471,7 +471,7 @@
 /* Begin XCBuildConfiguration section */
 		B2484AB52EEC79A7009D604B /* Debug */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = DE99ADEC25A38D9B1C1EFF0B /* Pods-GoFit.Ai - live Healthy.debug.xcconfig */;
+			baseConfigurationReference = 37B56753DACF3242B5C03111 /* Pods-GoFit.Ai - live Healthy.debug.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				"ASSETCATALOG_COMPILER_APPICON_NAME[sdk=iphoneos*]" = AppIcon;
@@ -522,7 +522,7 @@
 		};
 		B2484AB62EEC79A7009D604B /* Release */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = 2CD08DF8886F5BB69A589C71 /* Pods-GoFit.Ai - live Healthy.release.xcconfig */;
+			baseConfigurationReference = 9E78B93E39EBF407CD58E958 /* Pods-GoFit.Ai - live Healthy.release.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				"ASSETCATALOG_COMPILER_APPICON_NAME[sdk=iphoneos*]" = AppIcon;
@@ -699,7 +699,7 @@
 		};
 		B2484ABA2EEC79A7009D604B /* Debug */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = 3B36A7B5082A1359879A449A /* Pods-GoFit.Ai - live HealthyTests.debug.xcconfig */;
+			baseConfigurationReference = A5F8B3E0548361D67461D062 /* Pods-GoFit.Ai - live HealthyTests.debug.xcconfig */;
 			buildSettings = {
 				BUNDLE_LOADER = "$(TEST_HOST)";
 				CODE_SIGN_STYLE = Automatic;
@@ -719,7 +719,7 @@
 		};
 		B2484ABB2EEC79A7009D604B /* Release */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = B9458C82636848FB60C7E2E1 /* Pods-GoFit.Ai - live HealthyTests.release.xcconfig */;
+			baseConfigurationReference = 6665E4F3BAD462AA0678EE95 /* Pods-GoFit.Ai - live HealthyTests.release.xcconfig */;
 			buildSettings = {
 				BUNDLE_LOADER = "$(TEST_HOST)";
 				CODE_SIGN_STYLE = Automatic;
@@ -739,7 +739,7 @@
 		};
 		B2484ABD2EEC79A7009D604B /* Debug */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = 75F13E898A603CEA14BDA297 /* Pods-GoFit.Ai - live HealthyUITests.debug.xcconfig */;
+			baseConfigurationReference = D7F8F99F068950C35357765F /* Pods-GoFit.Ai - live HealthyUITests.debug.xcconfig */;
 			buildSettings = {
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 3;
@@ -757,7 +757,7 @@
 		};
 		B2484ABE2EEC79A7009D604B /* Release */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = 38D0FCC451CDC50C2CD0ACEE /* Pods-GoFit.Ai - live HealthyUITests.release.xcconfig */;
+			baseConfigurationReference = 95B7A4B29FC84246DF05FD24 /* Pods-GoFit.Ai - live HealthyUITests.release.xcconfig */;
 			buildSettings = {
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 3;

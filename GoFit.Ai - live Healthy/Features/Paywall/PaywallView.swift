@@ -43,9 +43,7 @@ struct PaywallView: View {
                         features
                         plans
                         ctaButton
-                        if !isBlocking {
-                            skipWithAdsButton
-                        }
+                        skipWithAdsButton
                         terms
                     }
                     .padding(.bottom, Design.Spacing.xl)
@@ -54,22 +52,20 @@ struct PaywallView: View {
             }
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
-                // Only show close button if not blocking (trial not expired)
-                if !isBlocking {
-                    ToolbarItem(placement: .navigationBarTrailing) {
-                        Button("Close") { 
-                            dismiss() 
-                        }
-                        .foregroundColor(Design.Colors.primary)
+                // Always show close button - users can use free tier with ads
+                ToolbarItem(placement: .navigationBarTrailing) {
+                    Button("Close") { 
+                        dismiss() 
                     }
+                    .foregroundColor(Design.Colors.primary)
                 }
             }
             .onAppear {
                 // Load products when paywall appears
                 purchases.loadProducts()
                 
-                // Check if this is a blocking paywall (trial expired)
-                isBlocking = purchases.requiresSubscription
+                // isBlocking is no longer used since app is free with ads
+                isBlocking = false
                 
                 // Animate features
                 withAnimation(.spring().delay(0.1)) {
@@ -95,41 +91,26 @@ struct PaywallView: View {
     // MARK: - Header
     private var header: some View {
         VStack(spacing: 12) {
-            Image(systemName: isBlocking ? "lock.fill" : "crown.fill")
+            Image(systemName: "crown.fill")
                 .font(.system(size: Design.Scale.value(40, textStyle: .title2)))
                 .foregroundColor(.white)
                 .padding()
                 .background(Design.Colors.primaryGradient)
                 .clipShape(Circle())
 
-            Text(isBlocking ? "Subscription Required" : "Start Your Journey")
+            Text("Upgrade to Premium")
                 .font(Design.Typography.largeTitle)
 
             VStack(spacing: 8) {
-                if isBlocking {
-                    Text("Your 3-day free trial has ended")
-                        .font(Design.Typography.title3)
-                        .foregroundColor(.primary)
-                    
-                    Text("Subscribe to continue using all premium features")
-                        .font(Design.Typography.subheadline)
-                        .foregroundColor(.secondary)
-                        .multilineTextAlignment(.center)
-                } else {
-                    HStack(spacing: 6) {
-                        Image(systemName: "gift.fill")
-                            .font(.title3)
-                            .foregroundColor(Design.Colors.primary)
-                        Text("3-Day Free Trial")
-                            .font(Design.Typography.title3)
-                            .fontWeight(.bold)
-                            .foregroundColor(Design.Colors.primary)
-                    }
-                    
-                    Text("Then continue with premium features")
-                        .font(Design.Typography.subheadline)
-                        .foregroundColor(.secondary)
-                }
+                Text("Unlock All Features")
+                    .font(Design.Typography.title3)
+                    .fontWeight(.bold)
+                    .foregroundColor(Design.Colors.primary)
+                
+                Text("Remove ads and get unlimited access to all premium features")
+                    .font(Design.Typography.subheadline)
+                    .foregroundColor(.secondary)
+                    .multilineTextAlignment(.center)
             }
         }
         .padding(.top)
@@ -138,11 +119,11 @@ struct PaywallView: View {
     // MARK: - Features
     private var features: some View {
         VStack(spacing: 12) {
-            FeatureRow(icon: "camera.fill", title: "Unlimited AI Scans", description: "Scan meals instantly", delay: 0.1)
-            FeatureRow(icon: "sparkles", title: "Smart AI Coach", description: "Daily meal & workout plans", delay: 0.2)
-            FeatureRow(icon: "chart.bar.fill", title: "Advanced Insights", description: "Track progress easily", delay: 0.3)
-            FeatureRow(icon: "rectangle.slash", title: "Ad-Free Experience", description: "No interruptions", delay: 0.4)
-            FeatureRow(icon: "applewatch", title: "Apple Watch Sync", description: "HealthKit integration", delay: 0.5)
+            FeatureRow(icon: "camera.fill", title: "Unlimited AI Scans", description: "No daily limits", delay: 0.1)
+            FeatureRow(icon: "sparkles", title: "Smart AI Coach", description: "Personalized recommendations", delay: 0.2)
+            FeatureRow(icon: "chart.bar.fill", title: "Advanced Analytics", description: "Detailed progress insights", delay: 0.3)
+            FeatureRow(icon: "rectangle.slash", title: "Ad-Free Experience", description: "Zero interruptions", delay: 0.4)
+            FeatureRow(icon: "applewatch", title: "Apple Watch Sync", description: "Full HealthKit integration", delay: 0.5)
         }
         .opacity(animateFeatures ? 1 : 0)
     }
@@ -233,10 +214,10 @@ struct PaywallView: View {
                         ProgressView().tint(.white)
                     } else {
                         VStack(spacing: 4) {
-                            Text("Start 3-Day Free Trial")
+                            Text("Subscribe Now")
                                 .font(Design.Typography.headline)
                             if let product = purchases.getProduct(id: selectedPlan.id) {
-                                Text("Then \(product.displayPrice)/\(selectedPlan.periodText)")
+                                Text("\(product.displayPrice)/\(selectedPlan.periodText)")
                                     .font(Design.Typography.caption2)
                                     .opacity(0.9)
                             }
@@ -266,15 +247,20 @@ struct PaywallView: View {
         Button {
             dismiss()
         } label: {
-            HStack {
-                Image(systemName: "rectangle.stack.badge.play.fill")
-                Text("Skip and use with ads")
-                    .fontWeight(.medium)
+            VStack(spacing: 4) {
+                HStack {
+                    Image(systemName: "play.rectangle.fill")
+                    Text("Continue with Free Version")
+                        .fontWeight(.medium)
+                }
+                Text("Limited features • Includes ads")
+                    .font(.caption)
+                    .foregroundColor(.secondary)
             }
             .frame(maxWidth: .infinity)
             .padding()
             .background(Design.Colors.cardBackground)
-            .foregroundColor(.secondary)
+            .foregroundColor(.primary)
             .cornerRadius(16)
             .overlay(
                 RoundedRectangle(cornerRadius: 16)
@@ -307,24 +293,9 @@ struct PaywallView: View {
                     
                     // Price Information
                     VStack(spacing: 4) {
-                        // Prominent 3-day free trial badge
-                        HStack(spacing: 6) {
-                            Image(systemName: "gift.fill")
-                                .font(.title3)
-                                .foregroundColor(Design.Colors.primary)
-                            Text("3-Day Free Trial")
-                                .font(Design.Typography.headline)
-                                .fontWeight(.bold)
-                                .foregroundColor(Design.Colors.primary)
-                        }
-                        .padding(.horizontal, 20)
-                        .padding(.vertical, 12)
-                        .background(Design.Colors.primary.opacity(0.1))
-                        .cornerRadius(12)
-                        
-                        Text("Then \(product.displayPrice)/\(selectedPlan.periodText)")
-                            .font(Design.Typography.subheadline)
-                            .foregroundColor(.secondary)
+                        Text("\(product.displayPrice)/\(selectedPlan.periodText)")
+                            .font(Design.Typography.headline)
+                            .foregroundColor(.primary)
                         
                         // Price per unit if applicable
                         if selectedPlan == .yearly {

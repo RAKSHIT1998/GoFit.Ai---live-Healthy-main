@@ -13,26 +13,55 @@ struct Friend: Codable, Identifiable {
         case id
         case username
         case email
-        case fullName = "full_name"
-        case profileImageUrl = "profile_image_url"
+        case fullName
+        case profileImageUrl
+    }
+    
+    init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        id = try container.decode(String.self, forKey: .id)
+        username = try container.decode(String.self, forKey: .username)
+        email = try container.decode(String.self, forKey: .email)
+        
+        // Try camelCase first, then snake_case
+        if let name = try? container.decodeIfPresent(String.self, forKey: .fullName) {
+            fullName = name
+        } else {
+            let snakeContainer = try decoder.container(keyedBy: SnakeCaseKeys.self)
+            fullName = try? snakeContainer.decodeIfPresent(String.self, forKey: .full_name)
+        }
+        
+        if let url = try? container.decodeIfPresent(String.self, forKey: .profileImageUrl) {
+            profileImageUrl = url
+        } else {
+            let snakeContainer = try decoder.container(keyedBy: SnakeCaseKeys.self)
+            profileImageUrl = try? snakeContainer.decodeIfPresent(String.self, forKey: .profile_image_url)
+        }
+    }
+    
+    private enum SnakeCaseKeys: String, CodingKey {
+        case full_name
+        case profile_image_url
     }
 }
 
 struct FriendRequest: Codable, Identifiable {
     let id: String
-    let requesterId: String
-    let requesterUsername: String
-    let requesterEmail: String
-    let requesterProfileImageUrl: String?
-    let createdAt: Date
+    let from: FriendRequestFrom
+    let status: String?
+    let createdAt: String?
     
-    enum CodingKeys: String, CodingKey {
-        case id
-        case requesterId = "requester_id"
-        case requesterUsername = "username"
-        case requesterEmail = "email"
-        case requesterProfileImageUrl = "profile_image_url"
-        case createdAt = "created_at"
+    // Computed properties for backward compatibility
+    var requesterId: String { from.id }
+    var requesterUsername: String { from.username }
+    var requesterFullName: String? { from.fullName }
+    var requesterProfileImageUrl: String? { from.profileImageUrl }
+    
+    struct FriendRequestFrom: Codable {
+        let id: String
+        let username: String
+        let fullName: String?
+        let profileImageUrl: String?
     }
 }
 

@@ -401,12 +401,12 @@ struct FriendRequestCardView: View {
                     )
                 
                 VStack(alignment: .leading, spacing: 6) {
-                    Text(request.requesterUsername)
+                    Text(request.requesterFullName ?? request.requesterUsername)
                         .font(Design.Typography.subheadline)
                         .fontWeight(.semibold)
                         .foregroundColor(.primary)
                     
-                    Text(request.requesterEmail)
+                    Text("@\(request.requesterUsername)")
                         .font(.caption)
                         .foregroundColor(.secondary)
                     

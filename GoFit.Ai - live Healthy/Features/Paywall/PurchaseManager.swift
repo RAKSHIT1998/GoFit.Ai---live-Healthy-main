@@ -181,19 +181,12 @@ class PurchaseManager: ObservableObject {
             return
         }
         
-        // If trial hasn't been initialized yet (new user), allow access
-        // The paywall will be shown after onboarding/signup separately
-        if UserDefaults.standard.object(forKey: trialStartDateKey) == nil {
-            requiresSubscription = false
-            showPaywall = false
-            print("ℹ️ Trial not yet initialized - allowing access (paywall shown separately)")
-            return
-        }
-        
-        // Trial expired and no subscription - block access
-        requiresSubscription = true
-        showPaywall = true
-        print("🚫 Trial expired and no subscription - blocking app access")
+        // NEW: Free tier with ads - no longer block access after trial expires
+        // Users can use the app for free with ads and limited features
+        // They can upgrade to premium anytime to remove ads and unlock all features
+        requiresSubscription = false
+        showPaywall = false
+        print("ℹ️ Free tier - user can access app with ads and limited features")
     }
 
     deinit {

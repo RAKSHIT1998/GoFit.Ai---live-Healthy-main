@@ -85,22 +85,17 @@ struct OnboardingSubscriptionView: View {
                 .clipShape(Circle())
                 .shadow(color: Design.Colors.primary.opacity(0.3), radius: 20, y: 10)
             
-            Text("Unlock Premium")
+            Text("Upgrade to Premium")
                 .font(.system(size: 32, weight: .bold))
                 .foregroundColor(.primary)
             
             VStack(spacing: 8) {
-                HStack(spacing: 6) {
-                    Image(systemName: "gift.fill")
-                        .font(.title3)
-                        .foregroundColor(Design.Colors.primary)
-                    Text("3-Day Free Trial")
-                        .font(.title3)
-                        .fontWeight(.bold)
-                        .foregroundColor(Design.Colors.primary)
-                }
+                Text("Unlock All Features")
+                    .font(.title3)
+                    .fontWeight(.bold)
+                    .foregroundColor(Design.Colors.primary)
                 
-                Text("Then unlock all premium features")
+                Text("Remove ads and get unlimited access")
                     .font(.subheadline)
                     .foregroundColor(.secondary)
                     .multilineTextAlignment(.center)
@@ -211,7 +206,7 @@ struct OnboardingSubscriptionView: View {
                         .progressViewStyle(CircularProgressViewStyle(tint: .white))
                 } else {
                     Image(systemName: "crown.fill")
-                    Text("Start Free Trial")
+                    Text("Subscribe Now")
                         .fontWeight(.semibold)
                 }
             }
@@ -233,26 +228,27 @@ struct OnboardingSubscriptionView: View {
                 shouldSkipWithAds = true
                 dismiss()
             }) {
-                HStack {
-                    Image(systemName: "rectangle.stack.badge.play.fill")
-                        .font(.subheadline)
-                    Text("Skip and use with ads")
-                        .fontWeight(.medium)
+                VStack(spacing: 4) {
+                    HStack {
+                        Image(systemName: "play.rectangle.fill")
+                            .font(.subheadline)
+                        Text("Continue with Free Version")
+                            .fontWeight(.medium)
+                    }
+                    Text("Limited features • Includes ads")
+                        .font(.caption)
+                        .foregroundColor(.secondary)
                 }
                 .frame(maxWidth: .infinity)
                 .padding()
                 .background(Design.Colors.cardBackground)
-                .foregroundColor(.secondary)
+                .foregroundColor(.primary)
                 .cornerRadius(16)
                 .overlay(
                     RoundedRectangle(cornerRadius: 16)
                         .stroke(Color.secondary.opacity(0.3), lineWidth: 1)
                 )
             }
-            
-            Text("Limited features • Ads included")
-                .font(.caption)
-                .foregroundColor(.secondary)
         }
     }
     
