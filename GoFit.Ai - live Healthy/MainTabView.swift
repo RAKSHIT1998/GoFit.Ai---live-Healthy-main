@@ -20,23 +20,17 @@ struct MainTabView: View {
                 }
                 .tag(1)
             
-            FitMatchView()
+            SocialHubView()
                 .tabItem {
-                    Label("Discover", systemImage: selectedTab == 2 ? "sparkles" : "sparkles")
+                    Label("Social", systemImage: selectedTab == 2 ? "person.2.circle.fill" : "person.2.circle")
                 }
                 .tag(2)
             
-            FriendsView()
-                .tabItem {
-                    Label("Friends", systemImage: selectedTab == 3 ? "person.2.fill" : "person.2")
-                }
-                .tag(3)
-            
             ProfileView()
                 .tabItem {
-                    Label("Profile", systemImage: selectedTab == 4 ? "person.circle.fill" : "person.circle")
+                    Label("Profile", systemImage: selectedTab == 3 ? "person.circle.fill" : "person.circle")
                 }
-                .tag(4)
+                .tag(3)
         }
         .accentColor(Design.Colors.primary)
         .background(Design.Colors.background)
