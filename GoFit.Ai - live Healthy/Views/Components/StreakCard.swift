@@ -118,22 +118,23 @@ struct StreakCard: View {
                 
                 // Show recent unlocked achievements
                 HStack(spacing: -8) {
-                    ForEach(streakManager.unlockedAchievements.suffix(3), id: \.self) { achievement in
+                    ForEach(streakManager.achievements.suffix(3)) { achievement in
                         Circle()
                             .fill(Color.yellow.opacity(0.2))
                             .frame(width: 32, height: 32)
                             .overlay(
-                                Text(achievement.emoji)
+                                Image(systemName: achievement.type.icon)
                                     .font(.system(size: 16))
+                                    .foregroundColor(.orange)
                             )
                     }
                     
-                    if streakManager.unlockedAchievements.count > 3 {
+                    if streakManager.achievements.count > 3 {
                         Circle()
                             .fill(Color.gray.opacity(0.2))
                             .frame(width: 32, height: 32)
                             .overlay(
-                                Text("+\(streakManager.unlockedAchievements.count - 3)")
+                                Text("+\(streakManager.achievements.count - 3)")
                                     .font(.caption2.weight(.semibold))
                                     .foregroundColor(.secondary)
                             )
@@ -197,9 +198,10 @@ struct AchievementsView: View {
                         
                         LazyVGrid(columns: columns, spacing: Design.Spacing.md) {
                             ForEach(AchievementType.allCases, id: \.self) { achievement in
+                                let isUnlocked = streakManager.achievements.contains { $0.type == achievement }
                                 AchievementBadge(
                                     achievement: achievement,
-                                    isUnlocked: streakManager.unlockedAchievements.contains(achievement)
+                                    isUnlocked: isUnlocked
                                 )
                             }
                         }
@@ -281,8 +283,9 @@ struct AchievementBadge: View {
                     .frame(width: 60, height: 60)
                 
                 if isUnlocked {
-                    Text(achievement.emoji)
+                    Image(systemName: achievement.icon)
                         .font(.system(size: 30))
+                        .foregroundColor(.orange)
                 } else {
                     Image(systemName: "lock.fill")
                         .font(.title2)
@@ -312,17 +315,17 @@ struct DailyGoalRow: View {
                     .fill(isCompleted ? Design.Colors.success.opacity(0.15) : Color.gray.opacity(0.1))
                     .frame(width: 44, height: 44)
                 
-                Image(systemName: isCompleted ? "checkmark.circle.fill" : goal.icon)
+                Image(systemName: isCompleted ? "checkmark.circle.fill" : goal.iconName)
                     .font(.title3)
                     .foregroundColor(isCompleted ? Design.Colors.success : .gray)
             }
             
             VStack(alignment: .leading, spacing: 2) {
-                Text(goal.title)
+                Text(goal.displayTitle)
                     .font(.subheadline.weight(.medium))
                     .foregroundColor(.primary)
                 
-                Text(goal.description)
+                Text(goal.displayDescription)
                     .font(.caption)
                     .foregroundColor(.secondary)
             }

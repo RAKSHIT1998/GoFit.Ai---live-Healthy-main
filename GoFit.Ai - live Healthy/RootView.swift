@@ -49,7 +49,7 @@ struct RootView: View {
             
             // Splash screen overlay
             if showSplash {
-                SplashScreenView(isLoading: !isAppReady) {
+                SplashScreenView {
                     // On completion, hide splash
                     withAnimation(.easeOut(duration: 0.5)) {
                         showSplash = false

@@ -52,6 +52,10 @@ class StreakManager: ObservableObject {
     }
     
     // MARK: - Streak Management
+    func checkAndUpdateStreak() {
+        checkStreak()
+    }
+    
     func checkStreak() {
         let calendar = Calendar.current
         let today = calendar.startOfDay(for: Date())
@@ -354,12 +358,42 @@ enum AchievementType: String, Codable, CaseIterable {
     }
 }
 
-enum DailyGoal: String, Codable {
+enum DailyGoal: String, Codable, CaseIterable {
     case logMeals
     case workout
     case water
     case calories
     case steps
+    
+    var iconName: String {
+        switch self {
+        case .logMeals: return "fork.knife"
+        case .workout: return "figure.run"
+        case .water: return "drop.fill"
+        case .calories: return "flame.fill"
+        case .steps: return "figure.walk"
+        }
+    }
+    
+    var displayTitle: String {
+        switch self {
+        case .logMeals: return "Log Meals"
+        case .workout: return "Complete Workout"
+        case .water: return "Drink Water"
+        case .calories: return "Meet Calorie Goal"
+        case .steps: return "Reach Step Goal"
+        }
+    }
+    
+    var displayDescription: String {
+        switch self {
+        case .logMeals: return "Log at least one meal today"
+        case .workout: return "Complete any workout"
+        case .water: return "Meet your daily water intake"
+        case .calories: return "Stay within calorie target"
+        case .steps: return "Walk 10,000 steps"
+        }
+    }
 }
 
 // MARK: - Motivational Quotes

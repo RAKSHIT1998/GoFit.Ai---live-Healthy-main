@@ -17,6 +17,15 @@ struct Friend: Codable, Identifiable {
         case profileImageUrl
     }
     
+    // Memberwise initializer
+    init(id: String, username: String, email: String, fullName: String?, profileImageUrl: String?) {
+        self.id = id
+        self.username = username
+        self.email = email
+        self.fullName = fullName
+        self.profileImageUrl = profileImageUrl
+    }
+    
     init(from decoder: Decoder) throws {
         let container = try decoder.container(keyedBy: CodingKeys.self)
         id = try container.decode(String.self, forKey: .id)
