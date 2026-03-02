@@ -4,16 +4,21 @@ struct RootView: View {
     @StateObject private var auth = AuthViewModel()
     @StateObject private var purchases = PurchaseManager()
     @StateObject private var healthKit = HealthKitService.shared
+    @StateObject private var streakManager = StreakManager.shared
     @EnvironmentObject var adManager: AdManager
 
     @AppStorage("pendingFriendInviteId") private var pendingFriendInviteId: String = ""
     
     @State private var hasCheckedSubscriptionAfterLogin = false
     @State private var hasShownInitialAd = false
+    @State private var showSplash = true
+    @State private var isAppReady = false
     
     var body: some View {
-        Group {
-            if !auth.didFinishOnboarding {
+        ZStack {
+            // Main content
+            Group {
+                if !auth.didFinishOnboarding {
                 OnboardingScreens()
                     .environmentObject(auth)
                     .environmentObject(purchases)
@@ -36,7 +41,20 @@ struct RootView: View {
                     MainTabView()
                         .environmentObject(auth)
                         .environmentObject(purchases)
+                        .environmentObject(streakManager)
                 }
+            }
+            .opacity(showSplash ? 0 : 1)
+            
+            // Splash screen overlay
+            if showSplash {
+                SplashScreenView(isLoading: !isAppReady) {
+                    // On completion, hide splash
+                    withAnimation(.easeOut(duration: 0.5)) {
+                        showSplash = false
+                    }
+                }
+                .transition(.opacity)
             }
         }
         .onAppear {
@@ -45,35 +63,48 @@ struct RootView: View {
             
             purchases.loadProducts()
             
-            // Check subscription and trial status on app launch
-            if auth.isLoggedIn {
-                Task {
-                    await purchases.updateSubscriptionStatus()
-                    await purchases.checkSubscriptionStatus()
-                    await purchases.checkTrialAndSubscriptionStatus()
-                    await MainActor.run {
-                        hasCheckedSubscriptionAfterLogin = true
-                    }
+            // Start loading data in background
+            Task {
+                // Check subscription and trial status on app launch
+                if auth.isLoggedIn {
+                    async let subscriptionCheck: Void = {
+                        await purchases.updateSubscriptionStatus()
+                        await purchases.checkSubscriptionStatus()
+                        await purchases.checkTrialAndSubscriptionStatus()
+                        await MainActor.run {
+                            hasCheckedSubscriptionAfterLogin = true
+                        }
+                    }()
                     
-                    // Show app open ad if user doesn't have subscription
-                    if !hasShownInitialAd && !purchases.hasActiveSubscription {
-                        // Delay ad slightly to let app fully load
-                        try? await Task.sleep(nanoseconds: 500_000_000) // 0.5 second
-                        adManager.showAppOpenAd()
-                        hasShownInitialAd = true
-                    }
+                    async let healthCheck: Void = {
+                        healthKit.checkAuthorizationStatus()
+                        if healthKit.isAuthorized {
+                            healthKit.startPeriodicSync()
+                            await healthKit.readTodayData()
+                            try? await healthKit.syncToBackend()
+                        }
+                    }()
+                    
+                    async let streakCheck: Void = {
+                        await MainActor.run {
+                            streakManager.checkAndUpdateStreak()
+                        }
+                    }()
+                    
+                    // Wait for all initial data to load
+                    _ = await (subscriptionCheck, healthCheck, streakCheck)
                 }
-            }
-            
-            // Check HealthKit authorization and sync if logged in
-            if auth.isLoggedIn {
-                healthKit.checkAuthorizationStatus()
-                if healthKit.isAuthorized {
-                    healthKit.startPeriodicSync()
-                    Task {
-                        await healthKit.readTodayData()
-                        try? await healthKit.syncToBackend()
-                    }
+                
+                // Mark app as ready
+                await MainActor.run {
+                    isAppReady = true
+                }
+                
+                // Show app open ad if user doesn't have subscription (after splash)
+                if auth.isLoggedIn && !hasShownInitialAd && !purchases.hasActiveSubscription {
+                    try? await Task.sleep(nanoseconds: 1_500_000_000) // Wait for splash to finish
+                    adManager.showAppOpenAd()
+                    hasShownInitialAd = true
                 }
             }
         }

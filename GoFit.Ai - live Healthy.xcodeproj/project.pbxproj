@@ -85,22 +85,16 @@
 		};
 		B2484AA42EEC79A7009D604B /* GoFit.Ai - live HealthyTests */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
-			exceptions = (
-			);
 			path = "GoFit.Ai - live HealthyTests";
 			sourceTree = "<group>";
 		};
 		B2484AAE2EEC79A7009D604B /* GoFit.Ai - live HealthyUITests */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
-			exceptions = (
-			);
 			path = "GoFit.Ai - live HealthyUITests";
 			sourceTree = "<group>";
 		};
 		B2F1DFB82F068104002E1B7B /* gofit */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
-			exceptions = (
-			);
 			path = gofit;
 			sourceTree = "<group>";
 		};
@@ -147,7 +141,6 @@
 				D7F8F99F068950C35357765F /* Pods-GoFit.Ai - live HealthyUITests.debug.xcconfig */,
 				95B7A4B29FC84246DF05FD24 /* Pods-GoFit.Ai - live HealthyUITests.release.xcconfig */,
 			);
-			name = Pods;
 			path = Pods;
 			sourceTree = "<group>";
 		};

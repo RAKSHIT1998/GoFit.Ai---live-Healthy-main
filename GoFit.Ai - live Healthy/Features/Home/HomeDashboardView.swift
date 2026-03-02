@@ -5,6 +5,7 @@ struct HomeDashboardView: View {
     @EnvironmentObject var auth: AuthViewModel
     @EnvironmentObject var purchases: PurchaseManager
     @StateObject private var healthKit = HealthKitService.shared
+    @ObservedObject private var streakManager = StreakManager.shared
 
     @State private var showingScanner = false
     @State private var showingHistory = false
@@ -13,6 +14,8 @@ struct HomeDashboardView: View {
     @State private var showingLiquidLog = false
     @State private var showingShareProgress = false
     @State private var showingDailyPhotoLog = false
+    @State private var showCelebration = false
+    @State private var celebrationMessage = ""
 
     @State private var todayCalories = "—"
     @State private var todayProtein = "—"
@@ -45,10 +48,25 @@ struct HomeDashboardView: View {
                     VStack(spacing: Design.Spacing.lg) {
                         welcomeHeader
                             .delayedAppear(0)
+                        
+                        // Gamification: Streak and level card
+                        StreakCard()
+                            .delayedAppear(0.05)
+                        
                         mainStatsCard
                             .delayedAppear(0.1)
+                        
+                        // Daily Challenges
+                        DailyChallengeCard()
+                            .delayedAppear(0.15)
+                        
                         quickActionsSection
                             .delayedAppear(0.2)
+                        
+                        // Daily motivational quote
+                        MotivationalQuoteCard()
+                            .delayedAppear(0.25)
+                        
                         healthMetricsSection
                             .delayedAppear(0.3)
                         waterIntakeCard
@@ -177,6 +195,13 @@ struct HomeDashboardView: View {
                             todaySugarValue = localTotals.sugar
                         }
                         HapticManager.shared.lightTap()
+                        
+                        // Award points for logging a meal
+                        let (newAchievement, _) = streakManager.logMeal()
+                        if let achievement = newAchievement {
+                            celebrationMessage = "Achievement Unlocked!\n\(achievement.emoji) \(achievement.title)"
+                            showCelebration = true
+                        }
                     }
                     syncWatchMetrics(
                         calories: localTotals.calories,
@@ -195,6 +220,7 @@ struct HomeDashboardView: View {
             .onReceive(NotificationCenter.default.publisher(for: .openWaterLogFromWatch)) { _ in
                 showingLiquidLog = true
             }
+            .celebration(isShowing: $showCelebration, message: celebrationMessage)
         }
     }
 
@@ -815,6 +841,10 @@ struct HomeDashboardView: View {
                 todayCarbsValue = carbs
                 todayFatValue = fat
                 todaySugarValue = sugar
+                
+                // Update daily challenge progress
+                DailyChallengeManager.shared.updateProgress(for: .calories, value: calories)
+                DailyChallengeManager.shared.updateProgress(for: .protein, value: protein)
             }
             syncWatchMetrics(
                 calories: calories,
@@ -921,6 +951,9 @@ struct HomeDashboardView: View {
             
             await MainActor.run {
                 waterIntake = summary.today.water ?? 0
+                
+                // Update daily challenge progress for water
+                DailyChallengeManager.shared.updateProgress(for: .water, value: summary.today.water ?? 0)
             }
             syncWatchMetrics(
                 calories: todayCaloriesValue,
@@ -1020,6 +1053,8 @@ struct HomeDashboardView: View {
                 // Update HealthKit service with backend data
                 if let steps = summary.today.steps {
                     healthKit.todaySteps = steps
+                    // Update daily challenge progress for steps
+                    DailyChallengeManager.shared.updateProgress(for: .steps, value: Double(steps))
                 }
                 if let calories = summary.today.activeCalories {
                     healthKit.todayActiveCalories = calories
