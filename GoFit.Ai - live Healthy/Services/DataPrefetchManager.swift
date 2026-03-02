@@ -55,7 +55,7 @@ class DataPrefetchManager {
         guard let token = AuthService.shared.readToken()?.accessToken else { return }
         
         do {
-            let url = URL(string: "\(AppConstants.baseURL)/api/liquid-log/today")!
+            let url = URL(string: "\(AppConstants.apiBaseURL)/liquid-log/today")!
             var request = URLRequest(url: url)
             request.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
             request.timeoutInterval = 5
@@ -76,7 +76,7 @@ class DataPrefetchManager {
         guard let token = AuthService.shared.readToken()?.accessToken else { return }
         
         do {
-            let url = URL(string: "\(AppConstants.baseURL)/api/user/profile")!
+            let url = URL(string: "\(AppConstants.apiBaseURL)/user/profile")!
             var request = URLRequest(url: url)
             request.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
             request.timeoutInterval = 5
