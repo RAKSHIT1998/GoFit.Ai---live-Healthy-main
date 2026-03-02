@@ -394,6 +394,16 @@ enum DailyGoal: String, Codable, CaseIterable {
         case .steps: return "Walk 10,000 steps"
         }
     }
+    
+    var points: Int {
+        switch self {
+        case .logMeals: return 10
+        case .workout: return 25
+        case .water: return 15
+        case .calories: return 20
+        case .steps: return 20
+        }
+    }
 }
 
 // MARK: - Motivational Quotes

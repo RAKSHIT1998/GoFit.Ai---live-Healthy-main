@@ -78,9 +78,13 @@ struct RootView: View {
                     }()
                     
                     async let healthCheck: Void = {
-                        healthKit.checkAuthorizationStatus()
+                        await MainActor.run {
+                            healthKit.checkAuthorizationStatus()
+                        }
                         if healthKit.isAuthorized {
-                            healthKit.startPeriodicSync()
+                            await MainActor.run {
+                                healthKit.startPeriodicSync()
+                            }
                             await healthKit.readTodayData()
                             try? await healthKit.syncToBackend()
                         }
