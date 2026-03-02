@@ -2,7 +2,7 @@ import SwiftUI
 import CoreLocation
 
 struct FriendsView: View {
-    @StateObject private var friendsService = FriendsService.shared
+    @ObservedObject private var friendsService = FriendsService.shared
     @EnvironmentObject private var auth: AuthViewModel
     @State private var searchText = ""
     @State private var selectedTab: FriendsTab = .friends
