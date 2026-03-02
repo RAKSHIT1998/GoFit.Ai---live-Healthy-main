@@ -189,12 +189,34 @@ struct RootView: View {
         guard isCustomScheme || isUniversalLink else { return }
 
         let components = URLComponents(url: url, resolvingAgainstBaseURL: false)
-        let inviterId = components?.queryItems?.first(where: { $0.name == "from" })?.value
+        
+        // Try query parameter first: ?from=userId
+        var inviterId = components?.queryItems?.first(where: { $0.name == "from" })?.value
+        
+        // Also try path-based: gofitai://invite/userId
+        if inviterId == nil || inviterId?.isEmpty == true {
+            let pathComponents = url.pathComponents.filter { $0 != "/" }
+            if !pathComponents.isEmpty {
+                inviterId = pathComponents.last
+            }
+        }
 
         guard let inviterId = inviterId, !inviterId.isEmpty else { return }
+        
+        // Don't send friend request to yourself
+        guard inviterId != auth.userId else { return }
 
         if auth.isLoggedIn {
-            FriendsService.shared.sendFriendRequest(to: inviterId) { _ in }
+            FriendsService.shared.sendFriendRequest(to: inviterId) { result in
+                DispatchQueue.main.async {
+                    switch result {
+                    case .success(let message):
+                        print("✅ Friend invite accepted: \(message)")
+                    case .failure(let error):
+                        print("❌ Friend invite error: \(error.localizedDescription)")
+                    }
+                }
+            }
         } else {
             pendingFriendInviteId = inviterId
         }
