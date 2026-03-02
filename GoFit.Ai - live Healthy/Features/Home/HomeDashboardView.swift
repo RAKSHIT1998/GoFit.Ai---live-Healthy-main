@@ -451,9 +451,6 @@ struct HomeDashboardView: View {
                 }
                 .buttonStyle(SmoothButtonStyle())
             }
-
-                .buttonStyle(SmoothButtonStyle())
-            }
         }
     }
 
