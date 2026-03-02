@@ -81,7 +81,8 @@ struct RootView: View {
                         await MainActor.run {
                             healthKit.checkAuthorizationStatus()
                         }
-                        if healthKit.isAuthorized {
+                        let isAuthorized = await MainActor.run { healthKit.isAuthorized }
+                        if isAuthorized {
                             await MainActor.run {
                                 healthKit.startPeriodicSync()
                             }
