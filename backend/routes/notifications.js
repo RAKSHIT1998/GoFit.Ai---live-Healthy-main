@@ -5,7 +5,7 @@ import Meal from '../models/Meal.js';
 import WaterLog from '../models/WaterLog.js';
 import { authenticateToken } from '../middleware/authMiddleware.js';
 import { generateCompetitiveNotification } from '../services/aiNotificationService.js';
-import { mlService } from '../services/mlService.js';
+import mlService from '../services/mlService.js';
 import OpenAI from 'openai';
 
 const router = express.Router();
