@@ -18,6 +18,7 @@ struct SocialHubView: View {
     @State private var showError = false
     @State private var errorMessage = ""
     @State private var showPaywall = false
+    @State private var showQuickAdd = false
     
     enum SocialSection: String, CaseIterable {
         case friends = "Friends"
@@ -62,11 +63,9 @@ struct SocialHubView: View {
             .navigationBarTitleDisplayMode(.large)
             .toolbar {
                 ToolbarItem(placement: .navigationBarTrailing) {
-                    ShareLink(
-                        item: inviteShareText,
-                        subject: Text("Join me on GoFit.Ai!"),
-                        message: Text(inviteShareText)
-                    ) {
+                    Button {
+                        showQuickAdd = true
+                    } label: {
                         Image(systemName: "person.badge.plus")
                             .foregroundColor(Design.Colors.primary)
                     }
@@ -111,6 +110,10 @@ struct SocialHubView: View {
             .sheet(isPresented: $showPaywall) {
                 PaywallView()
                     .environmentObject(purchases)
+            }
+            .sheet(isPresented: $showQuickAdd) {
+                QuickAddFriendSheet()
+                    .environmentObject(auth)
             }
         }
     }
@@ -238,6 +241,22 @@ struct SocialHubView: View {
                             Text("Search above or invite friends to connect!")
                                 .font(Design.Typography.caption)
                                 .foregroundColor(.secondary)
+                            
+                            Button {
+                                showQuickAdd = true
+                            } label: {
+                                HStack(spacing: 8) {
+                                    Image(systemName: "person.badge.plus")
+                                    Text("Add Friends")
+                                        .fontWeight(.semibold)
+                                }
+                                .foregroundColor(.white)
+                                .padding(.horizontal, 24)
+                                .padding(.vertical, 12)
+                                .background(Design.Colors.primary)
+                                .cornerRadius(14)
+                            }
+                            .buttonStyle(SmoothButtonStyle())
                         }
                         .frame(maxWidth: .infinity)
                         .padding(.top, 30)
@@ -280,19 +299,7 @@ struct SocialHubView: View {
             } else {
                 ForEach(friendsService.searchResults, id: \.id) { result in
                     SearchResultRow(result: result) { userId in
-                        friendsService.sendFriendRequest(to: userId) { res in
-                            DispatchQueue.main.async {
-                                if case .success(let message) = res {
-                                    errorMessage = message
-                                    showError = true
-                                    friendsService.searchResults.removeAll { $0.id == userId }
-                                    searchText = ""
-                                } else {
-                                    errorMessage = "Failed to send request"
-                                    showError = true
-                                }
-                            }
-                        }
+                        friendsService.sendFriendRequest(to: userId) { _ in }
                     }
                 }
                 .padding(.horizontal, Design.Spacing.md)
@@ -557,6 +564,11 @@ struct StatChip: View {
 struct SearchResultRow: View {
     let result: SearchResult
     let onAdd: (String) -> Void
+    @State private var sendState: SendState = .idle
+    
+    enum SendState {
+        case idle, sending, sent, failed
+    }
     
     var body: some View {
         HStack(spacing: 12) {
@@ -586,12 +598,23 @@ struct SearchResultRow: View {
                 Label("Friend", systemImage: "checkmark.circle.fill")
                     .font(.caption)
                     .foregroundColor(.green)
-            } else if result.friendStatus == "request_sent" {
-                Label("Sent", systemImage: "clock.badge")
-                    .font(.caption)
-                    .foregroundColor(.orange)
+            } else if result.friendStatus == "request_sent" || sendState == .sent {
+                Label("Sent", systemImage: "checkmark.circle.fill")
+                    .font(.caption.weight(.semibold))
+                    .foregroundColor(.green)
+                    .transition(.scale.combined(with: .opacity))
+            } else if sendState == .sending {
+                ProgressView()
+                    .frame(width: 40, height: 40)
             } else {
-                Button { onAdd(result.id) } label: {
+                Button {
+                    sendState = .sending
+                    HapticManager.shared.lightTap()
+                    onAdd(result.id)
+                    withAnimation(.spring(response: 0.3)) {
+                        sendState = .sent
+                    }
+                } label: {
                     Image(systemName: "person.badge.plus")
                         .font(.title3)
                         .foregroundColor(.white)
@@ -606,6 +629,139 @@ struct SearchResultRow: View {
         .background(Design.Colors.cardBackground)
         .cornerRadius(14)
         .shadow(color: Color.primary.opacity(0.04), radius: 4, x: 0, y: 2)
+        .animation(.easeInOut(duration: 0.2), value: sendState == .sent)
+    }
+}
+
+// MARK: - Quick Add Friend Sheet
+struct QuickAddFriendSheet: View {
+    @EnvironmentObject var auth: AuthViewModel
+    @ObservedObject private var friendsService = FriendsService.shared
+    @Environment(\.dismiss) private var dismiss
+    @State private var searchText = ""
+    @FocusState private var isSearchFocused: Bool
+    
+    var body: some View {
+        NavigationStack {
+            VStack(spacing: 0) {
+                // Search field
+                HStack(spacing: 10) {
+                    Image(systemName: "magnifyingglass")
+                        .foregroundColor(.gray)
+                    
+                    TextField("Name, email, or username", text: $searchText)
+                        .textInputAutocapitalization(.never)
+                        .disableAutocorrection(true)
+                        .focused($isSearchFocused)
+                        .submitLabel(.search)
+                        .onSubmit {
+                            friendsService.searchUsers(query: searchText) { _ in }
+                        }
+                    
+                    if !searchText.isEmpty {
+                        Button {
+                            searchText = ""
+                            friendsService.searchResults = []
+                        } label: {
+                            Image(systemName: "xmark.circle.fill")
+                                .foregroundColor(.gray)
+                        }
+                    }
+                }
+                .padding(12)
+                .background(Color(.systemGray6))
+                .cornerRadius(12)
+                .padding(.horizontal, Design.Spacing.md)
+                .padding(.top, Design.Spacing.sm)
+                .onChange(of: searchText) { _, newValue in
+                    guard newValue.count >= 2 else {
+                        friendsService.searchResults = []
+                        return
+                    }
+                    // Debounced live search
+                    Task {
+                        try? await Task.sleep(nanoseconds: 350_000_000)
+                        guard searchText == newValue else { return }
+                        friendsService.searchUsers(query: newValue) { _ in }
+                    }
+                }
+                
+                Divider().padding(.top, 12)
+                
+                // Results
+                if friendsService.isLoading && friendsService.searchResults.isEmpty {
+                    Spacer()
+                    VStack(spacing: 8) {
+                        ProgressView()
+                        Text("Searching...")
+                            .font(.caption)
+                            .foregroundColor(.secondary)
+                    }
+                    Spacer()
+                } else if friendsService.searchResults.isEmpty {
+                    Spacer()
+                    VStack(spacing: 16) {
+                        Image(systemName: searchText.count < 2 ? "person.badge.plus" : "magnifyingglass")
+                            .font(.system(size: 44))
+                            .foregroundColor(Design.Colors.primary.opacity(0.3))
+                        
+                        Text(searchText.count < 2 ? "Find friends by name or email" : "No results for \"\(searchText)\"")
+                            .font(Design.Typography.body)
+                            .foregroundColor(.secondary)
+                    }
+                    Spacer()
+                } else {
+                    ScrollView {
+                        VStack(spacing: 8) {
+                            ForEach(friendsService.searchResults, id: \.id) { result in
+                                SearchResultRow(result: result) { userId in
+                                    friendsService.sendFriendRequest(to: userId) { _ in }
+                                }
+                            }
+                        }
+                        .padding(.horizontal, Design.Spacing.md)
+                        .padding(.vertical, Design.Spacing.sm)
+                    }
+                }
+                
+                // Invite share link at bottom
+                ShareLink(
+                    item: inviteText,
+                    subject: Text("Join me on GoFit.Ai!"),
+                    message: Text(inviteText)
+                ) {
+                    HStack(spacing: 8) {
+                        Image(systemName: "square.and.arrow.up")
+                        Text("Invite via Link")
+                            .fontWeight(.semibold)
+                    }
+                    .foregroundColor(Design.Colors.primary)
+                    .frame(maxWidth: .infinity)
+                    .padding(.vertical, 14)
+                    .background(Design.Colors.primary.opacity(0.1))
+                    .cornerRadius(14)
+                }
+                .padding(.horizontal, Design.Spacing.md)
+                .padding(.bottom, Design.Spacing.md)
+            }
+            .navigationTitle("Add Friend")
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .navigationBarLeading) {
+                    Button("Done") { dismiss() }
+                }
+            }
+            .onAppear {
+                DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
+                    isSearchFocused = true
+                }
+            }
+        }
+    }
+    
+    private var inviteText: String {
+        let name = auth.name.isEmpty ? "Someone" : auth.name
+        return "Hey! \u{1F4AA} \(name) wants you to join GoFit.Ai — the AI fitness app. Track meals, compete, and crush your goals together!\n\nDownload: https://apps.apple.com/app/gofit-ai"
     }
 }
 

@@ -661,28 +661,46 @@ struct SearchBar: View {
     @Binding var text: String
     let placeholder: String
     let onSearch: (String) -> Void
+    @FocusState private var isFocused: Bool
+    @State private var searchTask: Task<Void, Never>?
     
     var body: some View {
         HStack(spacing: 8) {
             Image(systemName: "magnifyingglass")
                 .foregroundColor(.gray)
             
-            TextField(placeholder, text: $text, onEditingChanged: { _ in
-                onSearch(text)
-            })
-            .textInputAutocapitalization(.never)
-            .disableAutocorrection(true)
+            TextField(placeholder, text: $text)
+                .textInputAutocapitalization(.never)
+                .disableAutocorrection(true)
+                .focused($isFocused)
+                .submitLabel(.search)
+                .onSubmit { onSearch(text) }
             
             if !text.isEmpty {
-                Button(action: { text = "" }) {
+                Button(action: {
+                    text = ""
+                    onSearch("")
+                }) {
                     Image(systemName: "xmark.circle.fill")
                         .foregroundColor(.gray)
                 }
             }
         }
-        .padding(8)
+        .padding(10)
         .background(Color(.systemGray6))
-        .cornerRadius(8)
+        .cornerRadius(12)
+        .onChange(of: text) { _, newValue in
+            searchTask?.cancel()
+            searchTask = Task {
+                try? await Task.sleep(nanoseconds: 400_000_000)
+                guard !Task.isCancelled else { return }
+                await MainActor.run { onSearch(newValue) }
+            }
+        }
+    }
+    
+    func autoFocus() -> some View {
+        self.onAppear { isFocused = true }
     }
 }
 
