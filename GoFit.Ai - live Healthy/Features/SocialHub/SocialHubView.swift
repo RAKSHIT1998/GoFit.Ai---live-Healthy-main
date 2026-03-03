@@ -202,12 +202,16 @@ struct SocialHubView: View {
                         .padding(.horizontal, Design.Spacing.md)
                         
                         ForEach(friendsService.friendRequests, id: \.id) { request in
-                            FriendRequestCardView(request: request) {
+                            FriendRequestCardView(request: request, onAccept: {
                                 friendsService.acceptFriendRequest(from: request.requesterId) { _ in
                                     friendsService.fetchFriendRequests { _ in }
                                     friendsService.fetchFriends { _ in }
                                 }
-                            }
+                            }, onDecline: {
+                                friendsService.rejectFriendRequest(from: request.requesterId) { _ in
+                                    friendsService.fetchFriendRequests { _ in }
+                                }
+                            })
                         }
                         .padding(.horizontal, Design.Spacing.md)
                     }
