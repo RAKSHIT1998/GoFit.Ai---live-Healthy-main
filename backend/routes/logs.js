@@ -1,5 +1,9 @@
 import express from 'express';
-import pool from '../config/database.js';
+import ActivityLog from '../models/ActivityLog.js';
+import Meal from '../models/Meal.js';
+import Workout from '../models/Workout.js';
+import Friend from '../models/Friend.js';
+import { GamificationPoints } from '../models/Gamification.js';
 import { authenticateToken } from '../middleware/authMiddleware.js';
 
 const router = express.Router();
@@ -11,7 +15,7 @@ const router = express.Router();
 router.post('/meal/share', authenticateToken, async (req, res) => {
   try {
     const { mealId, visibility, sharedWith } = req.body;
-    const userId = req.user.id;
+    const userId = req.user._id;
 
     if (!mealId || !visibility) {
       return res.status(400).json({ message: 'Missing required fields' });
@@ -22,28 +26,37 @@ router.post('/meal/share', authenticateToken, async (req, res) => {
       return res.status(400).json({ message: 'Invalid visibility setting' });
     }
 
-    // Create activity log for shared meal
-    const result = await pool.query(
-      `INSERT INTO activity_logs (user_id, type, title, visibility, shared_with, created_at)
-       SELECT $1, 'meal', title, $2, $3, NOW()
-       FROM meals WHERE id = $4 AND user_id = $1
-       RETURNING *`,
-      [userId, visibility, sharedWith || [], mealId]
-    );
-
-    if (result.rows.length === 0) {
+    // Verify meal belongs to user
+    const meal = await Meal.findOne({ _id: mealId, userId });
+    if (!meal) {
       return res.status(404).json({ message: 'Meal not found' });
     }
 
+    const log = await ActivityLog.create({
+      userId,
+      type: 'meal',
+      title: meal.mealName || meal.mealType || 'Meal',
+      referenceId: mealId,
+      visibility,
+      sharedWith: sharedWith || [],
+      metadata: {
+        calories: meal.totalCalories,
+        protein: meal.totalProtein,
+        carbs: meal.totalCarbs,
+        fats: meal.totalFats
+      }
+    });
+
     // Award points for sharing
-    await pool.query(
-      'INSERT INTO gamification_points (user_id, action_type, points, created_at) VALUES ($1, $2, $3, NOW())',
-      [userId, 'share_log', 10]
-    );
+    await GamificationPoints.create({
+      userId,
+      actionType: 'share_log',
+      points: 10
+    });
 
     res.json({
       message: 'Meal shared successfully',
-      log: result.rows[0]
+      log
     });
   } catch (error) {
     console.error('Share meal error:', error);
@@ -58,7 +71,7 @@ router.post('/meal/share', authenticateToken, async (req, res) => {
 router.post('/workout/share', authenticateToken, async (req, res) => {
   try {
     const { workoutId, visibility, sharedWith } = req.body;
-    const userId = req.user.id;
+    const userId = req.user._id;
 
     if (!workoutId || !visibility) {
       return res.status(400).json({ message: 'Missing required fields' });
@@ -69,28 +82,36 @@ router.post('/workout/share', authenticateToken, async (req, res) => {
       return res.status(400).json({ message: 'Invalid visibility setting' });
     }
 
-    // Create activity log for shared workout
-    const result = await pool.query(
-      `INSERT INTO activity_logs (user_id, type, title, visibility, shared_with, created_at)
-       SELECT $1, 'workout', name, $2, $3, NOW()
-       FROM workouts WHERE id = $4 AND user_id = $1
-       RETURNING *`,
-      [userId, visibility, sharedWith || [], workoutId]
-    );
-
-    if (result.rows.length === 0) {
+    // Verify workout belongs to user
+    const workout = await Workout.findOne({ _id: workoutId, userId });
+    if (!workout) {
       return res.status(404).json({ message: 'Workout not found' });
     }
 
+    const log = await ActivityLog.create({
+      userId,
+      type: 'workout',
+      title: workout.exerciseName || workout.name || 'Workout',
+      referenceId: workoutId,
+      visibility,
+      sharedWith: sharedWith || [],
+      metadata: {
+        duration: workout.duration,
+        caloriesBurned: workout.caloriesBurned,
+        intensity: workout.intensity
+      }
+    });
+
     // Award points for sharing
-    await pool.query(
-      'INSERT INTO gamification_points (user_id, action_type, points, created_at) VALUES ($1, $2, $3, NOW())',
-      [userId, 'share_log', 10]
-    );
+    await GamificationPoints.create({
+      userId,
+      actionType: 'share_log',
+      points: 10
+    });
 
     res.json({
       message: 'Workout shared successfully',
-      log: result.rows[0]
+      log
     });
   } catch (error) {
     console.error('Share workout error:', error);
@@ -104,23 +125,29 @@ router.post('/workout/share', authenticateToken, async (req, res) => {
  */
 router.get('/friends', authenticateToken, async (req, res) => {
   try {
-    const userId = req.user.id;
+    const userId = req.user._id;
 
-    const result = await pool.query(
-      `SELECT al.*, u.username
-       FROM activity_logs al
-       JOIN users u ON al.user_id = u.id
-       JOIN friendships f ON (f.friend_id = al.user_id AND f.user_id = $1 AND f.status = 'accepted')
-       WHERE al.visibility IN ('friends_only', 'public')
-       OR (al.visibility = 'friends_only' AND al.shared_with @> ARRAY[$1])
-       ORDER BY al.created_at DESC
-       LIMIT 50`,
-      [userId]
+    // Get accepted friends
+    const friendships = await Friend.find({
+      $or: [
+        { userId, status: 'accepted' },
+        { friendId: userId, status: 'accepted' }
+      ]
+    });
+
+    const friendIds = friendships.map(f =>
+      f.userId.toString() === userId.toString() ? f.friendId : f.userId
     );
 
-    res.json({
-      logs: result.rows
-    });
+    const logs = await ActivityLog.find({
+      userId: { $in: friendIds },
+      visibility: { $in: ['friends_only', 'public'] }
+    })
+    .populate('userId', 'name profilePictureURL')
+    .sort({ createdAt: -1 })
+    .limit(50);
+
+    res.json({ logs });
   } catch (error) {
     console.error('Get friends logs error:', error);
     res.status(500).json({ message: 'Error fetching shared logs' });
@@ -133,27 +160,36 @@ router.get('/friends', authenticateToken, async (req, res) => {
  */
 router.get('/feed', authenticateToken, async (req, res) => {
   try {
-    const userId = req.user.id;
+    const userId = req.user._id;
 
-    const result = await pool.query(
-      `SELECT al.id, al.user_id, u.username, al.type, al.title, al.visibility, 
-              al.created_at, al.updated_at,
-              CASE WHEN al.user_id = $1 THEN true ELSE false END as is_own_activity
-       FROM activity_logs al
-       JOIN users u ON al.user_id = u.id
-       WHERE al.user_id = $1  -- Own activities
-       OR (al.visibility = 'public')  -- Public activities
-       OR (al.visibility = 'friends_only' AND 
-           EXISTS (SELECT 1 FROM friendships 
-                   WHERE user_id = $1 AND friend_id = al.user_id AND status = 'accepted'))
-       OR (al.visibility = 'friends_only' AND al.shared_with @> ARRAY[$1])
-       ORDER BY al.created_at DESC
-       LIMIT 100`,
-      [userId]
+    // Get accepted friends
+    const friendships = await Friend.find({
+      $or: [
+        { userId, status: 'accepted' },
+        { friendId: userId, status: 'accepted' }
+      ]
+    });
+
+    const friendIds = friendships.map(f =>
+      f.userId.toString() === userId.toString() ? f.friendId : f.userId
     );
 
+    const feed = await ActivityLog.find({
+      $or: [
+        { userId }, // Own activities
+        { userId: { $in: friendIds }, visibility: 'public' },
+        { userId: { $in: friendIds }, visibility: 'friends_only' }
+      ]
+    })
+    .populate('userId', 'name profilePictureURL')
+    .sort({ createdAt: -1 })
+    .limit(100);
+
     res.json({
-      feed: result.rows
+      feed: feed.map(item => ({
+        ...item.toObject(),
+        isOwnActivity: item.userId._id.toString() === userId.toString()
+      }))
     });
   } catch (error) {
     console.error('Get activity feed error:', error);
@@ -169,33 +205,25 @@ router.post('/:logId/visibility', authenticateToken, async (req, res) => {
   try {
     const { logId } = req.params;
     const { visibility, sharedWith } = req.body;
-    const userId = req.user.id;
+    const userId = req.user._id;
 
     if (!visibility) {
       return res.status(400).json({ message: 'Visibility is required' });
     }
 
-    // Verify user owns this log
-    const logResult = await pool.query(
-      'SELECT * FROM activity_logs WHERE id = $1 AND user_id = $2',
-      [logId, userId]
+    const log = await ActivityLog.findOneAndUpdate(
+      { _id: logId, userId },
+      { visibility, sharedWith: sharedWith || [] },
+      { new: true }
     );
 
-    if (logResult.rows.length === 0) {
+    if (!log) {
       return res.status(404).json({ message: 'Log not found or unauthorized' });
     }
 
-    const result = await pool.query(
-      `UPDATE activity_logs 
-       SET visibility = $1, shared_with = $2, updated_at = NOW()
-       WHERE id = $3 AND user_id = $4
-       RETURNING *`,
-      [visibility, sharedWith || [], logId, userId]
-    );
-
     res.json({
       message: 'Log visibility updated',
-      log: result.rows[0]
+      log
     });
   } catch (error) {
     console.error('Update visibility error:', error);
@@ -210,14 +238,11 @@ router.post('/:logId/visibility', authenticateToken, async (req, res) => {
 router.delete('/:logId', authenticateToken, async (req, res) => {
   try {
     const { logId } = req.params;
-    const userId = req.user.id;
+    const userId = req.user._id;
 
-    const result = await pool.query(
-      'DELETE FROM activity_logs WHERE id = $1 AND user_id = $2 RETURNING id',
-      [logId, userId]
-    );
+    const result = await ActivityLog.findOneAndDelete({ _id: logId, userId });
 
-    if (result.rows.length === 0) {
+    if (!result) {
       return res.status(404).json({ message: 'Log not found or unauthorized' });
     }
 

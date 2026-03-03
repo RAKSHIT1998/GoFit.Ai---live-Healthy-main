@@ -23,7 +23,7 @@ function getConversationId(userId1, userId2) {
  * POST /api/messages/:friendId
  */
 router.post('/:friendId', authenticateToken, async (req, res) => {
-  const { userId } = req.user;
+  const userId = req.user._id.toString();
   const { friendId } = req.params;
   const { message, messageType = 'text' } = req.body;
 
@@ -57,7 +57,7 @@ router.post('/:friendId', authenticateToken, async (req, res) => {
     });
 
     await newMessage.save();
-    await newMessage.populate('senderId', 'name profileImageUrl');
+    await newMessage.populate('senderId', 'name profilePictureURL');
 
     logger.log(`💬 Message sent from ${userId} to ${friendId}`);
 
@@ -68,7 +68,7 @@ router.post('/:friendId', authenticateToken, async (req, res) => {
       from: {
         id: newMessage.senderId._id.toString(),
         username: newMessage.senderId.name,
-        profileImageUrl: newMessage.senderId.profileImageUrl || null
+        profileImageUrl: newMessage.senderId.profilePictureURL || null
       },
       message: newMessage.message,
       messageType,
@@ -96,7 +96,7 @@ router.post('/:friendId', authenticateToken, async (req, res) => {
  * GET /api/messages/:friendId?limit=50&skip=0
  */
 router.get('/:friendId', authenticateToken, async (req, res) => {
-  const { userId } = req.user;
+  const userId = req.user._id.toString();
   const { friendId } = req.params;
   const { limit = 50, skip = 0 } = req.query;
 
@@ -118,7 +118,7 @@ router.get('/:friendId', authenticateToken, async (req, res) => {
 
     // Get messages
     const messages = await Message.find({ conversationId })
-      .populate('senderId', 'name profileImageUrl')
+      .populate('senderId', 'name profilePictureURL')
       .sort({ createdAt: -1 })
       .skip(parseInt(skip))
       .limit(parseInt(limit));
@@ -143,7 +143,7 @@ router.get('/:friendId', authenticateToken, async (req, res) => {
         id: msg._id.toString(),
         senderId: msg.senderId._id.toString(),
         senderName: msg.senderId.name,
-        senderImage: msg.senderId.profileImageUrl || null,
+        senderImage: msg.senderId.profilePictureURL || null,
         message: msg.message,
         messageType: msg.messageType,
         isRead: msg.isRead,
@@ -162,7 +162,7 @@ router.get('/:friendId', authenticateToken, async (req, res) => {
  * GET /api/messages
  */
 router.get('/', authenticateToken, async (req, res) => {
-  const { userId } = req.user;
+  const userId = req.user._id.toString();
 
   try {
     // Get all friend relationships
@@ -188,12 +188,12 @@ router.get('/', authenticateToken, async (req, res) => {
           isRead: false
         });
 
-        const friend = await User.findById(friendId).select('name profileImageUrl');
+        const friend = await User.findById(friendId).select('name profilePictureURL');
 
         return {
           friendId: friendId.toString(),
           friendName: friend.name,
-          friendImage: friend.profileImageUrl || null,
+          friendImage: friend.profilePictureURL || null,
           lastMessage: lastMessage ? lastMessage.message : null,
           lastMessageTime: lastMessage ? lastMessage.createdAt : null,
           unreadCount,
@@ -224,7 +224,7 @@ router.get('/', authenticateToken, async (req, res) => {
  * GET /api/messages/unread/count
  */
 router.get('/unread/count', authenticateToken, async (req, res) => {
-  const { userId } = req.user;
+  const userId = req.user._id.toString();
 
   try {
     const unreadCount = await Message.countDocuments({
@@ -244,7 +244,7 @@ router.get('/unread/count', authenticateToken, async (req, res) => {
  * POST /api/messages/:friendId/motivate
  */
 router.post('/:friendId/motivate', authenticateToken, async (req, res) => {
-  const { userId } = req.user;
+  const userId = req.user._id.toString();
   const { friendId } = req.params;
   const { motivationType } = req.body; // 'amazing', 'keep_going', 'you_got_this', 'proud_of_you', 'crush_it'
 

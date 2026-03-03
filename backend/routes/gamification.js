@@ -1,5 +1,6 @@
 import express from 'express';
-import db from '../config/database.js';
+import { GamificationPoints, Badge, Achievement, UserStreak } from '../models/Gamification.js';
+import User from '../models/User.js';
 import { authenticateToken } from '../middleware/authMiddleware.js';
 
 const router = express.Router();
@@ -10,47 +11,33 @@ const router = express.Router();
  */
 router.get('/stats', authenticateToken, async (req, res) => {
   try {
-    const userId = req.user.userId;
+    const userId = req.user._id;
 
-    // Get badges
-    const badgesResult = await db.query(
-      'SELECT * FROM badges WHERE user_id = $1 ORDER BY earned_at DESC',
-      [userId]
-    );
-
-    // Get achievements
-    const achievementsResult = await db.query(
-      'SELECT * FROM achievements WHERE user_id = $1 ORDER BY earned_at DESC',
-      [userId]
-    );
-
-    // Get current streak
-    const streakResult = await db.query(
-      'SELECT * FROM user_streaks WHERE user_id = $1 ORDER BY created_at DESC LIMIT 1',
-      [userId]
-    );
-
-    // Calculate total points
-    const pointsResult = await db.query(
-      'SELECT COALESCE(SUM(points), 0) as total_points FROM achievements WHERE user_id = $1',
-      [userId]
-    );
+    const [badges, achievements, streak, pointsAgg] = await Promise.all([
+      Badge.find({ userId }).sort({ earnedAt: -1 }),
+      Achievement.find({ userId }).sort({ earnedAt: -1 }),
+      UserStreak.findOne({ userId }).sort({ createdAt: -1 }),
+      GamificationPoints.aggregate([
+        { $match: { userId } },
+        { $group: { _id: null, totalPoints: { $sum: '$points' } } }
+      ])
+    ]);
 
     res.json({
       badges: {
-        total: badgesResult.rows.length,
-        recent: badgesResult.rows.slice(0, 5),
-        all: badgesResult.rows
+        total: badges.length,
+        recent: badges.slice(0, 5),
+        all: badges
       },
       achievements: {
-        total: achievementsResult.rows.length,
-        recent: achievementsResult.rows.slice(0, 5),
-        all: achievementsResult.rows
+        total: achievements.length,
+        recent: achievements.slice(0, 5),
+        all: achievements
       },
       streaks: {
-        current: streakResult.rows[0] || null
+        current: streak || null
       },
-      points: parseInt(pointsResult.rows[0].total_points) || 0
+      points: pointsAgg.length > 0 ? pointsAgg[0].totalPoints : 0
     });
   } catch (error) {
     console.error('Get gamification stats error:', error);
@@ -65,37 +52,36 @@ router.get('/stats', authenticateToken, async (req, res) => {
 router.get('/leaderboard', authenticateToken, async (req, res) => {
   try {
     const { limit = 50, type = 'points' } = req.query;
-    const userId = req.user.userId;
+    const userId = req.user._id;
 
-    let orderBy = 'total_points DESC';
-    if (type === 'streaks') {
-      orderBy = 'current_streak DESC';
-    } else if (type === 'badges') {
-      orderBy = 'badge_count DESC';
-    }
-
-    const result = await db.query(
-      `SELECT 
-        u.id,
-        u.username,
-        u.full_name,
-        u.profile_image_url,
-        COALESCE(SUM(a.points), 0) as total_points,
-        COUNT(DISTINCT b.id) as badge_count,
-        COALESCE(MAX(s.current_days), 0) as current_streak,
-        CASE WHEN u.id = $1 THEN true ELSE false END as is_me
-       FROM users u
-       LEFT JOIN achievements a ON u.id = a.user_id
-       LEFT JOIN badges b ON u.id = b.user_id
-       LEFT JOIN user_streaks s ON u.id = s.user_id
-       GROUP BY u.id, u.username, u.full_name, u.profile_image_url
-       ORDER BY ${orderBy}
-       LIMIT $2`,
-      [userId, limit]
-    );
+    // Aggregate points per user
+    const leaderboard = await GamificationPoints.aggregate([
+      { $group: { _id: '$userId', totalPoints: { $sum: '$points' } } },
+      { $sort: { totalPoints: -1 } },
+      { $limit: parseInt(limit) },
+      {
+        $lookup: {
+          from: 'users',
+          localField: '_id',
+          foreignField: '_id',
+          as: 'user'
+        }
+      },
+      { $unwind: '$user' },
+      {
+        $project: {
+          _id: 0,
+          id: '$_id',
+          name: '$user.name',
+          profilePictureURL: '$user.profilePictureURL',
+          totalPoints: 1,
+          isMe: { $eq: ['$_id', userId] }
+        }
+      }
+    ]);
 
     res.json({
-      leaderboard: result.rows.map((row, index) => ({
+      leaderboard: leaderboard.map((row, index) => ({
         ...row,
         rank: index + 1
       })),
@@ -113,16 +99,13 @@ router.get('/leaderboard', authenticateToken, async (req, res) => {
  */
 router.get('/badges', authenticateToken, async (req, res) => {
   try {
-    const userId = req.user.userId;
+    const userId = req.user._id;
 
-    const result = await db.query(
-      'SELECT * FROM badges WHERE user_id = $1 ORDER BY earned_at DESC',
-      [userId]
-    );
+    const badges = await Badge.find({ userId }).sort({ earnedAt: -1 });
 
     res.json({
-      badges: result.rows,
-      count: result.rows.length
+      badges,
+      count: badges.length
     });
   } catch (error) {
     console.error('Get badges error:', error);
@@ -136,16 +119,13 @@ router.get('/badges', authenticateToken, async (req, res) => {
  */
 router.get('/achievements', authenticateToken, async (req, res) => {
   try {
-    const userId = req.user.userId;
+    const userId = req.user._id;
 
-    const result = await db.query(
-      'SELECT * FROM achievements WHERE user_id = $1 ORDER BY earned_at DESC',
-      [userId]
-    );
+    const achievements = await Achievement.find({ userId }).sort({ earnedAt: -1 });
 
     res.json({
-      achievements: result.rows,
-      count: result.rows.length
+      achievements,
+      count: achievements.length
     });
   } catch (error) {
     console.error('Get achievements error:', error);
@@ -159,15 +139,12 @@ router.get('/achievements', authenticateToken, async (req, res) => {
  */
 router.get('/streaks', authenticateToken, async (req, res) => {
   try {
-    const userId = req.user.userId;
+    const userId = req.user._id;
 
-    const result = await db.query(
-      'SELECT * FROM user_streaks WHERE user_id = $1 ORDER BY created_at DESC LIMIT 1',
-      [userId]
-    );
+    const streak = await UserStreak.findOne({ userId }).sort({ createdAt: -1 });
 
     res.json({
-      current_streak: result.rows[0] || null
+      current_streak: streak || null
     });
   } catch (error) {
     console.error('Get streaks error:', error);

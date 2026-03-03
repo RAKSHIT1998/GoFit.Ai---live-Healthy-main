@@ -18,7 +18,7 @@ const logger = console;
  * POST /api/friends/request/:targetUserId
  */
 router.post('/request/:targetUserId', authenticateToken, async (req, res) => {
-    const { userId } = req.user;
+    const userId = req.user._id.toString();
     const { targetUserId } = req.params;
     
     try {
@@ -65,7 +65,7 @@ router.post('/request/:targetUserId', authenticateToken, async (req, res) => {
         await friendRequest.save();
         
         // Get sender info for the notification
-        const senderInfo = await User.findById(userId).select('name email profileImageUrl');
+        const senderInfo = await User.findById(userId).select('name email profilePictureURL');
         
         logger.log(`✅ Friend request sent from ${userId} to ${targetUserId}`);
         
@@ -76,7 +76,7 @@ router.post('/request/:targetUserId', authenticateToken, async (req, res) => {
                 id: senderInfo._id.toString(),
                 username: senderInfo.name,
                 fullName: senderInfo.name,
-                profileImageUrl: senderInfo.profileImageUrl || null
+                profileImageUrl: senderInfo.profilePictureURL || null
             },
             status: 'pending',
             message: `${senderInfo.name} sent you a friend request`
@@ -100,14 +100,14 @@ router.post('/request/:targetUserId', authenticateToken, async (req, res) => {
  * GET /api/friends/requests
  */
 router.get('/requests', authenticateToken, async (req, res) => {
-    const { userId } = req.user;
+    const userId = req.user._id.toString();
     
     try {
         const requests = await Friend.find({
             friendId: userId,
             status: 'pending'
         })
-        .populate('userId', 'name email profileImageUrl')
+        .populate('userId', 'name email profilePictureURL')
         .sort({ createdAt: -1 });
         
         const formattedRequests = requests.map(req => ({
@@ -116,7 +116,7 @@ router.get('/requests', authenticateToken, async (req, res) => {
                 id: req.userId._id.toString(),
                 username: req.userId.name,
                 fullName: req.userId.name,
-                profileImageUrl: req.userId.profileImageUrl || null
+                profileImageUrl: req.userId.profilePictureURL || null
             },
             status: 'pending',
             createdAt: req.createdAt
@@ -137,7 +137,7 @@ router.get('/requests', authenticateToken, async (req, res) => {
  * PUT /api/friends/accept/:requestUserId
  */
 router.put('/accept/:requestUserId', authenticateToken, async (req, res) => {
-    const { userId } = req.user;
+    const userId = req.user._id.toString();
     const { requestUserId } = req.params;
     
     try {
@@ -157,7 +157,7 @@ router.put('/accept/:requestUserId', authenticateToken, async (req, res) => {
         await friendRequest.save();
         
         // Get acceptor info for the notification
-        const acceptorInfo = await User.findById(userId).select('name email profileImageUrl');
+        const acceptorInfo = await User.findById(userId).select('name email profilePictureURL');
         
         logger.log(`✅ Friend request accepted from ${requestUserId} to ${userId}`);
         
@@ -167,7 +167,7 @@ router.put('/accept/:requestUserId', authenticateToken, async (req, res) => {
                 id: acceptorInfo._id.toString(),
                 username: acceptorInfo.name,
                 fullName: acceptorInfo.name,
-                profileImageUrl: acceptorInfo.profileImageUrl || null
+                profileImageUrl: acceptorInfo.profilePictureURL || null
             },
             status: 'accepted',
             message: `${acceptorInfo.name} accepted your friend request`
@@ -191,7 +191,7 @@ router.put('/accept/:requestUserId', authenticateToken, async (req, res) => {
  * DELETE /api/friends/reject/:requestUserId
  */
 router.delete('/reject/:requestUserId', authenticateToken, async (req, res) => {
-    const { userId } = req.user;
+    const userId = req.user._id.toString();
     const { requestUserId } = req.params;
     
     try {
@@ -221,7 +221,7 @@ router.delete('/reject/:requestUserId', authenticateToken, async (req, res) => {
  * GET /api/friends
  */
 router.get('/', authenticateToken, async (req, res) => {
-    const { userId } = req.user;
+    const userId = req.user._id.toString();
     
     try {
         const friendships = await Friend.find({
@@ -230,8 +230,8 @@ router.get('/', authenticateToken, async (req, res) => {
                 { friendId: userId, status: 'accepted' }
             ]
         })
-        .populate('userId', 'name email profileImageUrl')
-        .populate('friendId', 'name email profileImageUrl')
+        .populate('userId', 'name email profilePictureURL')
+        .populate('friendId', 'name email profilePictureURL')
         .sort({ updatedAt: -1 });
         
         // Extract friend info from both directions of the relationship
@@ -244,7 +244,7 @@ router.get('/', authenticateToken, async (req, res) => {
                 username: friendData.name,
                 email: friendData.email,
                 fullName: friendData.name,
-                profileImageUrl: friendData.profileImageUrl || null,
+                profileImageUrl: friendData.profilePictureURL || null,
                 status: 'friends',
                 connectedAt: f.updatedAt
             };
@@ -265,7 +265,7 @@ router.get('/', authenticateToken, async (req, res) => {
  * DELETE /api/friends/:friendId
  */
 router.delete('/:friendId', authenticateToken, async (req, res) => {
-    const { userId } = req.user;
+    const userId = req.user._id.toString();
     const { friendId } = req.params;
     
     try {
@@ -297,7 +297,7 @@ router.delete('/:friendId', authenticateToken, async (req, res) => {
  * GET /api/friends/search?q=<query>&limit=20
  */
 router.get('/search', authenticateToken, async (req, res) => {
-    const { userId } = req.user;
+    const userId = req.user._id.toString();
     const { q, limit = 20 } = req.query;
     
     try {
@@ -329,7 +329,7 @@ router.get('/search', authenticateToken, async (req, res) => {
                 { phone: searchRegex }
             ]
         })
-        .select('_id name email profileImageUrl')
+        .select('_id name email profilePictureURL')
         .limit(parseInt(limit));
         
         // For each user, get their friend status with the current user
@@ -359,7 +359,7 @@ router.get('/search', authenticateToken, async (req, res) => {
                 username: user.name,
                 email: user.email,
                 fullName: user.name,
-                profileImageUrl: user.profileImageUrl || null,
+                profileImageUrl: user.profilePictureURL || null,
                 friendStatus
             };
         }));
@@ -381,7 +381,7 @@ router.get('/search', authenticateToken, async (req, res) => {
  * POST /api/friends/location
  */
 router.post('/location', authenticateToken, async (req, res) => {
-    const { userId } = req.user;
+    const userId = req.user._id.toString();
     const { latitude, longitude, optIn } = req.body || {};
 
     try {
@@ -415,7 +415,7 @@ router.post('/location', authenticateToken, async (req, res) => {
  * GET /api/friends/nearby?radiusKm=5&limit=20
  */
 router.get('/nearby', authenticateToken, async (req, res) => {
-    const { userId } = req.user;
+    const userId = req.user._id.toString();
     const radiusKm = parseFloat(req.query.radiusKm || '5');
     const limit = parseInt(req.query.limit || '20');
     const ageMin = req.query.ageMin ? parseInt(req.query.ageMin) : null;
@@ -472,7 +472,7 @@ router.get('/nearby', authenticateToken, async (req, res) => {
                 $project: {
                     _id: 1,
                     name: 1,
-                    profileImageUrl: 1,
+                    profilePictureURL: 1,
                     distanceMeters: 1
                 }
             }
@@ -503,7 +503,7 @@ router.get('/nearby', authenticateToken, async (req, res) => {
                 id: user._id.toString(),
                 username: user.name,
                 fullName: user.name,
-                profileImageUrl: user.profileImageUrl || null,
+                profileImageUrl: user.profilePictureURL || null,
                 friendStatus,
                 distanceMeters: user.distanceMeters
             };
@@ -523,7 +523,7 @@ router.get('/nearby', authenticateToken, async (req, res) => {
  * POST /api/friends/block/:userId
  */
 router.post('/block/:userId', authenticateToken, async (req, res) => {
-    const { userId } = req.user;
+    const userId = req.user._id.toString();
     const { userId: blockUserId } = req.params;
     
     try {
@@ -558,7 +558,7 @@ router.post('/block/:userId', authenticateToken, async (req, res) => {
  * DELETE /api/friends/block/:userId
  */
 router.delete('/block/:userId', authenticateToken, async (req, res) => {
-    const { userId } = req.user;
+    const userId = req.user._id.toString();
     const { userId: unblockUserId } = req.params;
     
     try {

@@ -1,9 +1,24 @@
 import express from 'express';
-import pool from '../config/database.js';
+import Notification from '../models/Notification.js';
+import User from '../models/User.js';
+import Meal from '../models/Meal.js';
+import WaterLog from '../models/WaterLog.js';
 import { authenticateToken } from '../middleware/authMiddleware.js';
 import { generateCompetitiveNotification } from '../services/aiNotificationService.js';
+import { mlService } from '../services/mlService.js';
+import OpenAI from 'openai';
 
 const router = express.Router();
+
+// Initialize OpenAI (optional – gracefully handle missing key)
+let openai = null;
+try {
+  if (process.env.OPENAI_API_KEY) {
+    openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
+  }
+} catch (e) {
+  console.warn('⚠️ OpenAI not configured for notifications');
+}
 
 /**
  * Get all notifications for user
@@ -11,24 +26,23 @@ const router = express.Router();
  */
 router.get('/', authenticateToken, async (req, res) => {
   try {
-    const userId = req.user.id;
+    const userId = req.user._id;
     const { limit = 30, offset = 0, unreadOnly = false } = req.query;
 
-    let query = 'SELECT * FROM social_notifications WHERE recipient_id = $1';
-    const params = [userId];
-
+    const query = { recipientId: userId };
     if (unreadOnly === 'true') {
-      query += ' AND is_read = false';
+      query.isRead = false;
     }
 
-    query += ' ORDER BY created_at DESC LIMIT $2 OFFSET $3';
-    params.push(limit, offset);
-
-    const result = await pool.query(query, params);
+    const notifications = await Notification.find(query)
+      .sort({ createdAt: -1 })
+      .skip(parseInt(offset))
+      .limit(parseInt(limit))
+      .populate('relatedUserId', 'name profilePictureURL');
 
     res.json({
-      notifications: result.rows,
-      count: result.rows.length
+      notifications,
+      count: notifications.length
     });
   } catch (error) {
     console.error('Get notifications error:', error);
@@ -42,16 +56,14 @@ router.get('/', authenticateToken, async (req, res) => {
  */
 router.get('/unread/count', authenticateToken, async (req, res) => {
   try {
-    const userId = req.user.id;
+    const userId = req.user._id;
 
-    const result = await pool.query(
-      'SELECT COUNT(*) as unread_count FROM social_notifications WHERE recipient_id = $1 AND is_read = false',
-      [userId]
-    );
-
-    res.json({
-      unreadCount: parseInt(result.rows[0].unread_count)
+    const unreadCount = await Notification.countDocuments({
+      recipientId: userId,
+      isRead: false
     });
+
+    res.json({ unreadCount });
   } catch (error) {
     console.error('Get unread count error:', error);
     res.status(500).json({ message: 'Error fetching unread count' });
@@ -65,20 +77,21 @@ router.get('/unread/count', authenticateToken, async (req, res) => {
 router.put('/:notificationId/read', authenticateToken, async (req, res) => {
   try {
     const { notificationId } = req.params;
-    const userId = req.user.id;
+    const userId = req.user._id;
 
-    const result = await pool.query(
-      'UPDATE social_notifications SET is_read = true WHERE id = $1 AND recipient_id = $2 RETURNING *',
-      [notificationId, userId]
+    const notification = await Notification.findOneAndUpdate(
+      { _id: notificationId, recipientId: userId },
+      { isRead: true },
+      { new: true }
     );
 
-    if (result.rows.length === 0) {
+    if (!notification) {
       return res.status(404).json({ message: 'Notification not found' });
     }
 
     res.json({
       message: 'Notification marked as read',
-      notification: result.rows[0]
+      notification
     });
   } catch (error) {
     console.error('Mark as read error:', error);
@@ -93,14 +106,14 @@ router.put('/:notificationId/read', authenticateToken, async (req, res) => {
 router.delete('/:notificationId', authenticateToken, async (req, res) => {
   try {
     const { notificationId } = req.params;
-    const userId = req.user.id;
+    const userId = req.user._id;
 
-    const result = await pool.query(
-      'DELETE FROM social_notifications WHERE id = $1 AND recipient_id = $2 RETURNING id',
-      [notificationId, userId]
-    );
+    const result = await Notification.findOneAndDelete({
+      _id: notificationId,
+      recipientId: userId
+    });
 
-    if (result.rows.length === 0) {
+    if (!result) {
       return res.status(404).json({ message: 'Notification not found' });
     }
 
@@ -114,7 +127,6 @@ router.delete('/:notificationId', authenticateToken, async (req, res) => {
 /**
  * Generate competitive notification for a user
  * POST /api/notifications/competitive
- * Admin/System endpoint
  */
 router.post('/competitive', authenticateToken, async (req, res) => {
   try {
@@ -124,24 +136,23 @@ router.post('/competitive', authenticateToken, async (req, res) => {
       return res.status(400).json({ message: 'Missing required fields' });
     }
 
-    // Generate AI notification
-    const notification = await generateCompetitiveNotification(userId, triggerType, contextData);
+    const notificationData = await generateCompetitiveNotification(userId, triggerType, contextData);
 
-    if (!notification) {
+    if (!notificationData) {
       return res.status(400).json({ message: 'Could not generate notification' });
     }
 
-    // Store notification
-    const result = await pool.query(
-      `INSERT INTO social_notifications (recipient_id, type, title, message, ai_generated, created_at)
-       VALUES ($1, $2, $3, $4, true, NOW())
-       RETURNING *`,
-      [userId, 'ai_competitive', notification.title, notification.message]
-    );
+    const notification = await Notification.create({
+      recipientId: userId,
+      type: 'ai_competitive',
+      title: notificationData.title,
+      message: notificationData.message,
+      aiGenerated: true
+    });
 
     res.json({
       message: 'Competitive notification generated',
-      notification: result.rows[0]
+      notification
     });
   } catch (error) {
     console.error('Generate competitive notification error:', error);
@@ -155,50 +166,37 @@ router.post('/competitive', authenticateToken, async (req, res) => {
  */
 router.put('/read/all', authenticateToken, async (req, res) => {
   try {
-    const userId = req.user.id;
+    const userId = req.user._id;
 
-    const result = await pool.query(
-      'UPDATE social_notifications SET is_read = true WHERE recipient_id = $1 AND is_read = false RETURNING COUNT(*)',
-      [userId]
+    await Notification.updateMany(
+      { recipientId: userId, isRead: false },
+      { isRead: true }
     );
 
-    res.json({
-      message: 'All notifications marked as read'
-    });
+    res.json({ message: 'All notifications marked as read' });
   } catch (error) {
     console.error('Mark all as read error:', error);
     res.status(500).json({ message: 'Error marking notifications' });
   }
 });
 
-// Get user context for AI recommendations
+// ─── Helper: get user context for AI reminders ───
+
 async function getUserContext(userId) {
   const user = await User.findById(userId);
   if (!user) return null;
-  
-  // Get ML insights
-  const mlInsights = await mlService.getMLInsights(userId);
-  
-  // Get today's meals
+
+  let mlInsights = {};
+  try { mlInsights = await mlService.getMLInsights(userId); } catch (_) { /* optional */ }
+
   const today = new Date();
   today.setHours(0, 0, 0, 0);
-  const todayMeals = await Meal.find({
-    userId: userId,
-    timestamp: { $gte: today }
-  }).sort({ timestamp: -1 });
-  
-  // Get today's water intake
-  const todayWater = await WaterLog.find({
-    userId: userId,
-    timestamp: { $gte: today }
-  });
-  const totalWater = todayWater.reduce((sum, log) => sum + log.amount, 0);
-  
-  // Get recent meals for pattern analysis
-  const recentMeals = await Meal.find({
-    userId: userId
-  }).sort({ timestamp: -1 }).limit(10);
-  
+
+  const todayMeals = await Meal.find({ userId, timestamp: { $gte: today } }).sort({ timestamp: -1 });
+  const todayWater = await WaterLog.find({ userId, timestamp: { $gte: today } });
+  const totalWater = todayWater.reduce((sum, log) => sum + (log.amount || 0), 0);
+  const recentMeals = await Meal.find({ userId }).sort({ timestamp: -1 }).limit(10);
+
   return {
     user: {
       name: user.name,
@@ -220,181 +218,115 @@ async function getUserContext(userId) {
     },
     today: {
       meals: todayMeals.length,
-      calories: todayMeals.reduce((sum, meal) => sum + (meal.totalCalories || 0), 0),
-      protein: todayMeals.reduce((sum, meal) => sum + (meal.totalProtein || 0), 0),
-      carbs: todayMeals.reduce((sum, meal) => sum + (meal.totalCarbs || 0), 0),
+      calories: todayMeals.reduce((sum, m) => sum + (m.totalCalories || 0), 0),
+      protein: todayMeals.reduce((sum, m) => sum + (m.totalProtein || 0), 0),
+      carbs: todayMeals.reduce((sum, m) => sum + (m.totalCarbs || 0), 0),
       water: totalWater
     },
-    mlInsights: mlInsights || {},
+    mlInsights,
     recentMeals: recentMeals.map(m => ({
-      items: m.items.map(i => i.name),
+      items: (m.items || []).map(i => i.name),
       calories: m.totalCalories,
       timestamp: m.timestamp
     }))
   };
 }
 
-// Generate AI meal reminder
+// ─── AI Meal Reminder ───
+
 router.post('/meal-reminder', authenticateToken, async (req, res) => {
   try {
-    console.log(`🤖 Meal reminder request received for user: ${req.user._id}`);
     const { mealType } = req.body;
-    
+
     if (!openai) {
-      return res.status(500).json({
+      return res.json({
         title: "Time to eat! 🍽️",
-        body: `Don't forget your ${mealType}. Your body needs fuel to stay healthy!`
+        body: `Don't forget your ${mealType || 'meal'}. Your body needs fuel to stay healthy!`
       });
     }
-    
+
     const context = await getUserContext(req.user._id);
-    if (!context) {
-      return res.status(404).json({ message: 'User not found' });
-    }
-    
-    const prompt = `You are a friendly, encouraging health coach. Generate a personalized meal reminder notification for ${context.user.name}.
+    if (!context) return res.status(404).json({ message: 'User not found' });
 
-USER PROFILE:
-- Goals: ${context.user.goals}
-- Activity Level: ${context.user.activityLevel}
-- Dietary Preferences: ${context.user.dietaryPreferences.join(', ') || 'None'}
-- Allergies: ${context.user.allergies.join(', ') || 'None'}
-- Target Calories: ${context.user.targetCalories} kcal/day
-- Favorite Cuisines: ${context.user.favoriteCuisines.join(', ') || 'Varied'}
-
-TODAY'S PROGRESS:
-- Meals logged: ${context.today.meals}
-- Calories consumed: ${context.today.calories} / ${context.user.targetCalories} kcal
-- Protein: ${context.today.protein}g / ${context.user.targetProtein}g
-- Carbs: ${context.today.carbs}g / ${context.user.targetCarbs}g
-- Water: ${context.today.water.toFixed(1)}L
-
+    const prompt = `You are a friendly health coach. Generate a personalized meal reminder for ${context.user.name}.
+USER: Goals=${context.user.goals}, Activity=${context.user.activityLevel}, Diets=${context.user.dietaryPreferences.join(', ') || 'None'}, Fav Cuisines=${context.user.favoriteCuisines.join(', ') || 'Varied'}
+TODAY: Meals=${context.today.meals}, Calories=${context.today.calories}/${context.user.targetCalories}, Protein=${context.today.protein}g/${context.user.targetProtein}g
 MEAL TYPE: ${mealType}
-
-Generate a short, encouraging notification (max 100 characters for body) that:
-1. Reminds them it's time for ${mealType}
-2. Is personalized based on their goals and preferences
-3. Mentions their progress if relevant
-4. Is friendly and motivating
-5. May suggest a specific food from their favorite cuisines if appropriate
-
-Return ONLY a JSON object with "title" (max 50 chars) and "body" (max 100 chars) fields. No markdown, no explanations.`;
+Return ONLY JSON: {"title":"max 50 chars","body":"max 100 chars"}`;
 
     const completion = await openai.chat.completions.create({
       model: 'gpt-4o',
       messages: [
-        {
-          role: 'system',
-          content: 'You are a friendly health coach. Return ONLY valid JSON with "title" and "body" fields. No markdown, no explanations.'
-        },
-        {
-          role: 'user',
-          content: prompt
-        }
+        { role: 'system', content: 'Return ONLY valid JSON with "title" and "body". No markdown.' },
+        { role: 'user', content: prompt }
       ],
       max_tokens: 200,
       temperature: 0.7
     });
-    
-    const content = completion.choices[0]?.message?.content || '';
-    console.log(`✅ OpenAI meal reminder response received: ${content.length} characters`);
+
     let jsonContent;
-    
     try {
-      // Remove markdown if present
-      let jsonString = content.trim().replace(/^```json\s*/i, '').replace(/^```\s*/i, '').replace(/\s*```$/i, '');
-      jsonContent = JSON.parse(jsonString);
-    } catch (parseError) {
-      // Fallback
-      jsonContent = {
-        title: "Time to eat! 🍽️",
-        body: `Don't forget your ${mealType}. Your body needs fuel to stay healthy!`
-      };
+      const raw = completion.choices[0]?.message?.content?.trim()
+        .replace(/^```json\s*/i, '').replace(/^```\s*/i, '').replace(/\s*```$/i, '');
+      jsonContent = JSON.parse(raw);
+    } catch (_) {
+      jsonContent = { title: "Time to eat! 🍽️", body: `Don't forget your ${mealType}!` };
     }
-    
+
     res.json({
       title: jsonContent.title || `Time for ${mealType}! 🍽️`,
-      body: jsonContent.body || `Don't forget your ${mealType}. Your body needs fuel!`
+      body: jsonContent.body || `Don't forget your ${mealType}!`
     });
   } catch (error) {
     console.error('Error generating meal reminder:', error);
     res.json({
       title: "Time to eat! 🍽️",
-      body: `Don't forget your ${req.body.mealType || 'meal'}. Your body needs fuel!`
+      body: `Don't forget your ${req.body.mealType || 'meal'}!`
     });
   }
 });
 
-// Generate AI water reminder
+// ─── AI Water Reminder ───
+
 router.post('/water-reminder', authenticateToken, async (req, res) => {
   try {
-    console.log(`🤖 Water reminder request received for user: ${req.user._id}`);
     if (!openai) {
-      return res.status(500).json({
+      return res.json({
         title: "Stay Hydrated! 💧",
         body: "Time to drink water! Staying hydrated helps your body function at its best."
       });
     }
-    
+
     const context = await getUserContext(req.user._id);
-    if (!context) {
-      return res.status(404).json({ message: 'User not found' });
-    }
-    
-    const prompt = `You are a friendly, encouraging health coach. Generate a personalized water reminder notification for ${context.user.name}.
+    if (!context) return res.status(404).json({ message: 'User not found' });
 
-USER PROFILE:
-- Goals: ${context.user.goals}
-- Activity Level: ${context.user.activityLevel}
-- Weight: ${context.user.weightKg} kg
-
-TODAY'S PROGRESS:
-- Water consumed: ${context.today.water.toFixed(1)}L
-- Target: ~${(context.user.weightKg * 0.035).toFixed(1)}L (based on weight)
-- Meals logged: ${context.today.meals}
-- Calories: ${context.today.calories} / ${context.user.targetCalories} kcal
-
-Generate a short, encouraging notification (max 100 characters for body) that:
-1. Reminds them to drink water
-2. Mentions their progress if they're behind
-3. Is friendly and motivating
-4. May mention benefits of hydration
-
-Return ONLY a JSON object with "title" (max 50 chars) and "body" (max 100 chars) fields. No markdown, no explanations.`;
+    const prompt = `You are a friendly health coach. Generate a water reminder for ${context.user.name}.
+USER: Goals=${context.user.goals}, Activity=${context.user.activityLevel}, Weight=${context.user.weightKg}kg
+TODAY: Water=${context.today.water.toFixed(1)}L, Target=${(context.user.weightKg * 0.035).toFixed(1)}L
+Return ONLY JSON: {"title":"max 50 chars","body":"max 100 chars"}`;
 
     const completion = await openai.chat.completions.create({
       model: 'gpt-4o',
       messages: [
-        {
-          role: 'system',
-          content: 'You are a friendly health coach. Return ONLY valid JSON with "title" and "body" fields. No markdown, no explanations.'
-        },
-        {
-          role: 'user',
-          content: prompt
-        }
+        { role: 'system', content: 'Return ONLY valid JSON with "title" and "body". No markdown.' },
+        { role: 'user', content: prompt }
       ],
       max_tokens: 200,
       temperature: 0.7
     });
-    
-    const content = completion.choices[0]?.message?.content || '';
-    console.log(`✅ OpenAI water reminder response received: ${content.length} characters`);
+
     let jsonContent;
-    
     try {
-      let jsonString = content.trim().replace(/^```json\s*/i, '').replace(/^```\s*/i, '').replace(/\s*```$/i, '');
-      jsonContent = JSON.parse(jsonString);
-    } catch (parseError) {
-      jsonContent = {
-        title: "Stay Hydrated! 💧",
-        body: "Time to drink water! Staying hydrated helps your body function at its best."
-      };
+      const raw = completion.choices[0]?.message?.content?.trim()
+        .replace(/^```json\s*/i, '').replace(/^```\s*/i, '').replace(/\s*```$/i, '');
+      jsonContent = JSON.parse(raw);
+    } catch (_) {
+      jsonContent = { title: "Stay Hydrated! 💧", body: "Time to drink water!" };
     }
-    
+
     res.json({
       title: jsonContent.title || "Stay Hydrated! 💧",
-      body: jsonContent.body || "Time to drink water! Your body needs it!"
+      body: jsonContent.body || "Time to drink water!"
     });
   } catch (error) {
     console.error('Error generating water reminder:', error);
@@ -405,81 +337,47 @@ Return ONLY a JSON object with "title" (max 50 chars) and "body" (max 100 chars)
   }
 });
 
-// Generate AI workout reminder
+// ─── AI Workout Reminder ───
+
 router.post('/workout-reminder', authenticateToken, async (req, res) => {
   try {
     if (!openai) {
-      return res.status(500).json({
+      return res.json({
         title: "Workout Time! 💪",
         body: "Time for your workout! Your body will thank you for staying active."
       });
     }
-    
+
     const context = await getUserContext(req.user._id);
-    if (!context) {
-      return res.status(404).json({ message: 'User not found' });
-    }
-    
-    const prompt = `You are a friendly, encouraging fitness coach. Generate a personalized workout reminder notification for ${context.user.name}.
+    if (!context) return res.status(404).json({ message: 'User not found' });
 
-USER PROFILE:
-- Goals: ${context.user.goals}
-- Activity Level: ${context.user.activityLevel}
-- Workout Preferences: ${context.user.workoutPreferences.join(', ') || 'General fitness'}
-- Weight: ${context.user.weightKg} kg
-- Height: ${context.user.heightCm} cm
+    const prompt = `You are a friendly fitness coach. Generate a workout reminder for ${context.user.name}.
+USER: Goals=${context.user.goals}, Activity=${context.user.activityLevel}, Prefs=${context.user.workoutPreferences.join(', ') || 'General fitness'}
+TODAY: Calories=${context.today.calories}/${context.user.targetCalories}, Water=${context.today.water.toFixed(1)}L
+Return ONLY JSON: {"title":"max 50 chars","body":"max 100 chars"}`;
 
-TODAY'S PROGRESS:
-- Calories consumed: ${context.today.calories} / ${context.user.targetCalories} kcal
-- Water: ${context.today.water.toFixed(1)}L
-- Meals: ${context.today.meals}
-
-RECENT ACTIVITY:
-${context.recentMeals.length > 0 ? `Recent meals logged: ${context.recentMeals.length}` : 'No recent meals logged'}
-
-Generate a short, encouraging notification (max 100 characters for body) that:
-1. Reminds them it's workout time
-2. Is personalized based on their goals and workout preferences
-3. Is friendly and motivating
-4. May suggest a specific type of workout from their preferences
-
-Return ONLY a JSON object with "title" (max 50 chars) and "body" (max 100 chars) fields. No markdown, no explanations.`;
-
-    console.log(`🤖 Making OpenAI API request for workout reminder (user: ${userId})...`);
     const completion = await openai.chat.completions.create({
       model: 'gpt-4o',
       messages: [
-        {
-          role: 'system',
-          content: 'You are a friendly fitness coach. Return ONLY valid JSON with "title" and "body" fields. No markdown, no explanations.'
-        },
-        {
-          role: 'user',
-          content: prompt
-        }
+        { role: 'system', content: 'Return ONLY valid JSON with "title" and "body". No markdown.' },
+        { role: 'user', content: prompt }
       ],
       max_tokens: 200,
       temperature: 0.7
     });
-    
-    const content = completion.choices[0]?.message?.content || '';
-    console.log(`✅ OpenAI workout reminder response received: ${content.length} characters`);
-    
+
     let jsonContent;
-    
     try {
-      let jsonString = content.trim().replace(/^```json\s*/i, '').replace(/^```\s*/i, '').replace(/\s*```$/i, '');
-      jsonContent = JSON.parse(jsonString);
-    } catch (parseError) {
-      jsonContent = {
-        title: "Workout Time! 💪",
-        body: "Time for your workout! Your body will thank you for staying active."
-      };
+      const raw = completion.choices[0]?.message?.content?.trim()
+        .replace(/^```json\s*/i, '').replace(/^```\s*/i, '').replace(/\s*```$/i, '');
+      jsonContent = JSON.parse(raw);
+    } catch (_) {
+      jsonContent = { title: "Workout Time! 💪", body: "Time for your workout!" };
     }
-    
+
     res.json({
       title: jsonContent.title || "Workout Time! 💪",
-      body: jsonContent.body || "Time for your workout! Let's get moving!"
+      body: jsonContent.body || "Time for your workout!"
     });
   } catch (error) {
     console.error('Error generating workout reminder:', error);

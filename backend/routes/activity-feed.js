@@ -19,7 +19,7 @@ const logger = console;
  * GET /api/activity-feed?limit=20&skip=0
  */
 router.get('/', authenticateToken, async (req, res) => {
-  const { userId } = req.user;
+  const userId = req.user._id.toString();
   const { limit = 20, skip = 0 } = req.query;
 
   try {
@@ -39,7 +39,7 @@ router.get('/', authenticateToken, async (req, res) => {
     const activities = await SharedActivity.find({
       userId: { $in: friendIds }
     })
-    .populate('userId', 'name profileImageUrl')
+    .populate('userId', 'name profilePictureURL')
     .sort({ createdAt: -1 })
     .skip(parseInt(skip))
     .limit(parseInt(limit));
@@ -49,7 +49,7 @@ router.get('/', authenticateToken, async (req, res) => {
         id: activity._id.toString(),
         userId: activity.userId._id.toString(),
         userName: activity.userId.name,
-        userImage: activity.userId.profileImageUrl || null,
+        userImage: activity.userId.profilePictureURL || null,
         activityType: activity.activityType,
         title: activity.title,
         description: activity.description,
@@ -72,7 +72,7 @@ router.get('/', authenticateToken, async (req, res) => {
  * POST /api/activity-feed/share/workout/:workoutId
  */
 router.post('/share/workout/:workoutId', authenticateToken, async (req, res) => {
-  const { userId } = req.user;
+  const userId = req.user._id.toString();
   const { workoutId } = req.params;
   const { title, description } = req.body;
 
@@ -142,7 +142,7 @@ router.post('/share/workout/:workoutId', authenticateToken, async (req, res) => 
  * POST /api/activity-feed/share/meal/:mealId
  */
 router.post('/share/meal/:mealId', authenticateToken, async (req, res) => {
-  const { userId } = req.user;
+  const userId = req.user._id.toString();
   const { mealId } = req.params;
   const { title, description } = req.body;
 
@@ -214,7 +214,7 @@ router.post('/share/meal/:mealId', authenticateToken, async (req, res) => {
  * POST /api/activity-feed/:activityId/react
  */
 router.post('/:activityId/react', authenticateToken, async (req, res) => {
-  const { userId } = req.user;
+  const userId = req.user._id.toString();
   const { activityId } = req.params;
   const { reaction } = req.body; // 'fire', 'love', 'wow', 'like', 'rocket'
 
@@ -262,7 +262,7 @@ router.post('/:activityId/react', authenticateToken, async (req, res) => {
  * POST /api/activity-feed/:activityId/view
  */
 router.post('/:activityId/view', authenticateToken, async (req, res) => {
-  const { userId } = req.user;
+  const userId = req.user._id.toString();
   const { activityId } = req.params;
 
   try {

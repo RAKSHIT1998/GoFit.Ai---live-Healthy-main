@@ -1,5 +1,8 @@
 import express from 'express';
-import pool from '../config/database.js';
+import Challenge from '../models/Challenge.js';
+import Notification from '../models/Notification.js';
+import User from '../models/User.js';
+import { GamificationPoints } from '../models/Gamification.js';
 import { authenticateToken } from '../middleware/authMiddleware.js';
 import { wsService } from '../services/websocketService.js';
 
@@ -12,95 +15,100 @@ const router = express.Router();
 router.post('/create', authenticateToken, async (req, res) => {
   try {
     const { name, description, challengeType, metric, targetValue, duration, isGroupChallenge, invitedUsers } = req.body;
-    const userId = req.user.id;
+    const userId = req.user._id;
 
     if (!name || !challengeType || !metric || !targetValue || !duration) {
       return res.status(400).json({ message: 'Missing required fields' });
     }
 
-    const validTypes = ['personal', 'group'];
-    if (!validTypes.includes(challengeType)) {
-      return res.status(400).json({ message: 'Invalid challenge type' });
-    }
+    // Map challengeType to schema enum
+    const typeMap = {
+      'personal': 'custom',
+      'group': 'custom',
+      'weight_loss': 'weight_loss',
+      'muscle_gain': 'muscle_gain',
+      'strength': 'strength',
+      'endurance': 'endurance',
+      'nutrition': 'nutrition',
+      'consistency': 'consistency',
+      'custom': 'custom'
+    };
 
     const startDate = new Date();
     const endDate = new Date(startDate.getTime() + duration * 24 * 60 * 60 * 1000);
 
-    const result = await pool.query(
-      `INSERT INTO challenges (creator_id, name, description, challenge_type, metric, target_value, start_date, end_date, is_active, created_at)
-       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, true, NOW())
-       RETURNING *`,
-      [userId, name, description, challengeType, metric, targetValue, startDate, endDate]
-    );
+    const challenge = new Challenge({
+      userId,
+      name,
+      description: description || '',
+      type: typeMap[challengeType] || 'custom',
+      target: {
+        metric,
+        targetValue,
+        currentValue: 0,
+        unit: metric === 'weight' ? 'kg' : metric === 'calories' ? 'kcal' : 'count'
+      },
+      startDate,
+      endDate,
+      status: 'active',
+      isPublic: isGroupChallenge || false
+    });
 
-    const challenge = result.rows[0];
-
-    // Add creator as first participant
-    await pool.query(
-      'INSERT INTO challenge_participants (challenge_id, user_id, current_score, rank, joined_at) VALUES ($1, $2, 0, 1, NOW())',
-      [challenge.id, userId]
-    );
-
-    // Invite users if group challenge
-    if (isGroupChallenge && invitedUsers && invitedUsers.length > 0) {
-      // Get creator info for WebSocket notification
-      const creatorInfo = await pool.query(
-        'SELECT id, username, full_name FROM users WHERE id = $1',
-        [userId]
-      );
-      
-      for (const invitedUserId of invitedUsers) {
-        await pool.query(
-          'INSERT INTO challenge_invitations (challenge_id, invited_user_id, invited_by, status) VALUES ($1, $2, $3, $4)',
-          [challenge.id, invitedUserId, userId, 'pending']
-        );
-
-        // Create notification
-        await pool.query(
-          `INSERT INTO social_notifications (recipient_id, type, title, message, related_user_id, challenge_id, ai_generated)
-           VALUES ($1, $2, $3, $4, $5, $6, false)`,
-          [invitedUserId, 'challenge_invite', 'Challenge Invitation', `${req.user.username} invited you to "${name}"`, userId, challenge.id]
-        );
-        
-        // 🔥 Emit real-time WebSocket notification
-        if (creatorInfo.rows.length > 0) {
-          wsService.emitChallengeInvitation(invitedUserId, {
-            challengeId: challenge.id,
-            from: {
-              id: creatorInfo.rows[0].id,
-              username: creatorInfo.rows[0].username,
-              fullName: creatorInfo.rows[0].full_name
-            },
-            details: {
-              name: name,
-              description: description || '',
-              metric: metric,
-              targetValue: targetValue,
-              duration: duration
-            },
-            message: `${creatorInfo.rows[0].full_name || creatorInfo.rows[0].username} invited you to: ${name}`
-          });
-        }
-      }
-    }
+    await challenge.save();
 
     // Award points for creating challenge
-    await pool.query(
-      'INSERT INTO gamification_points (user_id, action_type, points, created_at) VALUES ($1, $2, $3, NOW())',
-      [userId, 'create_challenge', 25]
-    );
+    await GamificationPoints.create({
+      userId,
+      actionType: 'create_challenge',
+      points: 25
+    });
+
+    // If group challenge, notify invited users
+    if (isGroupChallenge && invitedUsers && invitedUsers.length > 0) {
+      const creator = await User.findById(userId).select('name');
+
+      for (const invitedUserId of invitedUsers) {
+        // Create notification
+        await Notification.create({
+          recipientId: invitedUserId,
+          type: 'challenge_invite',
+          title: 'Challenge Invitation',
+          message: `${creator.name} invited you to "${name}"`,
+          relatedUserId: userId,
+          challengeId: challenge._id
+        });
+
+        // Emit real-time WebSocket notification
+        wsService.emitChallengeInvitation(invitedUserId, {
+          challengeId: challenge._id.toString(),
+          from: {
+            id: userId.toString(),
+            username: creator.name,
+            fullName: creator.name
+          },
+          details: {
+            name,
+            description: description || '',
+            metric,
+            targetValue,
+            duration
+          },
+          message: `${creator.name} invited you to: ${name}`
+        });
+      }
+    }
 
     res.json({
       message: 'Challenge created successfully',
       challenge: {
-        id: challenge.id,
+        id: challenge._id.toString(),
         name,
         challengeType,
         metric,
         targetValue,
         startDate,
         endDate,
-        participantCount: 1
+        status: 'active'
       }
     });
   } catch (error) {
@@ -115,40 +123,45 @@ router.post('/create', authenticateToken, async (req, res) => {
  */
 router.get('/', authenticateToken, async (req, res) => {
   try {
-    const userId = req.user.id;
+    const userId = req.user._id;
     const { type, status = 'active', limit = 20, offset = 0 } = req.query;
 
-    let query = `
-      SELECT 
-        c.*, 
-        COUNT(DISTINCT cp.user_id) as participant_count,
-        CASE WHEN cp.user_id = $1 THEN true ELSE false END as user_joined
-      FROM challenges c
-      LEFT JOIN challenge_participants cp ON c.id = cp.challenge_id
-      WHERE 1=1
-    `;
-
-    const params = [userId];
+    const query = { userId };
 
     if (status === 'active') {
-      query += ` AND c.is_active = true AND c.end_date > NOW()`;
+      query.status = 'active';
+      query.endDate = { $gt: new Date() };
     } else if (status === 'completed') {
-      query += ` AND c.is_active = false OR c.end_date <= NOW()`;
+      query.$or = [
+        { status: 'completed' },
+        { endDate: { $lte: new Date() } }
+      ];
     }
 
     if (type) {
-      query += ` AND c.challenge_type = $${params.length + 1}`;
-      params.push(type);
+      query.type = type;
     }
 
-    query += ` GROUP BY c.id ORDER BY c.created_at DESC LIMIT $${params.length + 1} OFFSET $${params.length + 2}`;
-    params.push(limit, offset);
-
-    const result = await pool.query(query, params);
+    const challenges = await Challenge.find(query)
+      .sort({ createdAt: -1 })
+      .skip(parseInt(offset))
+      .limit(parseInt(limit));
 
     res.json({
-      challenges: result.rows,
-      count: result.rows.length
+      challenges: challenges.map(c => ({
+        id: c._id.toString(),
+        name: c.name,
+        description: c.description,
+        type: c.type,
+        target: c.target,
+        startDate: c.startDate,
+        endDate: c.endDate,
+        status: c.status,
+        progress: c.progress,
+        milestones: c.milestones,
+        isPublic: c.isPublic
+      })),
+      count: challenges.length
     });
   } catch (error) {
     console.error('Get challenges error:', error);
@@ -157,160 +170,142 @@ router.get('/', authenticateToken, async (req, res) => {
 });
 
 /**
- * Join a challenge
- * POST /api/challenges/:challengeId/join
+ * Get a single challenge
+ * GET /api/challenges/:challengeId
  */
-router.post('/:challengeId/join', authenticateToken, async (req, res) => {
+router.get('/:challengeId', authenticateToken, async (req, res) => {
   try {
     const { challengeId } = req.params;
-    const userId = req.user.id;
 
-    // Check if challenge exists and is active
-    const challengeResult = await pool.query(
-      'SELECT * FROM challenges WHERE id = $1 AND is_active = true AND end_date > NOW()',
-      [challengeId]
-    );
+    const challenge = await Challenge.findById(challengeId);
 
-    if (challengeResult.rows.length === 0) {
-      return res.status(404).json({ message: 'Challenge not found or inactive' });
+    if (!challenge) {
+      return res.status(404).json({ message: 'Challenge not found' });
     }
 
-    // Check if already joined
-    const joinedResult = await pool.query(
-      'SELECT * FROM challenge_participants WHERE challenge_id = $1 AND user_id = $2',
-      [challengeId, userId]
-    );
-
-    if (joinedResult.rows.length > 0) {
-      return res.status(400).json({ message: 'Already joined this challenge' });
-    }
-
-    // Add user as participant
-    await pool.query(
-      'INSERT INTO challenge_participants (challenge_id, user_id, current_score, joined_at) VALUES ($1, $2, 0, NOW())',
-      [challengeId, userId]
-    );
-
-    // Award points
-    await pool.query(
-      'INSERT INTO gamification_points (user_id, action_type, points, created_at) VALUES ($1, $2, $3, NOW())',
-      [userId, 'join_challenge', 10]
-    );
-
-    res.json({ message: 'Successfully joined challenge' });
+    res.json({ challenge });
   } catch (error) {
-    console.error('Join challenge error:', error);
-    res.status(500).json({ message: 'Error joining challenge' });
+    console.error('Get challenge error:', error);
+    res.status(500).json({ message: 'Error fetching challenge' });
   }
 });
 
 /**
- * Get challenge leaderboard
- * GET /api/challenges/:challengeId/leaderboard
- */
-router.get('/:challengeId/leaderboard', authenticateToken, async (req, res) => {
-  try {
-    const { challengeId } = req.params;
-
-    const result = await pool.query(
-      `SELECT 
-        cp.user_id, users.username, users.email, cp.current_score, cp.rank, cp.joined_at
-      FROM challenge_participants cp
-      JOIN users ON cp.user_id = users.id
-      WHERE cp.challenge_id = $1
-      ORDER BY cp.current_score DESC, cp.joined_at ASC`,
-      [challengeId]
-    );
-
-    res.json({
-      leaderboard: result.rows
-    });
-  } catch (error) {
-    console.error('Get leaderboard error:', error);
-    res.status(500).json({ message: 'Error fetching leaderboard' });
-  }
-});
-
-/**
- * Update challenge score
+ * Update challenge score / progress
  * POST /api/challenges/:challengeId/score
  */
 router.post('/:challengeId/score', authenticateToken, async (req, res) => {
   try {
     const { challengeId } = req.params;
-    const { scoreValue } = req.body;
-    const userId = req.user.id;
+    const { scoreValue, notes } = req.body;
+    const userId = req.user._id;
 
     if (!scoreValue || scoreValue <= 0) {
       return res.status(400).json({ message: 'Invalid score value' });
     }
 
-    // Get challenge info
-    const challengeResult = await pool.query(
-      'SELECT metric FROM challenges WHERE id = $1',
-      [challengeId]
-    );
+    const challenge = await Challenge.findOne({ _id: challengeId, userId });
 
-    if (challengeResult.rows.length === 0) {
+    if (!challenge) {
       return res.status(404).json({ message: 'Challenge not found' });
     }
 
-    // Update participant score
-    const updateResult = await pool.query(
-      `UPDATE challenge_participants 
-       SET current_score = current_score + $1, updated_at = NOW()
-       WHERE challenge_id = $2 AND user_id = $3
-       RETURNING current_score`,
-      [scoreValue, challengeId, userId]
-    );
+    // Update current value
+    challenge.target.currentValue = (challenge.target.currentValue || 0) + scoreValue;
 
-    if (updateResult.rows.length === 0) {
-      return res.status(404).json({ message: 'Not a participant in this challenge' });
+    // Add to progress log
+    challenge.progress.push({
+      date: new Date(),
+      value: scoreValue,
+      notes: notes || ''
+    });
+
+    // Check milestones
+    for (const milestone of challenge.milestones) {
+      if (!milestone.achieved && challenge.target.currentValue >= milestone.targetValue) {
+        milestone.achieved = true;
+        milestone.achievedDate = new Date();
+      }
     }
 
-    // Update ranks
-    await pool.query(
-      `UPDATE challenge_participants 
-       SET rank = (SELECT COUNT(*) + 1 FROM challenge_participants cp2 
-                   WHERE cp2.challenge_id = $1 AND cp2.current_score > challenge_participants.current_score)
-       WHERE challenge_id = $1`,
-      [challengeId]
-    );
-    
-    // 🔥 Emit real-time WebSocket update to all challenge participants
-    const participantsResult = await pool.query(
-      'SELECT user_id FROM challenge_participants WHERE challenge_id = $1 AND user_id != $2',
-      [challengeId, userId]
-    );
-    
-    if (participantsResult.rows.length > 0) {
-      // Get updated user info
-      const userInfo = await pool.query(
-        'SELECT username, full_name FROM users WHERE id = $1',
-        [userId]
-      );
-      
-      // Broadcast to all participants
-      wsService.emitToChallenge(challengeId, {
-        type: 'score_update',
-        userId: userId,
-        username: userInfo.rows[0]?.username,
-        newScore: updateResult.rows[0].current_score,
-        scoreAdded: scoreValue
+    // Check if challenge is complete
+    if (challenge.target.currentValue >= challenge.target.targetValue) {
+      challenge.status = 'completed';
+
+      // Award completion points
+      await GamificationPoints.create({
+        userId,
+        actionType: 'complete_challenge',
+        points: 50
       });
     }
 
+    await challenge.save();
+
     res.json({
       message: 'Score updated',
-      newScore: updateResult.rows[0].current_score
+      currentValue: challenge.target.currentValue,
+      targetValue: challenge.target.targetValue,
+      status: challenge.status
     });
   } catch (error) {
-    console.error('Update score error:', error);
+    console.error('Update challenge score error:', error);
     res.status(500).json({ message: 'Error updating score' });
   }
 });
 
+/**
+ * Pause/resume a challenge
+ * PUT /api/challenges/:challengeId/status
+ */
+router.put('/:challengeId/status', authenticateToken, async (req, res) => {
+  try {
+    const { challengeId } = req.params;
+    const { status } = req.body;
+    const userId = req.user._id;
+
+    const validStatuses = ['active', 'paused', 'cancelled'];
+    if (!validStatuses.includes(status)) {
+      return res.status(400).json({ message: 'Invalid status' });
+    }
+
+    const challenge = await Challenge.findOneAndUpdate(
+      { _id: challengeId, userId },
+      { status },
+      { new: true }
+    );
+
+    if (!challenge) {
+      return res.status(404).json({ message: 'Challenge not found' });
+    }
+
+    res.json({ message: `Challenge ${status}`, challenge });
+  } catch (error) {
+    console.error('Update challenge status error:', error);
+    res.status(500).json({ message: 'Error updating challenge status' });
+  }
+});
+
+/**
+ * Delete a challenge
+ * DELETE /api/challenges/:challengeId
+ */
+router.delete('/:challengeId', authenticateToken, async (req, res) => {
+  try {
+    const { challengeId } = req.params;
+    const userId = req.user._id;
+
+    const result = await Challenge.findOneAndDelete({ _id: challengeId, userId });
+
+    if (!result) {
+      return res.status(404).json({ message: 'Challenge not found' });
+    }
+
+    res.json({ message: 'Challenge deleted' });
+  } catch (error) {
+    console.error('Delete challenge error:', error);
+    res.status(500).json({ message: 'Error deleting challenge' });
+  }
+});
+
 export default router;
-
-
-
