@@ -454,9 +454,13 @@ router.get('/stats/:friendId', authenticateToken, async (req, res) => {
             return res.status(404).json({ error: 'Friend not found' });
         }
         
+        const metrics = friend.metrics || {};
         const stats = {
-            metrics: friend.metrics || {},
-            subscription: friend.subscription || {}
+            totalMealsLogged: metrics.totalMealsLogged || 0,
+            totalWorkoutsCompleted: metrics.totalWorkoutsCompleted || 0,
+            totalCaloriesBurned: metrics.totalCaloriesBurned || 0,
+            lastMealLogged: metrics.lastMealLogged || null,
+            lastWorkoutCompleted: metrics.lastWorkoutCompleted || null
         };
         
         res.status(200).json({ stats });

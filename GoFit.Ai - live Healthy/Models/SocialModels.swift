@@ -105,9 +105,9 @@ struct SearchResult: Codable, Identifiable {
         case id
         case username
         case email
-        case fullName = "full_name"
-        case profileImageUrl = "profile_image_url"
-        case friendStatus = "friend_status"
+        case fullName
+        case profileImageUrl
+        case friendStatus
     }
 }
 
@@ -122,14 +122,6 @@ struct FriendStats: Codable {
     let totalCaloriesBurned: Int
     let lastMealLogged: Date?
     let lastWorkoutCompleted: Date?
-    
-    enum CodingKeys: String, CodingKey {
-        case totalMealsLogged = "total_meals_logged"
-        case totalWorkoutsCompleted = "total_workouts_completed"
-        case totalCaloriesBurned = "total_calories_burned"
-        case lastMealLogged = "last_meal_logged"
-        case lastWorkoutCompleted = "last_workout_completed"
-    }
 }
 
 struct FriendStatsResponse: Codable {
@@ -380,14 +372,14 @@ struct ShareActivityResponse: Codable {
 // MARK: - Phase 2: Log Sharing Models (Additional)
 
 struct SharedActivityLog: Identifiable, Codable {
-    let id: Int
-    let userId: Int
+    let id: String
+    let userId: String
     let username: String?
     let type: String // meal, workout
     let title: String?
     let description: String?
     let visibility: String // private, friends_only, public
-    let sharedWith: [Int]? // Array of user IDs
+    let sharedWith: [String]? // Array of user IDs
     let createdAt: String
     let updatedAt: String?
 
@@ -400,7 +392,7 @@ struct SharedActivityLog: Identifiable, Codable {
 }
 
 struct ActivityFeed: Identifiable, Codable {
-    let id: Int
+    let id: String
     let activity: SharedActivityLog
     let friendUsername: String
     let timestamp: String

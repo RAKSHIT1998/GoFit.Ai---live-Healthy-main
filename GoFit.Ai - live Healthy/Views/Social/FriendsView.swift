@@ -117,6 +117,11 @@ struct FriendsView: View {
                                         friendsService.fetchFriendRequests { _ in }
                                         friendsService.fetchFriends { _ in }
                                     }
+                                },
+                                onDecline: { friendId in
+                                    friendsService.rejectFriendRequest(from: friendId) { _ in
+                                        friendsService.fetchFriendRequests { _ in }
+                                    }
                                 }
                             )
                             .onAppear {
@@ -313,6 +318,7 @@ struct FriendCardView: View {
 struct FriendRequestsView: View {
     let requests: [FriendRequest]
     let onAccept: (String) -> Void
+    let onDecline: (String) -> Void
     
     var body: some View {
         if requests.isEmpty {
@@ -339,7 +345,7 @@ struct FriendRequestsView: View {
         } else {
             VStack(spacing: Design.Spacing.md) {
                 ForEach(requests, id: \.id) { request in
-                    FriendRequestCardView(request: request, onAccept: { onAccept(request.requesterId) })
+                    FriendRequestCardView(request: request, onAccept: { onAccept(request.requesterId) }, onDecline: { onDecline(request.requesterId) })
                 }
             }
             .padding(.horizontal, Design.Spacing.md)
@@ -351,6 +357,7 @@ struct FriendRequestsView: View {
 struct FriendRequestCardView: View {
     let request: FriendRequest
     let onAccept: () -> Void
+    let onDecline: () -> Void
     @State private var showDeclineConfirm = false
     
     var body: some View {
@@ -421,7 +428,7 @@ struct FriendRequestCardView: View {
         .shadow(color: Color.black.opacity(0.05), radius: 8, x: 0, y: 2)
         .confirmationDialog("Decline Request", isPresented: $showDeclineConfirm) {
             Button("Cancel", role: .cancel) { }
-            Button("Decline", role: .destructive) { }
+            Button("Decline", role: .destructive) { onDecline() }
         } message: {
             Text("Are you sure you want to decline this friend request?")
         }

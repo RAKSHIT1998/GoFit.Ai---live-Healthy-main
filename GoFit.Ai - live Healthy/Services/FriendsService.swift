@@ -343,7 +343,7 @@ class FriendsService: NSObject, ObservableObject {
     
     /// Get friend statistics
     func getFriendStats(friendId: String, completion: @escaping (Result<FriendStats, Error>) -> Void) {
-        let endpoint = "\(baseURL)/api/friends/\(friendId)/stats"
+        let endpoint = "\(baseURL)/api/friends/stats/\(friendId)"
         
         guard let url = URL(string: endpoint) else {
             completion(.failure(NSError(domain: "Invalid URL", code: -1)))
@@ -353,7 +353,7 @@ class FriendsService: NSObject, ObservableObject {
         var request = URLRequest(url: url)
         request.httpMethod = "GET"
         
-        if let token = UserDefaults.standard.string(forKey: "authToken") {
+        if let token = AuthService.shared.readToken()?.accessToken, !token.isEmpty {
             request.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
         }
         
@@ -370,7 +370,9 @@ class FriendsService: NSObject, ObservableObject {
                 }
                 
                 do {
-                    let response = try JSONDecoder().decode(FriendStatsResponse.self, from: data)
+                    let decoder = JSONDecoder()
+                    decoder.dateDecodingStrategy = .iso8601
+                    let response = try decoder.decode(FriendStatsResponse.self, from: data)
                     completion(.success(response.stats))
                 } catch {
                     completion(.failure(error))

@@ -13,7 +13,7 @@ class LogSharingService: NSObject, ObservableObject {
 
     // MARK: - Share Log
 
-    func shareMealLog(mealId: Int, visibility: String, sharedWith: [Int]? = nil) async throws {
+    func shareMealLog(mealId: String, visibility: String, sharedWith: [String]? = nil) async throws {
         isLoading = true
         defer { isLoading = false }
 
@@ -43,7 +43,7 @@ class LogSharingService: NSObject, ObservableObject {
         print("✅ Meal shared successfully: \(result)")
     }
 
-    func shareWorkoutLog(workoutId: Int, visibility: String, sharedWith: [Int]? = nil) async throws {
+    func shareWorkoutLog(workoutId: String, visibility: String, sharedWith: [String]? = nil) async throws {
         isLoading = true
         defer { isLoading = false }
 
@@ -123,7 +123,7 @@ class LogSharingService: NSObject, ObservableObject {
 
     // MARK: - Update Visibility
 
-    func updateLogVisibility(logId: Int, visibility: String, sharedWith: [Int]? = nil) async throws {
+    func updateLogVisibility(logId: String, visibility: String, sharedWith: [String]? = nil) async throws {
         isLoading = true
         defer { isLoading = false }
 
@@ -151,7 +151,7 @@ class LogSharingService: NSObject, ObservableObject {
 
     // MARK: - Delete Log
 
-    func deleteSharedLog(logId: Int) async throws {
+    func deleteSharedLog(logId: String) async throws {
         isLoading = true
         defer { isLoading = false }
 

@@ -79,9 +79,13 @@ router.post('/:friendId', authenticateToken, async (req, res) => {
       message: 'Message sent',
       data: {
         id: newMessage._id.toString(),
+        senderId: newMessage.senderId._id.toString(),
+        senderName: newMessage.senderId.name,
+        senderImage: newMessage.senderId.profilePictureURL || null,
         conversationId,
         message: newMessage.message,
         messageType,
+        isRead: false,
         createdAt: newMessage.createdAt
       }
     });
