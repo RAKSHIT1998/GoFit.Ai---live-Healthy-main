@@ -28,9 +28,7 @@ import onboardingRoutes from './routes/onboarding.js';
 import notificationRoutes from './routes/notifications.js';
 import friendsRoutes from './routes/friends.js';
 import logsRoutes from './routes/logs.js';
-import gamificationRoutes from './routes/gamification.js';
 import messagesRoutes from './routes/messages.js';
-import activityFeedRoutes from './routes/activity-feed.js';
 
 dotenv.config();
 
@@ -238,9 +236,7 @@ app.use('/api/onboarding', onboardingRoutes);
 app.use('/api/notifications', notificationRoutes);
 app.use('/api/friends', friendsRoutes);
 app.use('/api/messages', messagesRoutes);
-app.use('/api/activity-feed', activityFeedRoutes);
 app.use('/api/logs', logsRoutes);
-app.use('/api/gamification', gamificationRoutes);
 
 // Error handling middleware
 app.use((err, req, res, next) => {
