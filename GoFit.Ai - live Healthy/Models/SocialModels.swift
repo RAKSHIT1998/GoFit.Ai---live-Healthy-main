@@ -116,31 +116,6 @@ struct SearchUsersResponse: Codable {
     let count: Int
 }
 
-// MARK: - Nearby People
-
-struct NearbyUser: Codable, Identifiable {
-    let id: String
-    let username: String
-    let fullName: String?
-    let profileImageUrl: String?
-    let friendStatus: String
-    let distanceMeters: Double
-
-    enum CodingKeys: String, CodingKey {
-        case id
-        case username
-        case fullName = "full_name"
-        case profileImageUrl = "profile_image_url"
-        case friendStatus = "friend_status"
-        case distanceMeters = "distance_meters"
-    }
-}
-
-struct NearbyUsersResponse: Codable {
-    let results: [NearbyUser]
-    let count: Int
-}
-
 struct FriendStats: Codable {
     let totalMealsLogged: Int
     let totalWorkoutsCompleted: Int
@@ -430,16 +405,6 @@ struct ActivityFeed: Identifiable, Codable {
     let friendUsername: String
     let timestamp: String
     let isOwnActivity: Bool
-}
-
-struct LogVisibilitySettings: Codable {
-    let visibility: String // private, friends_only, public
-    let sharedWith: [Int]? // Specific users to share with
-
-    enum CodingKeys: String, CodingKey {
-        case visibility
-        case sharedWith = "shared_with"
-    }
 }
 
 // MARK: - Phase 5: Gamification Models

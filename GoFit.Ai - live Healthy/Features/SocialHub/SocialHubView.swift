@@ -2,8 +2,7 @@
 //  SocialHubView.swift
 //  GoFit.Ai - live Healthy
 //
-//  Unified Social Hub combining Discover + Friends + AI Challenges
-//  into a single, polished tab experience.
+//  Social Hub: Friends + Chat + Daily Log Sharing + AI Challenges
 //
 
 import SwiftUI
@@ -11,25 +10,22 @@ import SwiftUI
 struct SocialHubView: View {
     @EnvironmentObject var auth: AuthViewModel
     @EnvironmentObject var purchases: PurchaseManager
-    @StateObject private var nearbyService = NearbyFitnessService.shared
     @ObservedObject private var friendsService = FriendsService.shared
     @StateObject private var aiChallenges = AIChallengeService.shared
     
-    @State private var selectedSection: SocialSection = .discover
+    @State private var selectedSection: SocialSection = .friends
     @State private var searchText = ""
     @State private var showError = false
     @State private var errorMessage = ""
     @State private var showPaywall = false
     
     enum SocialSection: String, CaseIterable {
-        case discover = "Discover"
         case friends = "Friends"
-        case aiChallenges = "AI Coach"
+        case aiChallenges = "AI Challenges"
         case chats = "Chats"
         
         var icon: String {
             switch self {
-            case .discover: return "sparkles"
             case .friends: return "person.2.fill"
             case .aiChallenges: return "brain.head.profile"
             case .chats: return "bubble.left.and.bubble.right.fill"
@@ -43,20 +39,13 @@ struct SocialHubView: View {
                 Design.Colors.background.ignoresSafeArea()
                 
                 VStack(spacing: 0) {
-                    // Top stats banner
                     socialStatsBanner
-                    
-                    // Section picker
                     sectionPicker
                     
                     Divider()
                         .padding(.top, 4)
                     
-                    // Content
                     TabView(selection: $selectedSection) {
-                        discoverSection
-                            .tag(SocialSection.discover)
-                        
                         friendsSection
                             .tag(SocialSection.friends)
                         
@@ -105,7 +94,6 @@ struct SocialHubView: View {
                 }
             }
             .onAppear {
-                nearbyService.startDiscovery()
                 friendsService.fetchFriends { _ in }
                 friendsService.fetchFriendRequests { _ in }
                 
@@ -131,34 +119,12 @@ struct SocialHubView: View {
     private var socialStatsBanner: some View {
         ScrollView(.horizontal, showsIndicators: false) {
             HStack(spacing: 12) {
-                StatChip(
-                    icon: "person.2.fill",
-                    value: "\(friendsService.friends.count)",
-                    label: "Friends",
-                    color: Design.Colors.primary
-                )
-                
-                StatChip(
-                    icon: "location.fill",
-                    value: "\(nearbyService.nearbyPeople.count)",
-                    label: "Nearby",
-                    color: .orange
-                )
-                
-                StatChip(
-                    icon: "bolt.fill",
-                    value: "\(nearbyService.activeChallenges.count)",
-                    label: "Challenges",
-                    color: .purple
-                )
+                StatChip(icon: "person.2.fill", value: "\(friendsService.friends.count)", label: "Friends", color: Design.Colors.primary)
+                StatChip(icon: "envelope.fill", value: "\(friendsService.friendRequests.count)", label: "Requests", color: .orange)
+                StatChip(icon: "bolt.fill", value: "\(aiChallenges.activeChallenges.count)", label: "Challenges", color: .purple)
                 
                 if purchases.isPremiumActive {
-                    StatChip(
-                        icon: "star.fill",
-                        value: "\(aiChallenges.totalXPEarned)",
-                        label: "AI XP",
-                        color: .yellow
-                    )
+                    StatChip(icon: "star.fill", value: "\(aiChallenges.totalXPEarned)", label: "AI XP", color: .yellow)
                 }
             }
             .padding(.horizontal, Design.Spacing.md)
@@ -183,14 +149,12 @@ struct SocialHubView: View {
                             Text(section.rawValue)
                                 .font(.subheadline.weight(.semibold))
                             
-                            // Premium badge on AI Coach
                             if section == .aiChallenges && !purchases.isPremiumActive {
                                 Image(systemName: "lock.fill")
                                     .font(.caption2)
                                     .foregroundColor(.yellow)
                             }
                             
-                            // Notification dot on Friends tab
                             if section == .friends && friendsService.friendRequests.count > 0 {
                                 Circle()
                                     .fill(Color.red)
@@ -209,114 +173,10 @@ struct SocialHubView: View {
         }
     }
     
-    // MARK: - Discover Section
-    private var discoverSection: some View {
-        ScrollView {
-            VStack(spacing: Design.Spacing.lg) {
-                // Swipe cards
-                if nearbyService.isLoading {
-                    VStack(spacing: 16) {
-                        ProgressView()
-                            .scaleEffect(1.5)
-                        Text("Finding fitness people near you...")
-                            .font(Design.Typography.body)
-                            .foregroundColor(.secondary)
-                    }
-                    .frame(maxWidth: .infinity)
-                    .padding(.top, 60)
-                } else if nearbyService.locationPermissionDenied {
-                    locationPermissionView
-                } else if nearbyService.matchQueue.isEmpty && nearbyService.nearbyPeople.isEmpty {
-                    emptyDiscoverView
-                } else {
-                    // Swipe cards at top
-                    if !nearbyService.matchQueue.isEmpty {
-                        VStack(alignment: .leading, spacing: Design.Spacing.sm) {
-                            HStack {
-                                Image(systemName: "sparkles")
-                                    .foregroundColor(Design.Colors.primary)
-                                Text("Swipe to Challenge")
-                                    .font(Design.Typography.headline)
-                                Spacer()
-                                Text("\(nearbyService.matchQueue.count) people")
-                                    .font(Design.Typography.caption)
-                                    .foregroundColor(.secondary)
-                            }
-                            .padding(.horizontal, Design.Spacing.md)
-                            
-                            ZStack {
-                                ForEach(Array(nearbyService.matchQueue.prefix(3).enumerated().reversed()), id: \.element.id) { index, person in
-                                    SwipeCard(person: person, isTopCard: index == 0) { action in
-                                        withAnimation(.spring(response: 0.4, dampingFraction: 0.7)) {
-                                            nearbyService.swipeAction(action, person: person)
-                                        }
-                                    }
-                                    .offset(y: CGFloat(index) * 8)
-                                    .scaleEffect(1.0 - CGFloat(index) * 0.03)
-                                    .zIndex(Double(3 - index))
-                                }
-                            }
-                            .frame(height: 520)
-                            .padding(.horizontal, Design.Spacing.md)
-                        }
-                    }
-                    
-                    // Nearby list below
-                    if !nearbyService.nearbyPeople.isEmpty {
-                        VStack(alignment: .leading, spacing: Design.Spacing.sm) {
-                            HStack {
-                                Image(systemName: "location.circle.fill")
-                                    .foregroundColor(.orange)
-                                Text("Nearby (\(nearbyService.nearbyPeople.count))")
-                                    .font(Design.Typography.headline)
-                                Spacer()
-                                Text("Within 20 km")
-                                    .font(Design.Typography.caption)
-                                    .foregroundColor(.secondary)
-                            }
-                            .padding(.horizontal, Design.Spacing.md)
-                            
-                            ForEach(nearbyService.nearbyPeople.prefix(5)) { person in
-                                NearbyPersonRow(person: person) {
-                                    nearbyService.sendChallenge(to: person, type: .steps)
-                                }
-                            }
-                            .padding(.horizontal, Design.Spacing.md)
-                        }
-                    }
-                    
-                    // Active challenges
-                    if !nearbyService.activeChallenges.isEmpty {
-                        VStack(alignment: .leading, spacing: Design.Spacing.sm) {
-                            HStack {
-                                Image(systemName: "trophy.fill")
-                                    .foregroundColor(.purple)
-                                Text("Active Challenges")
-                                    .font(Design.Typography.headline)
-                                Spacer()
-                                Text("\(nearbyService.activeChallenges.count)")
-                                    .font(Design.Typography.caption)
-                                    .foregroundColor(.secondary)
-                            }
-                            .padding(.horizontal, Design.Spacing.md)
-                            
-                            ForEach(nearbyService.activeChallenges) { challenge in
-                                ChallengeCard(challenge: challenge)
-                            }
-                            .padding(.horizontal, Design.Spacing.md)
-                        }
-                    }
-                }
-            }
-            .padding(.vertical, Design.Spacing.md)
-        }
-    }
-    
     // MARK: - Friends Section
     private var friendsSection: some View {
         ScrollView {
             VStack(spacing: Design.Spacing.lg) {
-                // Search bar
                 SearchBar(text: $searchText, placeholder: "Search by email, name, or username") { query in
                     guard !query.trimmingCharacters(in: .whitespaces).isEmpty else {
                         friendsService.searchResults = []
@@ -326,12 +186,10 @@ struct SocialHubView: View {
                 }
                 .padding(.horizontal, Design.Spacing.md)
                 
-                // Search results
                 if !searchText.isEmpty {
                     searchResultsView
                 }
                 
-                // Friend Requests
                 if !friendsService.friendRequests.isEmpty {
                     VStack(alignment: .leading, spacing: Design.Spacing.sm) {
                         HStack {
@@ -355,7 +213,6 @@ struct SocialHubView: View {
                     }
                 }
                 
-                // Friends List
                 VStack(alignment: .leading, spacing: Design.Spacing.sm) {
                     HStack {
                         Image(systemName: "person.2.fill")
@@ -444,10 +301,8 @@ struct SocialHubView: View {
         ScrollView {
             VStack(spacing: Design.Spacing.lg) {
                 if !purchases.isPremiumActive {
-                    // Premium upsell
                     aiPremiumUpsell
                 } else {
-                    // AI Header
                     aiChallengeHeader
                     
                     if aiChallenges.isGenerating {
@@ -467,20 +322,12 @@ struct SocialHubView: View {
                         VStack(spacing: 20) {
                             Image(systemName: "sparkles")
                                 .font(.system(size: 50))
-                                .foregroundStyle(
-                                    LinearGradient(
-                                        colors: [Design.Colors.primary, .purple],
-                                        startPoint: .topLeading,
-                                        endPoint: .bottomTrailing
-                                    )
-                                )
+                                .foregroundStyle(LinearGradient(colors: [Design.Colors.primary, .purple], startPoint: .topLeading, endPoint: .bottomTrailing))
                             Text("Ready to generate challenges!")
                                 .font(Design.Typography.headline)
                             
                             Button {
-                                Task {
-                                    await aiChallenges.generateChallenges(forceRefresh: true)
-                                }
+                                Task { await aiChallenges.generateChallenges(forceRefresh: true) }
                             } label: {
                                 HStack {
                                     Image(systemName: "brain.head.profile")
@@ -489,13 +336,7 @@ struct SocialHubView: View {
                                 .foregroundColor(.white)
                                 .padding(.horizontal, 24)
                                 .padding(.vertical, 14)
-                                .background(
-                                    LinearGradient(
-                                        colors: [Design.Colors.primary, .purple],
-                                        startPoint: .leading,
-                                        endPoint: .trailing
-                                    )
-                                )
+                                .background(LinearGradient(colors: [Design.Colors.primary, .purple], startPoint: .leading, endPoint: .trailing))
                                 .cornerRadius(16)
                             }
                             .buttonStyle(SmoothButtonStyle())
@@ -503,13 +344,11 @@ struct SocialHubView: View {
                         .frame(maxWidth: .infinity)
                         .padding(.top, 30)
                     } else {
-                        // Active AI challenges
                         ForEach(aiChallenges.activeChallenges) { challenge in
                             AIChallengeCard(challenge: challenge)
                         }
                         .padding(.horizontal, Design.Spacing.md)
                         
-                        // Completed challenges count
                         if !aiChallenges.completedChallenges.isEmpty {
                             VStack(alignment: .leading, spacing: Design.Spacing.sm) {
                                 HStack {
@@ -529,11 +368,8 @@ struct SocialHubView: View {
                             }
                         }
                         
-                        // Refresh button
                         Button {
-                            Task {
-                                await aiChallenges.generateChallenges(forceRefresh: true)
-                            }
+                            Task { await aiChallenges.generateChallenges(forceRefresh: true) }
                         } label: {
                             HStack {
                                 Image(systemName: "arrow.clockwise")
@@ -559,17 +395,9 @@ struct SocialHubView: View {
     private var aiChallengeHeader: some View {
         VStack(spacing: Design.Spacing.md) {
             HStack(spacing: 16) {
-                // XP Circle
                 ZStack {
                     Circle()
-                        .stroke(
-                            LinearGradient(
-                                colors: [Design.Colors.primary, .purple],
-                                startPoint: .topLeading,
-                                endPoint: .bottomTrailing
-                            ),
-                            lineWidth: 3
-                        )
+                        .stroke(LinearGradient(colors: [Design.Colors.primary, .purple], startPoint: .topLeading, endPoint: .bottomTrailing), lineWidth: 3)
                         .frame(width: 60, height: 60)
                     
                     VStack(spacing: 0) {
@@ -584,7 +412,7 @@ struct SocialHubView: View {
                 
                 VStack(alignment: .leading, spacing: 4) {
                     HStack(spacing: 6) {
-                        Text("AI Coach")
+                        Text("AI Challenges")
                             .font(Design.Typography.headline)
                         
                         Text("PRO")
@@ -592,13 +420,7 @@ struct SocialHubView: View {
                             .foregroundColor(.white)
                             .padding(.horizontal, 6)
                             .padding(.vertical, 2)
-                            .background(
-                                LinearGradient(
-                                    colors: [Design.Colors.primary, .purple],
-                                    startPoint: .leading,
-                                    endPoint: .trailing
-                                )
-                            )
+                            .background(LinearGradient(colors: [Design.Colors.primary, .purple], startPoint: .leading, endPoint: .trailing))
                             .cornerRadius(6)
                     }
                     
@@ -610,7 +432,7 @@ struct SocialHubView: View {
                 Spacer()
                 
                 VStack(spacing: 2) {
-                    Text("🔥 \(aiChallenges.challengeStreak)")
+                    Text("\u{1F525} \(aiChallenges.challengeStreak)")
                         .font(.headline)
                     Text("Streak")
                         .font(.caption2)
@@ -630,27 +452,14 @@ struct SocialHubView: View {
         VStack(spacing: 24) {
             Spacer().frame(height: 20)
             
-            // Animated brain icon
             ZStack {
                 Circle()
-                    .fill(
-                        LinearGradient(
-                            colors: [Design.Colors.primary.opacity(0.15), Color.purple.opacity(0.15)],
-                            startPoint: .topLeading,
-                            endPoint: .bottomTrailing
-                        )
-                    )
+                    .fill(LinearGradient(colors: [Design.Colors.primary.opacity(0.15), Color.purple.opacity(0.15)], startPoint: .topLeading, endPoint: .bottomTrailing))
                     .frame(width: 120, height: 120)
                 
                 Image(systemName: "brain.head.profile")
                     .font(.system(size: 50))
-                    .foregroundStyle(
-                        LinearGradient(
-                            colors: [Design.Colors.primary, .purple],
-                            startPoint: .topLeading,
-                            endPoint: .bottomTrailing
-                        )
-                    )
+                    .foregroundStyle(LinearGradient(colors: [Design.Colors.primary, .purple], startPoint: .topLeading, endPoint: .bottomTrailing))
             }
             
             VStack(spacing: 12) {
@@ -665,13 +474,12 @@ struct SocialHubView: View {
                     .padding(.horizontal, 30)
             }
             
-            // Features list
             VStack(alignment: .leading, spacing: 14) {
                 PremiumFeatureRow(icon: "chart.line.uptrend.xyaxis", text: "Adapts to your fitness level & habits", color: .green)
                 PremiumFeatureRow(icon: "target", text: "Personalized daily & weekly targets", color: .orange)
                 PremiumFeatureRow(icon: "star.fill", text: "Earn XP and unlock achievements", color: .yellow)
                 PremiumFeatureRow(icon: "brain", text: "AI learns from your progress", color: .purple)
-                PremiumFeatureRow(icon: "person.2.fill", text: "Social challenges with friends", color: .blue)
+                PremiumFeatureRow(icon: "person.2.fill", text: "Share challenges with friends", color: .blue)
             }
             .padding(.horizontal, 30)
             
@@ -680,19 +488,13 @@ struct SocialHubView: View {
             } label: {
                 HStack(spacing: 8) {
                     Image(systemName: "crown.fill")
-                    Text("Unlock AI Coach — Go Premium")
+                    Text("Unlock AI Challenges \u{2014} Go Premium")
                         .fontWeight(.bold)
                 }
                 .foregroundColor(.white)
                 .frame(maxWidth: .infinity)
                 .padding(.vertical, 16)
-                .background(
-                    LinearGradient(
-                        colors: [Design.Colors.primary, .purple],
-                        startPoint: .leading,
-                        endPoint: .trailing
-                    )
-                )
+                .background(LinearGradient(colors: [Design.Colors.primary, .purple], startPoint: .leading, endPoint: .trailing))
                 .cornerRadius(16)
                 .shadow(color: Design.Colors.primary.opacity(0.3), radius: 10, x: 0, y: 5)
             }
@@ -708,83 +510,12 @@ struct SocialHubView: View {
         ConversationsView()
     }
     
-    // MARK: - Empty/Permission Views
-    private var emptyDiscoverView: some View {
-        VStack(spacing: 20) {
-            Image(systemName: "figure.run.circle")
-                .font(.system(size: 70))
-                .foregroundStyle(
-                    LinearGradient(colors: [Design.Colors.primary, Design.Colors.accent], startPoint: .topLeading, endPoint: .bottomTrailing)
-                )
-            
-            Text("No one nearby... yet!")
-                .font(Design.Typography.title2)
-                .foregroundColor(.primary)
-            
-            Text("People within 20 km who use GoFit will show up here.")
-                .font(Design.Typography.body)
-                .foregroundColor(.secondary)
-                .multilineTextAlignment(.center)
-                .padding(.horizontal, 40)
-            
-            Button {
-                Task { await nearbyService.fetchNearbyPeople() }
-            } label: {
-                HStack {
-                    Image(systemName: "arrow.clockwise")
-                    Text("Refresh")
-                }
-                .foregroundColor(.white)
-                .padding(.horizontal, 24)
-                .padding(.vertical, 12)
-                .background(Design.Colors.primary)
-                .cornerRadius(Design.Radius.medium)
-            }
-            .buttonStyle(SmoothButtonStyle())
-        }
-        .frame(maxWidth: .infinity)
-        .padding(.top, 60)
-    }
-    
-    private var locationPermissionView: some View {
-        VStack(spacing: 20) {
-            Image(systemName: "location.slash.circle.fill")
-                .font(.system(size: 60))
-                .foregroundColor(.orange)
-            
-            Text("Location Access Needed")
-                .font(Design.Typography.title2)
-            
-            Text("Allow location access to discover fitness enthusiasts within 20 km.")
-                .font(Design.Typography.body)
-                .foregroundColor(.secondary)
-                .multilineTextAlignment(.center)
-                .padding(.horizontal, 40)
-            
-            Button {
-                if let url = URL(string: UIApplication.openSettingsURLString) {
-                    UIApplication.shared.open(url)
-                }
-            } label: {
-                Text("Open Settings")
-                    .foregroundColor(.white)
-                    .padding(.horizontal, 24)
-                    .padding(.vertical, 12)
-                    .background(Design.Colors.primary)
-                    .cornerRadius(Design.Radius.medium)
-            }
-            .buttonStyle(SmoothButtonStyle())
-        }
-        .frame(maxWidth: .infinity)
-        .padding(.top, 60)
-    }
-    
     // MARK: - Invite
     private var inviteShareText: String {
         let userId = auth.userId ?? ""
         let username = auth.name.isEmpty ? "a friend" : auth.name
         let deepLink = "gofitai://invite?from=\(userId)"
-        return "Hey! 💪 \(username) wants you to join GoFit.Ai — the AI-powered fitness app. Track meals, compete with friends, and crush your goals together!\n\nJoin here: \(deepLink)\n\nOr search for @\(auth.name) in the app!"
+        return "Hey! \u{1F4AA} \(username) wants you to join GoFit.Ai \u{2014} the AI-powered fitness app. Track meals, compete with friends, and crush your goals together!\n\nJoin here: \(deepLink)\n\nOr search for @\(auth.name) in the app!"
     }
 }
 
@@ -826,13 +557,7 @@ struct SearchResultRow: View {
     var body: some View {
         HStack(spacing: 12) {
             Circle()
-                .fill(
-                    LinearGradient(
-                        colors: [.blue.opacity(0.6), .purple.opacity(0.6)],
-                        startPoint: .topLeading,
-                        endPoint: .bottomTrailing
-                    )
-                )
+                .fill(LinearGradient(colors: [.blue.opacity(0.6), .purple.opacity(0.6)], startPoint: .topLeading, endPoint: .bottomTrailing))
                 .frame(width: 48, height: 48)
                 .overlay(
                     Text(String(result.username.prefix(1)).uppercased())
@@ -887,7 +612,6 @@ struct AIChallengeCard: View {
     var body: some View {
         VStack(spacing: Design.Spacing.md) {
             HStack(spacing: 12) {
-                // Icon
                 Text(challenge.icon)
                     .font(.title)
                     .frame(width: 50, height: 50)
@@ -901,7 +625,6 @@ struct AIChallengeCard: View {
                             .fontWeight(.bold)
                             .foregroundColor(.primary)
                         
-                        // Difficulty stars
                         HStack(spacing: 2) {
                             ForEach(0..<challenge.difficulty.stars, id: \.self) { _ in
                                 Image(systemName: "star.fill")
@@ -939,13 +662,11 @@ struct AIChallengeCard: View {
                 }
             }
             
-            // Description
             Text(challenge.description)
                 .font(Design.Typography.caption)
                 .foregroundColor(.secondary)
                 .lineLimit(2)
             
-            // Progress bar
             VStack(spacing: 6) {
                 GeometryReader { geo in
                     ZStack(alignment: .leading) {
@@ -954,13 +675,7 @@ struct AIChallengeCard: View {
                             .frame(height: 10)
                         
                         RoundedRectangle(cornerRadius: 6)
-                            .fill(
-                                LinearGradient(
-                                    colors: challenge.isCompleted ? [.green, .green] : [challenge.category.color, challenge.category.color.opacity(0.7)],
-                                    startPoint: .leading,
-                                    endPoint: .trailing
-                                )
-                            )
+                            .fill(LinearGradient(colors: challenge.isCompleted ? [.green, .green] : [challenge.category.color, challenge.category.color.opacity(0.7)], startPoint: .leading, endPoint: .trailing))
                             .frame(width: geo.size.width * challenge.progressPercent, height: 10)
                             .animation(.easeInOut(duration: 0.3), value: challenge.progressPercent)
                     }

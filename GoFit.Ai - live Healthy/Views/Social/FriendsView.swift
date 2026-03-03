@@ -1,5 +1,4 @@
 import SwiftUI
-import CoreLocation
 
 struct FriendsView: View {
     @ObservedObject private var friendsService = FriendsService.shared
@@ -73,7 +72,6 @@ struct FriendsView: View {
                     .padding(.horizontal, Design.Spacing.md)
                     .padding(.vertical, Design.Spacing.md)
                     
-                    // Tab Picker with modern style
                     ScrollView(.horizontal, showsIndicators: false) {
                         HStack(spacing: 8) {
                             ForEach([FriendsTab.friends, .requests, .search, .conversations], id: \.self) { tab in
@@ -102,7 +100,6 @@ struct FriendsView: View {
                 Divider()
                     .padding(.vertical, 8)
             
-                // Content based on selected tab
                 ScrollView {
                     VStack(spacing: 0) {
                         switch selectedTab {
@@ -196,12 +193,11 @@ struct FriendsView: View {
         let userId = auth.userId ?? ""
         let username = auth.name.isEmpty ? "a friend" : auth.name
         let deepLink = "gofitai://invite?from=\(userId)"
-        return "Hey! 💪 \(username) wants you to join GoFit.Ai — the AI-powered fitness app. Track meals, compete with friends, and crush your goals together!\n\nJoin here: \(deepLink)\n\nOr search for @\(auth.name) in the app!"
+        return "Hey! \u{1F4AA} \(username) wants you to join GoFit.Ai \u{2014} the AI-powered fitness app. Track meals, compete with friends, and crush your goals together!\n\nJoin here: \(deepLink)\n\nOr search for @\(auth.name) in the app!"
     }
-
 }
 
-// MARK: - Friends List View (Enhanced)
+// MARK: - Friends List View
 struct FriendsListView: View {
     let friends: [Friend]
     let currentUserId: String
@@ -248,18 +244,8 @@ struct FriendCardView: View {
     var body: some View {
         VStack(spacing: 12) {
             HStack(spacing: 12) {
-                // Avatar with gradient
                 Circle()
-                    .fill(
-                        LinearGradient(
-                            gradient: Gradient(colors: [
-                                Design.Colors.primary.opacity(0.7),
-                                Design.Colors.primary.opacity(0.4)
-                            ]),
-                            startPoint: .topLeading,
-                            endPoint: .bottomTrailing
-                        )
-                    )
+                    .fill(LinearGradient(gradient: Gradient(colors: [Design.Colors.primary.opacity(0.7), Design.Colors.primary.opacity(0.4)]), startPoint: .topLeading, endPoint: .bottomTrailing))
                     .frame(width: 56, height: 56)
                     .overlay(
                         Text(String(friend.username.prefix(1)).uppercased())
@@ -276,35 +262,18 @@ struct FriendCardView: View {
                     Text("@\(friend.username)")
                         .font(.caption)
                         .foregroundColor(.secondary)
-                    
-                    HStack(spacing: 12) {
-                        Label("5 workouts", systemImage: "figure.strengthtraining")
-                            .font(.caption2)
-                            .foregroundColor(.secondary)
-                        
-                        Label("8 day streak", systemImage: "flame.fill")
-                            .font(.caption2)
-                            .foregroundColor(.orange)
-                    }
                 }
                 
                 Spacer()
                 
-                VStack(alignment: .center, spacing: 8) {
-                    Image(systemName: "chevron.right")
-                        .foregroundColor(.secondary)
-                        .font(.caption)
-                    
-                    Image(systemName: "star.fill")
-                        .font(.caption)
-                        .foregroundColor(Design.Colors.primary)
-                }
+                Image(systemName: "chevron.right")
+                    .foregroundColor(.secondary)
+                    .font(.caption)
             }
             
             Divider()
                 .padding(.vertical, 4)
             
-            // Quick action buttons
             HStack(spacing: 12) {
                 Button(action: {}) {
                     HStack(spacing: 4) {
@@ -340,7 +309,7 @@ struct FriendCardView: View {
     }
 }
 
-// MARK: - Friend Requests View (Enhanced)
+// MARK: - Friend Requests View
 struct FriendRequestsView: View {
     let requests: [FriendRequest]
     let onAccept: (String) -> Void
@@ -388,16 +357,7 @@ struct FriendRequestCardView: View {
         VStack(spacing: 12) {
             HStack(spacing: 12) {
                 Circle()
-                    .fill(
-                        LinearGradient(
-                            gradient: Gradient(colors: [
-                                Color.orange.opacity(0.7),
-                                Color.yellow.opacity(0.5)
-                            ]),
-                            startPoint: .topLeading,
-                            endPoint: .bottomTrailing
-                        )
-                    )
+                    .fill(LinearGradient(gradient: Gradient(colors: [Color.orange.opacity(0.7), Color.yellow.opacity(0.5)]), startPoint: .topLeading, endPoint: .bottomTrailing))
                     .frame(width: 56, height: 56)
                     .overlay(
                         Text(String(request.requesterUsername.prefix(1)).uppercased())
@@ -481,7 +441,6 @@ struct SearchFriendsView: View {
             VStack(spacing: 12) {
                 SearchBar(text: $searchText, placeholder: "Search by email, name, or username", onSearch: onSearch)
                 
-                // Help text
                 if searchText.isEmpty {
                     HStack(spacing: 8) {
                         Image(systemName: "info.circle")
@@ -527,15 +486,8 @@ struct SearchFriendsView: View {
                 List {
                     ForEach(searchResults, id: \.id) { result in
                         HStack(spacing: 12) {
-                            // Avatar
                             Circle()
-                                .fill(
-                                    LinearGradient(
-                                        gradient: Gradient(colors: [.blue.opacity(0.6), .purple.opacity(0.6)]),
-                                        startPoint: .topLeading,
-                                        endPoint: .bottomTrailing
-                                    )
-                                )
+                                .fill(LinearGradient(gradient: Gradient(colors: [.blue.opacity(0.6), .purple.opacity(0.6)]), startPoint: .topLeading, endPoint: .bottomTrailing))
                                 .frame(width: 48, height: 48)
                                 .overlay(
                                     Text(String(result.username.prefix(1)).uppercased())
@@ -544,40 +496,16 @@ struct SearchFriendsView: View {
                                 )
                             
                             VStack(alignment: .leading, spacing: 6) {
-                                // Name
-                                HStack(spacing: 6) {
-                                    Text(result.fullName ?? result.username)
-                                        .font(.headline)
-                                    
-                                    // Badge showing match type
-                                    HStack(spacing: 2) {
-                                        Image(systemName: getMatchTypeIcon(for: result))
-                                            .font(.caption2)
-                                        Text(getMatchType(for: result))
-                                            .font(.caption2)
-                                    }
-                                    .padding(.horizontal, 6)
-                                    .padding(.vertical, 2)
-                                    .background(Color.blue.opacity(0.2))
-                                    .foregroundColor(.blue)
-                                    .cornerRadius(4)
-                                }
+                                Text(result.fullName ?? result.username)
+                                    .font(.headline)
                                 
-                                // Contact info
-                                VStack(alignment: .leading, spacing: 2) {
-                                    Text(result.email)
-                                        .font(.caption)
-                                        .foregroundColor(.secondary)
-                                    
-                                    Text("@\(result.username)")
-                                        .font(.caption2)
-                                        .foregroundColor(.secondary)
-                                }
+                                Text("@\(result.username)")
+                                    .font(.caption2)
+                                    .foregroundColor(.secondary)
                             }
                             
                             Spacer()
                             
-                            // Action button
                             if result.friendStatus == "friends" {
                                 Label("Friend", systemImage: "checkmark.circle.fill")
                                     .font(.caption)
@@ -602,19 +530,6 @@ struct SearchFriendsView: View {
             }
         }
     }
-    
-    // MARK: - Helper Methods
-    
-    private func getMatchType(for result: SearchResult) -> String {
-        // Determine what field was matched in the search
-        // This would ideally come from the backend, but we can infer from the search text
-        return "match"
-    }
-    
-    private func getMatchTypeIcon(for result: SearchResult) -> String {
-        // Return appropriate icon based on match type
-        return "checkmark.circle"
-    }
 }
 
 // MARK: - Friend Details View
@@ -628,7 +543,6 @@ struct FriendDetailsView: View {
     
     var body: some View {
         VStack(spacing: 20) {
-            // Profile Header
             VStack(spacing: 12) {
                 Circle()
                     .fill(Color.blue.opacity(0.3))
@@ -651,7 +565,6 @@ struct FriendDetailsView: View {
             .background(Color(.systemGray6))
             .cornerRadius(12)
             
-            // Stats
             if let stats = friendStats {
                 VStack(spacing: 12) {
                     StatRowItem(label: "Workouts", value: "\(stats.totalWorkoutsCompleted)")
@@ -763,393 +676,6 @@ struct SearchBar: View {
         .padding(8)
         .background(Color(.systemGray6))
         .cornerRadius(8)
-    }
-}
-
-// MARK: - Nearby People View
-struct NearbyPeopleView: View {
-    let nearbyUsers: [NearbyUser]
-    let isLoading: Bool
-    @Binding var optIn: Bool
-    @Binding var radiusKm: Double
-    @Binding var ageMin: Int
-    @Binding var ageMax: Int
-    @Binding var goal: String
-    let authorizationStatus: CLAuthorizationStatus
-    let onRequestPermission: () -> Void
-    let onRefresh: () -> Void
-    let onAddFriend: (String) -> Void
-
-    var body: some View {
-        VStack(spacing: 16) {
-            VStack(alignment: .leading, spacing: 12) {
-                Toggle(isOn: $optIn) {
-                    VStack(alignment: .leading) {
-                        Text("Nearby People")
-                            .font(Design.Typography.headline)
-                        Text("Show people near you for quick connections")
-                            .font(Design.Typography.caption)
-                            .foregroundColor(.secondary)
-                    }
-                }
-
-                if optIn {
-                    if authorizationStatus == .denied || authorizationStatus == .restricted {
-                        Button("Enable Location in Settings") {
-                            onRequestPermission()
-                        }
-                        .font(.caption)
-                    } else {
-                        HStack {
-                            Text("Radius: \(Int(radiusKm)) km")
-                                .font(.caption)
-                            Slider(value: $radiusKm, in: 1...20, step: 1) {
-                                Text("Radius")
-                            }
-                        }
-
-                        HStack(spacing: 12) {
-                            Stepper(value: $ageMin, in: 13...80) {
-                                Text("Min Age: \(ageMin)")
-                                    .font(.caption)
-                            }
-                            Stepper(value: $ageMax, in: ageMin...90) {
-                                Text("Max Age: \(ageMax)")
-                                    .font(.caption)
-                            }
-                        }
-
-                        Menu {
-                            Button("Any") { goal = "any" }
-                            Button("Lose") { goal = "lose" }
-                            Button("Maintain") { goal = "maintain" }
-                            Button("Gain") { goal = "gain" }
-                        } label: {
-                            HStack {
-                                Text("Goal: \(goal.capitalized)")
-                                    .font(.caption)
-                                Image(systemName: "chevron.down")
-                                    .font(.caption)
-                            }
-                        }
-
-                        Button("Refresh Nearby") {
-                            onRefresh()
-                        }
-                        .font(.caption)
-                    }
-                }
-            }
-            .padding()
-            .background(Design.Colors.cardBackground)
-            .cornerRadius(12)
-
-            if !optIn {
-                emptyState(title: "Nearby is off", subtitle: "Enable Nearby to discover people around you.")
-            } else if isLoading {
-                ProgressView()
-                    .padding(.top, 12)
-            } else if nearbyUsers.isEmpty {
-                emptyState(title: "No nearby users", subtitle: "Try increasing the radius or check back later.")
-            } else {
-                VStack(spacing: 12) {
-                    ForEach(nearbyUsers) { user in
-                        nearbyCard(user)
-                    }
-                }
-            }
-
-            Spacer()
-        }
-        .padding(.horizontal, Design.Spacing.md)
-    }
-
-    private func nearbyCard(_ user: NearbyUser) -> some View {
-        VStack(alignment: .leading, spacing: 8) {
-            HStack {
-                Circle()
-                    .fill(Design.Colors.primary.opacity(0.2))
-                    .frame(width: 44, height: 44)
-                    .overlay(
-                        Text(String(user.username.prefix(1)).uppercased())
-                            .foregroundColor(Design.Colors.primary)
-                            .font(.headline)
-                    )
-
-                VStack(alignment: .leading, spacing: 2) {
-                    Text(user.fullName ?? user.username)
-                        .font(Design.Typography.subheadline)
-                    Text(String(format: "%.1f km away", user.distanceMeters / 1000.0))
-                        .font(.caption)
-                        .foregroundColor(.secondary)
-                }
-
-                Spacer()
-
-                if user.friendStatus == "not_friends" {
-                    Button("Add") {
-                        onAddFriend(user.id)
-                    }
-                    .font(.caption)
-                    .padding(.horizontal, 12)
-                    .padding(.vertical, 6)
-                    .background(Design.Colors.primary)
-                    .foregroundColor(.white)
-                    .cornerRadius(8)
-                } else if user.friendStatus == "request_sent" {
-                    Text("Requested")
-                        .font(.caption)
-                        .foregroundColor(.secondary)
-                } else if user.friendStatus == "friends" {
-                    Text("Friends")
-                        .font(.caption)
-                        .foregroundColor(.secondary)
-                }
-            }
-        }
-        .padding(12)
-        .background(Design.Colors.cardBackground)
-        .cornerRadius(12)
-    }
-
-    private func emptyState(title: String, subtitle: String) -> some View {
-        VStack(spacing: 8) {
-            Image(systemName: "location.slash")
-                .font(.system(size: 48))
-                .foregroundColor(Design.Colors.primary.opacity(0.3))
-            Text(title)
-                .font(Design.Typography.headline)
-            Text(subtitle)
-                .font(Design.Typography.caption)
-                .foregroundColor(.secondary)
-                .multilineTextAlignment(.center)
-        }
-        .padding(.top, 20)
-    }
-}
-
-// MARK: - Activity Feed View (NEW)
-struct ActivityFeedView: View {
-    @State private var activities: [ActivityItem] = []
-    @State private var isLoading = true
-    
-    var body: some View {
-        VStack {
-            if isLoading {
-                VStack(spacing: 16) {
-                    ProgressView()
-                        .scaleEffect(1.2)
-                    Text("Loading your feed...")
-                        .font(Design.Typography.body)
-                        .foregroundColor(.secondary)
-                }
-                .frame(maxHeight: .infinity, alignment: .center)
-                .onAppear {
-                    loadActivities()
-                }
-            } else if activities.isEmpty {
-                VStack(spacing: 24) {
-                    Image(systemName: "bolt.slash")
-                        .font(.system(size: 64))
-                        .foregroundColor(Design.Colors.primary.opacity(0.3))
-                    
-                    VStack(spacing: 8) {
-                        Text("Your Feed is Empty")
-                            .font(Design.Typography.headline)
-                            .foregroundColor(.primary)
-                        
-                        Text("When your friends log workouts and meals, they'll show up here!")
-                            .font(Design.Typography.body)
-                            .foregroundColor(.secondary)
-                            .multilineTextAlignment(.center)
-                    }
-                    
-                    Spacer()
-                }
-                .frame(maxHeight: .infinity, alignment: .center)
-                .padding(.horizontal, Design.Spacing.lg)
-            } else {
-                VStack(spacing: Design.Spacing.md) {
-                    ForEach(activities) { activity in
-                        ActivityCardView(activity: activity)
-                    }
-                }
-                .padding(.horizontal, Design.Spacing.md)
-            }
-        }
-        .onAppear {
-            if isLoading {
-                loadActivities()
-            }
-        }
-    }
-    
-    private func loadActivities() {
-        // Mock data for activity feed
-        DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
-            activities = [
-                ActivityItem(
-                    id: "1",
-                    userName: "Sarah Johnson",
-                    userInitial: "S",
-                    activityType: "workout",
-                    title: "Morning HIIT Session",
-                    description: "Completed 45-minute high intensity workout",
-                    details: "350 calories burned • Upper body focused",
-                    timestamp: "2 minutes ago",
-                    reactions: ["🔥", "💪", "🔥"]
-                ),
-                ActivityItem(
-                    id: "2",
-                    userName: "Mike Chen",
-                    userInitial: "M",
-                    activityType: "meal",
-                    title: "Protein Power Bowl",
-                    description: "Logged healthy breakfast",
-                    details: "520 calories • 45g protein • 35g carbs",
-                    timestamp: "15 minutes ago",
-                    reactions: ["❤️", "😋"]
-                ),
-                ActivityItem(
-                    id: "3",
-                    userName: "Emma Davis",
-                    userInitial: "E",
-                    activityType: "achievement",
-                    title: "7-Day Streak! 🎉",
-                    description: "Maintained 7 consecutive days of workouts",
-                    details: "Keep it up! You're crushing your goals!",
-                    timestamp: "1 hour ago",
-                    reactions: ["🔥", "💪", "🎉", "❤️"]
-                )
-            ]
-            isLoading = false
-        }
-    }
-}
-
-// MARK: - Activity Card View
-struct ActivityCardView: View {
-    let activity: ActivityItem
-    @State private var reactionSelection: String?
-    
-    var body: some View {
-        VStack(spacing: 12) {
-            HStack(spacing: 12) {
-                Circle()
-                    .fill(
-                        LinearGradient(
-                            gradient: Gradient(colors: [
-                                Design.Colors.primary.opacity(0.7),
-                                Design.Colors.primary.opacity(0.4)
-                            ]),
-                            startPoint: .topLeading,
-                            endPoint: .bottomTrailing
-                        )
-                    )
-                    .frame(width: 48, height: 48)
-                    .overlay(
-                        Text(activity.userInitial)
-                            .font(.headline)
-                            .fontWeight(.semibold)
-                            .foregroundColor(.white)
-                    )
-                
-                VStack(alignment: .leading, spacing: 4) {
-                    Text(activity.userName)
-                        .font(Design.Typography.subheadline)
-                        .fontWeight(.semibold)
-                        .foregroundColor(.primary)
-                    
-                    Text(activity.timestamp)
-                        .font(.caption2)
-                        .foregroundColor(.secondary)
-                }
-                
-                Spacer()
-                
-                Image(systemName: activity.activityTypeIcon)
-                    .font(.headline)
-                    .foregroundColor(activity.activityTypeColor)
-            }
-            
-            VStack(alignment: .leading, spacing: 6) {
-                Text(activity.title)
-                    .font(Design.Typography.subheadline)
-                    .fontWeight(.semibold)
-                    .foregroundColor(.primary)
-                
-                Text(activity.description)
-                    .font(.caption)
-                    .foregroundColor(.secondary)
-                
-                Text(activity.details)
-                    .font(.caption2)
-                    .foregroundColor(.secondary)
-                    .italic()
-            }
-            
-            Divider()
-                .padding(.vertical, 4)
-            
-            // Reactions and action buttons
-            HStack(spacing: 8) {
-                HStack(spacing: 4) {
-                    ForEach(Array(activity.reactions.enumerated()), id: \.offset) { index, reaction in
-                        Text(reaction)
-                            .font(.caption)
-                    }
-                }
-                
-                Spacer()
-                
-                Menu {
-                    ForEach(Array(["🔥", "❤️", "👍", "🎉", "💪"].enumerated()), id: \.offset) { index, emoji in
-                        Button(emoji) {
-                            reactionSelection = emoji
-                        }
-                    }
-                } label: {
-                    Image(systemName: "face.smiling")
-                        .font(.caption)
-                        .foregroundColor(Design.Colors.primary)
-                }
-            }
-        }
-        .padding(Design.Spacing.md)
-        .background(Design.Colors.cardBackground)
-        .cornerRadius(Design.Radius.medium)
-        .shadow(color: Color.black.opacity(0.05), radius: 8, x: 0, y: 2)
-    }
-}
-
-// MARK: - Activity Item Model
-struct ActivityItem: Identifiable {
-    let id: String
-    let userName: String
-    let userInitial: String
-    let activityType: String // "workout", "meal", "achievement"
-    let title: String
-    let description: String
-    let details: String
-    let timestamp: String
-    let reactions: [String]
-    
-    var activityTypeIcon: String {
-        switch activityType {
-        case "workout": return "figure.run.circle.fill"
-        case "meal": return "fork.knife.circle.fill"
-        case "achievement": return "star.circle.fill"
-        default: return "bolt.circle.fill"
-        }
-    }
-    
-    var activityTypeColor: Color {
-        switch activityType {
-        case "workout": return .blue
-        case "meal": return .green
-        case "achievement": return .yellow
-        default: return Design.Colors.primary
-        }
     }
 }
 
