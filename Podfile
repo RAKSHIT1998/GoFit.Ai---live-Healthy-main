@@ -19,4 +19,12 @@ post_install do |installer|
       config.build_settings['ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES'] = 'NO'
     end
   end
+  # Fix aggregate target xcconfigs to suppress swift-stdlib-tool warning
+  installer.aggregate_targets.each do |aggregate_target|
+    aggregate_target.xcconfigs.each do |config_name, config|
+      config.attributes['ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES'] = 'NO'
+      xcconfig_path = aggregate_target.xcconfig_path(config_name)
+      config.save_as(xcconfig_path)
+    end
+  end
 end

@@ -22,6 +22,33 @@ export async function connectDB() {
     
     console.log('✅ MongoDB connected successfully');
     console.log(`📊 Database: ${mongoose.connection.name}`);
+
+    // Fix broken location data and rebuild 2dsphere index
+    try {
+      const usersCollection = mongoose.connection.collection('users');
+      // Remove location field from documents that have type but no valid coordinates
+      await usersCollection.updateMany(
+        {
+          'location.type': { $exists: true },
+          $or: [
+            { 'location.coordinates': { $exists: false } },
+            { 'location.coordinates': { $size: 0 } },
+            { 'location.coordinates': null }
+          ]
+        },
+        { $unset: { location: '' } }
+      );
+      // Drop old non-sparse 2dsphere index if it exists, new sparse one will be created by Mongoose
+      try {
+        await usersCollection.dropIndex('location_2dsphere');
+        console.log('🔧 Dropped old location_2dsphere index, will be recreated as sparse');
+      } catch (e) {
+        // Index might not exist, that's fine
+      }
+      console.log('✅ Location data cleanup complete');
+    } catch (fixError) {
+      console.warn('⚠️ Location cleanup skipped:', fixError.message);
+    }
   } catch (error) {
     console.error('❌ MongoDB connection error:', error.message);
     

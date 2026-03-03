@@ -120,12 +120,10 @@ const userSchema = new mongoose.Schema({
   location: {
     type: {
       type: String,
-      enum: ['Point'],
-      default: 'Point'
+      enum: ['Point']
     },
     coordinates: {
-      type: [Number],
-      default: undefined
+      type: [Number]
     }
   },
   locationUpdatedAt: {
@@ -198,8 +196,20 @@ const userSchema = new mongoose.Schema({
   timestamps: true
 });
 
-// Geospatial index for nearby discovery
-userSchema.index({ location: '2dsphere' });
+// Geospatial index for nearby discovery (sparse: skip docs without coordinates)
+userSchema.index({ location: '2dsphere' }, { sparse: true });
+
+// Clean up location field if coordinates are missing (prevents 2dsphere index error)
+userSchema.pre('validate', function(next) {
+  if (this.location) {
+    const coords = this.location.coordinates;
+    if (!coords || !Array.isArray(coords) || coords.length < 2 || 
+        coords.every(c => c === 0 || c === null || c === undefined)) {
+      this.location = undefined;
+    }
+  }
+  next();
+});
 
 // Clean up subscription.plan if it's null/undefined before validation
 userSchema.pre('validate', function(next) {
