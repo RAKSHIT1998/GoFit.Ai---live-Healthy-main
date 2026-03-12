@@ -1,4 +1,5 @@
 import SwiftUI
+import UIKit
 
 // MARK: - Human Body Liquid Visualization
 /// Shows a human body silhouette that fills with color based on drinks logged

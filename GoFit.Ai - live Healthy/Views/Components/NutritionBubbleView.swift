@@ -1,4 +1,5 @@
 import SwiftUI
+import UIKit
 
 // MARK: - Nutrition Bubble View
 /// Floating animated bubbles showing nutrition info over food
