@@ -19,6 +19,15 @@ class FriendsService: NSObject, ObservableObject {
             self.baseURL = "https://gofit-ai-live-healthy-1.onrender.com"
         }
         super.init()
+        
+        // Load from local cache instantly
+        let cache = SocialCacheManager.shared
+        if !cache.cachedFriends.isEmpty {
+            self.friends = cache.cachedFriends
+        }
+        if !cache.cachedFriendRequests.isEmpty {
+            self.friendRequests = cache.cachedFriendRequests
+        }
     }
     
     // MARK: - Friend Requests
@@ -99,6 +108,7 @@ class FriendsService: NSObject, ObservableObject {
                 do {
                     let response = try JSONDecoder().decode(FriendRequestsResponse.self, from: data)
                     self?.friendRequests = response.requests
+                    SocialCacheManager.shared.saveFriendRequests(response.requests)
                     completion(.success(response.requests))
                 } catch {
                     self?.error = error.localizedDescription
@@ -215,6 +225,7 @@ class FriendsService: NSObject, ObservableObject {
                 do {
                     let response = try JSONDecoder().decode(FriendsListResponse.self, from: data)
                     self?.friends = response.friends
+                    SocialCacheManager.shared.saveFriends(response.friends)
                     completion(.success(response.friends))
                 } catch {
                     self?.error = error.localizedDescription

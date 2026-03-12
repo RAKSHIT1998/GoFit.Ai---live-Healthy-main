@@ -50,7 +50,9 @@ final class MessagesService: ObservableObject {
                 }
                 do {
                     let decoded = try self?.makeDecoder().decode(ConversationsResponse.self, from: data)
-                    completion(.success(decoded?.conversations ?? []))
+                    let conversations = decoded?.conversations ?? []
+                    SocialCacheManager.shared.saveConversations(conversations)
+                    completion(.success(conversations))
                 } catch {
                     self?.error = error.localizedDescription
                     completion(.failure(error))
@@ -87,7 +89,9 @@ final class MessagesService: ObservableObject {
                 }
                 do {
                     let decoded = try self?.makeDecoder().decode(MessagesResponse.self, from: data)
-                    completion(.success(decoded?.messages ?? []))
+                    let messages = decoded?.messages ?? []
+                    SocialCacheManager.shared.saveMessages(messages, for: friendId)
+                    completion(.success(messages))
                 } catch {
                     self?.error = error.localizedDescription
                     completion(.failure(error))

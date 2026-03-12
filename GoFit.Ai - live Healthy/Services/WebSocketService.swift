@@ -444,6 +444,8 @@ class WebSocketService: ObservableObject {
                 title: "💬 \(senderName)",
                 body: message
             )
+            // Schedule a follow-up reminder if user doesn't reply
+            NotificationService.shared.scheduleChatReminder(friendName: senderName)
         }
         
         // Post notification for in-app banner

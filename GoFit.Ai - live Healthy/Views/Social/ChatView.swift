@@ -165,38 +165,95 @@ struct ChatView: View {
 
     private func messageBubble(_ msg: MessageItem) -> some View {
         let isMine = msg.senderId == currentUserId
+        let isSummaryMessage = msg.message.hasPrefix("📊")
+        let isCheerMessage = msg.message.contains("🎉👏") || msg.message.contains("Cheering you") || msg.message.contains("Beast mode") || msg.message.contains("crushing it")
+        
         return HStack(alignment: .bottom, spacing: 6) {
             if isMine { Spacer(minLength: 50) }
             
             VStack(alignment: isMine ? .trailing : .leading, spacing: 3) {
-                Text(msg.message)
-                    .font(Design.Typography.body)
-                    .foregroundColor(isMine ? .white : .primary)
+                if isSummaryMessage {
+                    // Animated summary card
+                    VStack(alignment: .leading, spacing: 8) {
+                        HStack {
+                            Image(systemName: "chart.bar.fill")
+                                .foregroundColor(.yellow)
+                            Text("Fitness Summary")
+                                .font(.caption.bold())
+                                .foregroundColor(.white)
+                            Spacer()
+                            Image(systemName: "sparkles")
+                                .foregroundColor(.yellow)
+                                .symbolEffect(.pulse)
+                        }
+                        
+                        ForEach(msg.message.components(separatedBy: "\n"), id: \.self) { line in
+                            if !line.hasPrefix("📊") {
+                                Text(line)
+                                    .font(.caption)
+                                    .foregroundColor(.white.opacity(0.95))
+                            }
+                        }
+                    }
+                    .padding(12)
+                    .background(
+                        LinearGradient(
+                            colors: [Color.purple, Color.blue, Color.indigo],
+                            startPoint: .topLeading,
+                            endPoint: .bottomTrailing
+                        )
+                    )
+                    .cornerRadius(16)
+                    .shadow(color: .purple.opacity(0.3), radius: 8, x: 0, y: 4)
+                } else if isCheerMessage {
+                    // Animated cheer message
+                    VStack(spacing: 4) {
+                        Text(msg.message)
+                            .font(Design.Typography.body)
+                            .foregroundColor(.white)
+                            .multilineTextAlignment(isMine ? .trailing : .leading)
+                    }
+                    .padding(.horizontal, 12)
+                    .padding(.vertical, 8)
+                    .background(
+                        LinearGradient(
+                            colors: [Color.orange, Color.red, Color.pink],
+                            startPoint: .topLeading,
+                            endPoint: .bottomTrailing
+                        )
+                    )
+                    .cornerRadius(16)
+                    .shadow(color: .orange.opacity(0.3), radius: 6, x: 0, y: 3)
+                } else {
+                    Text(msg.message)
+                        .font(Design.Typography.body)
+                        .foregroundColor(isMine ? .white : .primary)
+                        .padding(.horizontal, 12)
+                        .padding(.vertical, 8)
+                        .background(
+                            Group {
+                                if isMine {
+                                    Design.Colors.primaryGradient
+                                } else {
+                                    LinearGradient(colors: [Color(.systemGray6)], startPoint: .leading, endPoint: .trailing)
+                                }
+                            }
+                        )
+                        .cornerRadius(16, corners: isMine ? [.topLeft, .topRight, .bottomLeft] : [.topLeft, .topRight, .bottomRight])
+                }
                 
                 HStack(spacing: 4) {
                     Text(formatTime(msg.createdAt))
                         .font(.system(size: 10))
-                        .foregroundColor(isMine ? .white.opacity(0.6) : .secondary)
+                        .foregroundColor(isMine ? .secondary : .secondary)
                     
                     if isMine {
                         Image(systemName: msg.isRead ? "checkmark.circle.fill" : "checkmark.circle")
                             .font(.system(size: 10))
-                            .foregroundColor(isMine ? .white.opacity(0.6) : .secondary)
+                            .foregroundColor(.secondary)
                     }
                 }
             }
-            .padding(.horizontal, 12)
-            .padding(.vertical, 8)
-            .background(
-                Group {
-                    if isMine {
-                        Design.Colors.primaryGradient
-                    } else {
-                        LinearGradient(colors: [Color(.systemGray6)], startPoint: .leading, endPoint: .trailing)
-                    }
-                }
-            )
-            .cornerRadius(16, corners: isMine ? [.topLeft, .topRight, .bottomLeft] : [.topLeft, .topRight, .bottomRight])
             
             if !isMine { Spacer(minLength: 50) }
         }
@@ -213,6 +270,14 @@ struct ChatView: View {
 
     private func loadMessages() {
         isLoadingMessages = true
+        
+        // Load from cache first for instant display
+        if let cached = SocialCacheManager.shared.loadMessages(for: friend.id), !cached.isEmpty {
+            self.messages = cached
+            isLoadingMessages = false
+        }
+        
+        // Then refresh from network
         messagesService.fetchConversation(friendId: friend.id) { result in
             DispatchQueue.main.async {
                 isLoadingMessages = false
@@ -220,6 +285,8 @@ struct ChatView: View {
                     withAnimation(.easeOut(duration: 0.2)) {
                         self.messages = msgs
                     }
+                    // Save to cache for next time
+                    SocialCacheManager.shared.saveMessages(msgs, for: friend.id)
                 }
             }
         }
@@ -250,19 +317,27 @@ struct ChatView: View {
     }
 
     private func sendTodaySummary() {
+        // Force refresh from all local data sources
+        let broadcaster = NutritionBroadcaster.shared
+        broadcaster.refreshFromLocalStorage()
+        
+        // Also pull from every available source for maximum accuracy
         let todayLog = LocalDailyLogStore.shared.getTodayLog()
+        let mealCacheTotals = LocalMealCache.shared.getTodayTotals()
         let fallbackStats = cache.calculateTodaysStats()
-
-        let calories = todayLog.totalCalories > 0 ? todayLog.totalCalories : fallbackStats.totalCaloriesConsumed
-        let protein = todayLog.totalProtein > 0 ? todayLog.totalProtein : fallbackStats.protein
-        let carbs = todayLog.totalCarbs > 0 ? todayLog.totalCarbs : fallbackStats.carbs
-        let fat = todayLog.totalFat > 0 ? todayLog.totalFat : fallbackStats.fat
+        
+        // Use the BEST data from all 3 sources (whichever has the highest real value)
+        let calories = max(todayLog.totalCalories, max(mealCacheTotals.calories, fallbackStats.totalCaloriesConsumed))
+        let protein = max(todayLog.totalProtein, max(mealCacheTotals.protein, fallbackStats.protein))
+        let carbs = max(todayLog.totalCarbs, max(mealCacheTotals.carbs, fallbackStats.carbs))
+        let fat = max(todayLog.totalFat, max(mealCacheTotals.fat, fallbackStats.fat))
         let workouts = fallbackStats.workoutsCompleted
-        let mealsLogged = todayLog.meals.count > 0 ? todayLog.meals.count : fallbackStats.mealsLogged
-        let water = todayLog.totalLiquid > 0 ? todayLog.totalLiquid : fallbackStats.waterIntake
+        let mealsLogged = max(todayLog.meals.count, max(LocalMealCache.shared.getTodayMeals().count, fallbackStats.mealsLogged))
+        let water = max(todayLog.totalLiquid, fallbackStats.waterIntake)
         let steps = todayLog.steps ?? fallbackStats.steps
+        let burned = max(todayLog.caloriesBurned, fallbackStats.totalCaloriesBurned)
 
-        let summary = "📊 Today: \(Int(calories)) kcal, P \(Int(protein))g, C \(Int(carbs))g, F \(Int(fat))g, Workouts \(workouts), Meals \(mealsLogged), Water \(String(format: \"%.1f\", water))L, Steps \(steps)"
+        let summary = "📊 Today's GoFit Stats:\n🔥 \(Int(calories)) kcal consumed\n💪 P: \(Int(protein))g | C: \(Int(carbs))g | F: \(Int(fat))g\n⚡️ \(Int(burned)) kcal burned\n🏃 Workouts: \(workouts)\n🍽️ Meals: \(mealsLogged)\n💧 Water: \(String(format: \"%.1f\", water))L\n🚶 Steps: \(steps)"
         isSending = true
         messagesService.sendMessage(friendId: friend.id, message: summary) { result in
             DispatchQueue.main.async {

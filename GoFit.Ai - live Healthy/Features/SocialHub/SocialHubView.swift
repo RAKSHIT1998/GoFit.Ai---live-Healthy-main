@@ -125,9 +125,29 @@ struct SocialHubView: View {
                 StatChip(icon: "person.2.fill", value: "\(friendsService.friends.count)", label: "Friends", color: Design.Colors.primary)
                 StatChip(icon: "envelope.fill", value: "\(friendsService.friendRequests.count)", label: "Requests", color: .orange)
                 StatChip(icon: "bolt.fill", value: "\(aiChallenges.activeChallenges.count)", label: "Challenges", color: .purple)
+                StatChip(icon: "flame.fill", value: "\(StreakManager.shared.currentStreak)", label: "Streak", color: .red)
                 
                 if purchases.isPremiumActive {
                     StatChip(icon: "star.fill", value: "\(aiChallenges.totalXPEarned)", label: "AI XP", color: .yellow)
+                }
+                
+                // Share progress chip
+                ShareLink(
+                    item: ViralEngagementManager.motivationalShareTexts.randomElement() ?? "Check out GoFit.Ai! #GoFitAi",
+                    subject: Text("My GoFit.Ai Progress"),
+                    message: Text(NutritionBroadcaster.shared.formattedSummary)
+                ) {
+                    HStack(spacing: 6) {
+                        Image(systemName: "square.and.arrow.up.fill")
+                            .font(.caption)
+                        Text("Share")
+                            .font(.caption.weight(.semibold))
+                    }
+                    .foregroundColor(.white)
+                    .padding(.horizontal, 14)
+                    .padding(.vertical, 10)
+                    .background(LinearGradient(colors: [.green, .mint], startPoint: .leading, endPoint: .trailing))
+                    .cornerRadius(12)
                 }
             }
             .padding(.horizontal, Design.Spacing.md)
@@ -262,9 +282,7 @@ struct SocialHubView: View {
                         .padding(.top, 30)
                     } else {
                         ForEach(friendsService.friends, id: \.id) { friend in
-                            NavigationLink(destination: FriendDetailsView(friend: friend, currentUserId: auth.userId ?? "")) {
-                                FriendCardView(friend: friend)
-                            }
+                            FriendCardView(friend: friend, currentUserId: auth.userId ?? "")
                         }
                         .padding(.horizontal, Design.Spacing.md)
                     }

@@ -109,6 +109,16 @@ final class LocalDailyLogStore: ObservableObject {
             
             persist(updatedLogs)
             print("✅ Added meal to daily log: \(meal.mealType.displayName)")
+            
+            // Broadcast to entire app for instant UI updates everywhere
+            DispatchQueue.main.async {
+                NotificationCenter.default.post(name: NutritionBroadcaster.mealDidLog, object: nil, userInfo: [
+                    "calories": meal.totalCalories,
+                    "protein": meal.totalProtein,
+                    "carbs": meal.totalCarbs,
+                    "fat": meal.totalFat
+                ])
+            }
         }
     }
     
@@ -154,6 +164,14 @@ final class LocalDailyLogStore: ObservableObject {
             
             persist(updatedLogs)
             print("✅ Added liquid intake: \(entry.amount)L \(entry.beverageType.displayName)")
+            
+            // Broadcast to entire app for instant UI updates everywhere
+            DispatchQueue.main.async {
+                NotificationCenter.default.post(name: NutritionBroadcaster.liquidDidLog, object: nil, userInfo: [
+                    "amount": entry.amount,
+                    "type": entry.beverageType.displayName
+                ])
+            }
         }
     }
     

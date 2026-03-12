@@ -155,6 +155,12 @@ class NotificationService: ObservableObject {
         if workoutRemindersEnabled {
             scheduleWorkoutReminders()
         }
+        
+        // Always schedule social engagement notifications for retention
+        scheduleSocialEngagementNotifications()
+        
+        // Schedule daily motivational notification
+        scheduleDailyMotivation()
     }
     
     // MARK: - Meal Reminders
@@ -174,6 +180,10 @@ class NotificationService: ObservableObject {
     }
     
     private func scheduleMealReminder(hour: Int, minute: Int, mealType: String, identifier: String) {
+        // Add random time offset ±12 minutes for natural feel
+        let randomOffset = Int.random(in: -12...12)
+        let adjustedMinute = max(0, min(59, minute + randomOffset))
+        
         // Fetch AI-generated reminder content from backend
         Task {
             do {
@@ -183,17 +193,19 @@ class NotificationService: ObservableObject {
                     title: content.title,
                     body: content.body,
                     hour: hour,
-                    minute: minute,
+                    minute: adjustedMinute,
                     repeats: true
                 )
             } catch {
-                // Fallback to default message
+                // Use randomized fallback message from pool
+                let pool = ViralEngagementManager.mealReminderMessages
+                let msg = pool.randomElement() ?? (title: "Time to eat! 🍽️", body: "Don't forget your \(mealType).")
                 createNotification(
                     identifier: identifier,
-                    title: "Time to eat! 🍽️",
-                    body: "Don't forget your \(mealType). Your body needs fuel to stay healthy!",
+                    title: msg.title,
+                    body: msg.body,
                     hour: hour,
-                    minute: minute,
+                    minute: adjustedMinute,
                     repeats: true
                 )
             }
@@ -210,6 +222,9 @@ class NotificationService: ObservableObject {
     }
     
     private func scheduleWaterReminder(hour: Int, identifier: String) {
+        // Add random time offset ±15 minutes
+        let randomMinute = Int.random(in: 0...30)
+        
         Task {
             do {
                 let content = try await fetchAIWaterReminder()
@@ -218,17 +233,19 @@ class NotificationService: ObservableObject {
                     title: content.title,
                     body: content.body,
                     hour: hour,
-                    minute: 0,
+                    minute: randomMinute,
                     repeats: true
                 )
             } catch {
-                // Fallback to default message
+                // Use randomized fallback message
+                let pool = ViralEngagementManager.waterReminderMessages
+                let msg = pool.randomElement() ?? (title: "Stay Hydrated! 💧", body: "Time to drink water!")
                 createNotification(
                     identifier: identifier,
-                    title: "Stay Hydrated! 💧",
-                    body: "Time to drink water! Staying hydrated helps your body function at its best.",
+                    title: msg.title,
+                    body: msg.body,
                     hour: hour,
-                    minute: 0,
+                    minute: randomMinute,
                     repeats: true
                 )
             }
@@ -246,6 +263,10 @@ class NotificationService: ObservableObject {
     }
     
     private func scheduleWorkoutReminder(hour: Int, minute: Int, identifier: String) {
+        // Add random time offset ±10 minutes
+        let randomOffset = Int.random(in: -10...10)
+        let adjustedMinute = max(0, min(59, minute + randomOffset))
+        
         Task {
             do {
                 let content = try await fetchAIWorkoutReminder()
@@ -254,17 +275,19 @@ class NotificationService: ObservableObject {
                     title: content.title,
                     body: content.body,
                     hour: hour,
-                    minute: minute,
+                    minute: adjustedMinute,
                     repeats: true
                 )
             } catch {
-                // Fallback to default message
+                // Use randomized fallback message
+                let pool = ViralEngagementManager.workoutReminderMessages
+                let msg = pool.randomElement() ?? (title: "Workout Time! 💪", body: "Time for your workout!")
                 createNotification(
                     identifier: identifier,
-                    title: "Workout Time! 💪",
-                    body: "Time for your workout! Your body will thank you for staying active.",
+                    title: msg.title,
+                    body: msg.body,
                     hour: hour,
-                    minute: minute,
+                    minute: adjustedMinute,
                     repeats: true
                 )
             }
@@ -438,6 +461,86 @@ class NotificationService: ObservableObject {
                 print("❌ Failed to show local notification: \(error.localizedDescription)")
             } else {
                 print("✅ Local notification shown: \(title)")
+            }
+        }
+    }
+    
+    // MARK: - Social Engagement Notifications (Retention & Virality)
+    
+    /// Schedule social engagement notifications to boost retention
+    private func scheduleSocialEngagementNotifications() {
+        // Mid-morning social check-in (10:30 AM ± random)
+        let socialPool = ViralEngagementManager.socialEngagementMessages
+        let morningMsg = socialPool.randomElement() ?? (title: "Check in! 👋", body: "See what your friends are up to!")
+        let morningMinute = Int.random(in: 15...45)
+        createNotification(
+            identifier: "social-morning",
+            title: morningMsg.title,
+            body: morningMsg.body,
+            hour: 10,
+            minute: morningMinute,
+            repeats: true
+        )
+        
+        // Evening social reminder (8:30 PM ± random)
+        let eveningMsg = socialPool.randomElement() ?? (title: "Share your day! 📊", body: "Share your progress with friends!")
+        let eveningMinute = Int.random(in: 15...45)
+        createNotification(
+            identifier: "social-evening",
+            title: eveningMsg.title,
+            body: eveningMsg.body,
+            hour: 20,
+            minute: eveningMinute,
+            repeats: true
+        )
+        
+        // Weekend challenge reminder (Saturday 9 AM)
+        createNotification(
+            identifier: "social-weekend",
+            title: "Weekend Challenge! 🏆",
+            body: "Challenge a friend this weekend! Fitness is better together.",
+            hour: 9,
+            minute: Int.random(in: 0...30),
+            repeats: true
+        )
+    }
+    
+    /// Schedule daily motivational notification
+    private func scheduleDailyMotivation() {
+        let quote = MotivationalQuote.random()
+        createNotification(
+            identifier: "daily-motivation",
+            title: "💡 Daily Motivation",
+            body: "\"\(quote.text)\" — \(quote.author)",
+            hour: 9,
+            minute: Int.random(in: 0...30),
+            repeats: true
+        )
+    }
+    
+    // MARK: - Chat Notification
+    
+    /// Schedule a chat reminder if user has unread messages
+    func scheduleChatReminder(friendName: String) {
+        guard notificationsEnabled else { return }
+        
+        let content = UNMutableNotificationContent()
+        content.title = "💬 Unread message from \(friendName)"
+        content.body = "Don't leave \(friendName) hanging! Reply to keep the conversation going."
+        content.sound = .default
+        content.badge = 1
+        
+        // Trigger after 30 minutes
+        let trigger = UNTimeIntervalNotificationTrigger(timeInterval: 1800, repeats: false)
+        let request = UNNotificationRequest(
+            identifier: "chat-reminder-\(friendName)",
+            content: content,
+            trigger: trigger
+        )
+        
+        UNUserNotificationCenter.current().add(request) { error in
+            if let error = error {
+                print("⚠️ Failed to schedule chat reminder: \(error.localizedDescription)")
             }
         }
     }

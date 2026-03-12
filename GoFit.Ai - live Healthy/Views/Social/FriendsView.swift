@@ -232,9 +232,7 @@ struct FriendsListView: View {
         } else {
             VStack(spacing: Design.Spacing.md) {
                 ForEach(friends, id: \.id) { friend in
-                    NavigationLink(destination: FriendDetailsView(friend: friend, currentUserId: currentUserId)) {
-                        FriendCardView(friend: friend)
-                    }
+                    FriendCardView(friend: friend, currentUserId: currentUserId)
                 }
             }
             .padding(.horizontal, Design.Spacing.md)
@@ -245,55 +243,71 @@ struct FriendsListView: View {
 // MARK: - Friend Card View
 struct FriendCardView: View {
     let friend: Friend
+    let currentUserId: String
+    @State private var cheerSent = false
+    @State private var isSendingCheer = false
+    @State private var showCheerBurst = false
     
     var body: some View {
         VStack(spacing: 12) {
-            HStack(spacing: 12) {
-                Circle()
-                    .fill(LinearGradient(gradient: Gradient(colors: [Design.Colors.primary.opacity(0.7), Design.Colors.primary.opacity(0.4)]), startPoint: .topLeading, endPoint: .bottomTrailing))
-                    .frame(width: 56, height: 56)
-                    .overlay(
-                        Text(String(friend.username.prefix(1)).uppercased())
-                            .font(.headline)
-                            .foregroundColor(.white)
-                    )
-                
-                VStack(alignment: .leading, spacing: 6) {
-                    Text(friend.fullName ?? friend.username)
-                        .font(Design.Typography.subheadline)
-                        .fontWeight(.semibold)
-                        .foregroundColor(.primary)
+            // Header: tapping navigates to friend details
+            NavigationLink(destination: FriendDetailsView(friend: friend, currentUserId: currentUserId)) {
+                HStack(spacing: 12) {
+                    Circle()
+                        .fill(LinearGradient(gradient: Gradient(colors: [Design.Colors.primary.opacity(0.7), Design.Colors.primary.opacity(0.4)]), startPoint: .topLeading, endPoint: .bottomTrailing))
+                        .frame(width: 56, height: 56)
+                        .overlay(
+                            Text(String(friend.username.prefix(1)).uppercased())
+                                .font(.headline)
+                                .foregroundColor(.white)
+                        )
                     
-                    Text("@\(friend.username)")
-                        .font(.caption)
+                    VStack(alignment: .leading, spacing: 6) {
+                        Text(friend.fullName ?? friend.username)
+                            .font(Design.Typography.subheadline)
+                            .fontWeight(.semibold)
+                            .foregroundColor(.primary)
+                        
+                        Text("@\(friend.username)")
+                            .font(.caption)
+                            .foregroundColor(.secondary)
+                    }
+                    
+                    Spacer()
+                    
+                    Image(systemName: "chevron.right")
                         .foregroundColor(.secondary)
+                        .font(.caption)
                 }
-                
-                Spacer()
-                
-                Image(systemName: "chevron.right")
-                    .foregroundColor(.secondary)
-                    .font(.caption)
             }
+            .buttonStyle(.plain)
             
             Divider()
                 .padding(.vertical, 4)
             
             HStack(spacing: 12) {
-                Button(action: {}) {
+                // Cheer button - sends a random cheer message
+                Button(action: sendCheer) {
                     HStack(spacing: 4) {
-                        Image(systemName: "heart")
-                        Text("Cheer")
+                        Image(systemName: cheerSent ? "heart.fill" : "heart")
+                            .foregroundColor(cheerSent ? .red : Design.Colors.primary)
+                            .scaleEffect(showCheerBurst ? 1.4 : 1.0)
+                            .animation(.spring(response: 0.3, dampingFraction: 0.4), value: showCheerBurst)
+                        Text(cheerSent ? "Sent! 🎉" : "Cheer")
                     }
                     .font(.caption)
-                    .foregroundColor(Design.Colors.primary)
+                    .fontWeight(cheerSent ? .bold : .regular)
+                    .foregroundColor(cheerSent ? .red : Design.Colors.primary)
                     .frame(maxWidth: .infinity)
                     .padding(.vertical, 8)
-                    .background(Design.Colors.primary.opacity(0.1))
+                    .background(cheerSent ? Color.red.opacity(0.1) : Design.Colors.primary.opacity(0.1))
                     .cornerRadius(8)
                 }
+                .disabled(isSendingCheer)
+                .buttonStyle(.borderless)
                 
-                Button(action: {}) {
+                // Message button - navigates to chat
+                NavigationLink(destination: ChatView(friend: friend, currentUserId: currentUserId)) {
                     HStack(spacing: 4) {
                         Image(systemName: "bubble.right")
                         Text("Message")
@@ -305,12 +319,46 @@ struct FriendCardView: View {
                     .background(Design.Colors.primary.opacity(0.1))
                     .cornerRadius(8)
                 }
+                .buttonStyle(.borderless)
             }
         }
         .padding(Design.Spacing.md)
         .background(Design.Colors.cardBackground)
         .cornerRadius(Design.Radius.medium)
         .shadow(color: Color.black.opacity(0.05), radius: 8, x: 0, y: 2)
+    }
+    
+    private func sendCheer() {
+        guard !isSendingCheer else { return }
+        isSendingCheer = true
+        HapticManager.shared.mediumTap()
+        
+        let cheerMessage = ViralEngagementManager.randomCheerMessage()
+        
+        MessagesService.shared.sendMessage(friendId: friend.id, message: cheerMessage) { result in
+            DispatchQueue.main.async {
+                isSendingCheer = false
+                if case .success = result {
+                    withAnimation(.spring(response: 0.3, dampingFraction: 0.5)) {
+                        cheerSent = true
+                        showCheerBurst = true
+                    }
+                    HapticManager.shared.success()
+                    
+                    // Reset burst animation
+                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
+                        showCheerBurst = false
+                    }
+                    
+                    // Reset after 3 seconds so user can cheer again
+                    DispatchQueue.main.asyncAfter(deadline: .now() + 3) {
+                        withAnimation { cheerSent = false }
+                    }
+                } else {
+                    HapticManager.shared.error()
+                }
+            }
+        }
     }
 }
 

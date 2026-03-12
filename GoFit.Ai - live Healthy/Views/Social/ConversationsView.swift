@@ -78,6 +78,14 @@ struct ConversationsView: View {
     }
 
     private func loadConversations() {
+        // Load from cache first for instant display
+        let cached = SocialCacheManager.shared.cachedConversations
+        if !cached.isEmpty && conversations.isEmpty {
+            conversations = cached
+            isLoading = false
+        }
+        
+        // Then refresh from network in background
         messagesService.fetchConversations { result in
             DispatchQueue.main.async {
                 isLoading = false
@@ -85,6 +93,8 @@ struct ConversationsView: View {
                     withAnimation(.easeInOut(duration: 0.25)) {
                         conversations = items
                     }
+                    // Save to cache for next time
+                    SocialCacheManager.shared.saveConversations(items)
                 }
             }
         }
