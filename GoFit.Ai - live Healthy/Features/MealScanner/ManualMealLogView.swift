@@ -255,7 +255,7 @@ struct ManualMealLogView: View {
             if items.count > 1 {
                 Button(role: .destructive) {
                     HapticManager.shared.lightTap()
-                    withAnimation(.easeInOut(duration: 0.2)) {
+                    let _ = withAnimation(.easeInOut(duration: 0.2)) {
                         items.remove(at: index)
                     }
                 } label: {

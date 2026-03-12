@@ -57,106 +57,11 @@ struct MealScannerView3: View {
     var body: some View {
         NavigationView {
             VStack(spacing: 0) {
-                // Camera View - Full Screen
-                ZStack {
-                    CameraView(capturedImage: $capturedImage, captureTrigger: captureTrigger)
-                        .frame(maxWidth: .infinity, maxHeight: .infinity)
-                        .ignoresSafeArea()
-                    
-                    // Flash effect overlay (like Snapchat)
-                    if showFlash {
-                        Color.white
-                            .ignoresSafeArea()
-                            .opacity(0.8)
-                            .animation(.easeOut(duration: 0.1), value: showFlash)
-                    }
-                    
-                    VStack {
-                        HStack {
-                            Spacer()
-                            Button {
-                                HapticManager.shared.lightTap()
-                                withAnimation(.easeInOut(duration: 0.2)) {
-                                    showPicker = true
-                                }
-                            } label: {
-                                Image(systemName: "photo.on.rectangle.angled")
-                                    .font(.title2)
-                                    .foregroundColor(.white)
-                                    .padding(12)
-                                    .background(Color.primary.opacity(0.5))
-                                    .clipShape(Circle())
-                            }
-                            .padding()
-                        }
-                        Spacer()
-                        
-                        // Capture Button - Instant capture
-                        Button(action: { 
-                            guard !isCapturing else { return }
-                            isCapturing = true
-                            
-                            HapticManager.shared.mediumTap()
-                            captureTrigger += 1
-                            
-                            withAnimation(.easeOut(duration: 0.05)) {
-                                showFlash = true
-                            }
-                            DispatchQueue.main.asyncAfter(deadline: .now() + 0.05) {
-                                showFlash = false
-                            }
-                            
-                            DispatchQueue.main.asyncAfter(deadline: .now() + 0.2) {
-                                isCapturing = false
-                            }
-                        }) {
-                            ZStack {
-                                Circle()
-                                    .fill(isCapturing ? Color.gray : Color.white)
-                                    .frame(width: 70, height: 70)
-                                    .animation(.easeInOut(duration: 0.1), value: isCapturing)
-                                
-                                Circle()
-                                    .stroke(Color.white, lineWidth: 4)
-                                    .frame(width: 80, height: 80)
-                                
-                                if isCapturing {
-                                    ProgressView()
-                                        .tint(.black)
-                                } else {
-                                    Image(systemName: "camera.fill")
-                                        .font(.title2)
-                                        .foregroundColor(.black)
-                                }
-                            }
-                        }
-                        .disabled(isCapturing)
-                        .padding(.bottom, 40)
-                    }
-                }
-
-                // Results Section - Scrollable
-                if isUploading {
-                    VStack(spacing: 16) {
-                        ProgressView()
-                            .scaleEffect(1.5)
-                            .tint(Design.Colors.primary)
-                        Text("Analyzing with AI...")
-                            .font(Design.Typography.headline)
-                            .foregroundColor(.primary)
-                            .smoothFadeIn()
-                        Text("Detecting food items and nutrition")
-                            .font(Design.Typography.caption)
-                            .foregroundColor(.secondary)
-                        Text("This may take up to 60 seconds")
-                            .font(Design.Typography.caption2)
-                            .foregroundColor(.secondary)
-                            .padding(.top, 4)
-                    }
-                    .frame(maxWidth: .infinity)
-                    .padding(.vertical, 40)
-                    .background(Design.Colors.background)
-                }
+                cameraSection
+                uploadingSection
+                resultsSection
+                errorSection
+            }
 
                 // Results Section
                 if let resp = uploadResult, let items = resp.parsedItems, !items.isEmpty {

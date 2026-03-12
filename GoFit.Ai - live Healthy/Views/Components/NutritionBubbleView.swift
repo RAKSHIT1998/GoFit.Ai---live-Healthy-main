@@ -250,7 +250,7 @@ struct MealLogCelebration: View {
         for _ in 0..<20 {
             let startX = screenWidth / 2
             let startY = screenHeight / 2
-            var particle = CelebrationParticle(
+            let particle = CelebrationParticle(
                 emoji: emojis.randomElement()!,
                 x: startX,
                 y: startY,

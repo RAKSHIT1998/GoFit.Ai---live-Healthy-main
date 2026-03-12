@@ -273,9 +273,8 @@ struct LiquidLogView: View {
     
     // MARK: - Load Today's Entries
     private func loadTodayEntries() {
-        if let log = LocalDailyLogStore.shared.getToday() {
-            todayEntries = log.liquidEntries
-        }
+        let log = LocalDailyLogStore.shared.getTodayLog()
+        todayEntries = log.liquidEntries
     }
     
     // MARK: - Save
