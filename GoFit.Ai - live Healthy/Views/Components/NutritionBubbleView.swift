@@ -16,11 +16,11 @@ struct NutritionBubbleOverlay: View {
     @State private var floatPhase: [Bool] = Array(repeating: false, count: 5)
     
     private let bubbleData: [(icon: String, label: String, color: Color)]  = [
-        ("flame.fill", "kcal", AppDesign.Colors.calories),
-        ("figure.strengthtraining.traditional", "Protein", AppDesign.Colors.protein),
-        ("leaf.fill", "Carbs", AppDesign.Colors.carbs),
-        ("drop.fill", "Fat", AppDesign.Colors.fat),
-        ("sparkles", "Sugar", AppDesign.Colors.sugar),
+        ("flame.fill", "kcal", Design.Colors.calories),
+        ("figure.strengthtraining.traditional", "Protein", Design.Colors.protein),
+        ("leaf.fill", "Carbs", Design.Colors.carbs),
+        ("drop.fill", "Fat", Design.Colors.fat),
+        ("sparkles", "Sugar", Design.Colors.sugar),
     ]
     
     private var values: [Double] { [calories, protein, carbs, fat, sugar] }
