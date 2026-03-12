@@ -337,7 +337,8 @@ struct ChatView: View {
         let steps = todayLog.steps ?? fallbackStats.steps
         let burned = max(todayLog.caloriesBurned, fallbackStats.totalCaloriesBurned)
 
-        let summary = "📊 Today's GoFit Stats:\n🔥 \(Int(calories)) kcal consumed\n💪 P: \(Int(protein))g | C: \(Int(carbs))g | F: \(Int(fat))g\n⚡️ \(Int(burned)) kcal burned\n🏃 Workouts: \(workouts)\n🍽️ Meals: \(mealsLogged)\n💧 Water: \(String(format: \"%.1f\", water))L\n🚶 Steps: \(steps)"
+        let waterStr = String(format: "%.1f", water)
+        let summary = "📊 Today's GoFit Stats:\n🔥 \(Int(calories)) kcal consumed\n💪 P: \(Int(protein))g | C: \(Int(carbs))g | F: \(Int(fat))g\n⚡️ \(Int(burned)) kcal burned\n🏃 Workouts: \(workouts)\n🍽️ Meals: \(mealsLogged)\n💧 Water: \(waterStr)L\n🚶 Steps: \(steps)"
         isSending = true
         messagesService.sendMessage(friendId: friend.id, message: summary) { result in
             DispatchQueue.main.async {
