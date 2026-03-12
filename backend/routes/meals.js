@@ -1,9 +1,83 @@
 import express from 'express';
+import OpenAI from 'openai';
 import Meal from '../models/Meal.js';
 import { authMiddleware } from '../middleware/authMiddleware.js';
 import mlService from '../services/mlService.js';
 
 const router = express.Router();
+
+// Initialize OpenAI for nutrition lookup
+const OPENAI_API_KEY = (process.env.OPENAI_API_KEY || '').trim();
+const openai = OPENAI_API_KEY ? new OpenAI({ apiKey: OPENAI_API_KEY }) : null;
+
+// AI Nutrition Lookup - get nutrition from food name + portion
+router.post('/ai-nutrition-lookup', authMiddleware, async (req, res) => {
+  try {
+    const { foodName, portion } = req.body;
+
+    if (!foodName || !foodName.trim()) {
+      return res.status(400).json({ message: 'Food name is required' });
+    }
+
+    if (!openai) {
+      return res.status(503).json({ message: 'AI service unavailable' });
+    }
+
+    const portionText = portion && portion.trim() ? portion.trim() : '1 serving';
+
+    const prompt = `You are a nutrition expert. Given the food item and portion size, provide accurate nutritional information.
+
+Food: ${foodName.trim()}
+Portion: ${portionText}
+
+Respond with ONLY a JSON object (no markdown, no explanation) with these exact fields:
+{
+  "calories": <number>,
+  "protein": <number in grams>,
+  "carbs": <number in grams>,
+  "fat": <number in grams>,
+  "sugar": <number in grams>
+}
+
+Use established nutritional databases (USDA, etc.) for accuracy. Round to 1 decimal place.`;
+
+    const completion = await openai.chat.completions.create({
+      model: 'gpt-4o-mini',
+      messages: [{ role: 'user', content: prompt }],
+      max_tokens: 200,
+      temperature: 0.1
+    });
+
+    const responseText = completion.choices[0]?.message?.content?.trim();
+    
+    if (!responseText) {
+      return res.status(500).json({ message: 'Empty AI response' });
+    }
+
+    // Parse JSON - handle markdown code blocks if present
+    let jsonStr = responseText;
+    if (jsonStr.startsWith('```')) {
+      jsonStr = jsonStr.replace(/```json?\n?/g, '').replace(/```/g, '').trim();
+    }
+
+    const nutrition = JSON.parse(jsonStr);
+
+    res.json({
+      calories: Number(nutrition.calories) || 0,
+      protein: Number(nutrition.protein) || 0,
+      carbs: Number(nutrition.carbs) || 0,
+      fat: Number(nutrition.fat) || 0,
+      sugar: Number(nutrition.sugar) || 0,
+      source: 'ai',
+      foodName: foodName.trim(),
+      portion: portionText
+    });
+
+  } catch (error) {
+    console.error('AI nutrition lookup error:', error);
+    res.status(500).json({ message: 'AI nutrition lookup failed', error: error.message });
+  }
+});
 
 // Save meal
 router.post('/save', authMiddleware, async (req, res) => {
