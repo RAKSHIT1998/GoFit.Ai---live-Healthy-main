@@ -226,6 +226,33 @@ struct ManualMealLogView: View {
         )
         
         // 3️⃣ SAVE TO LOCAL CACHE IMMEDIATELY (Offline-first)
+        let cachedItems = validItems.map { item in
+            CachedMeal.CachedMealItem(
+                name: item.name,
+                calories: item.calories,
+                protein: item.protein,
+                carbs: item.carbs,
+                fat: item.fat,
+                sugar: item.sugar,
+                portionSize: item.qtyText.isEmpty ? nil : item.qtyText
+            )
+        }
+        
+        let cachedMeal = CachedMeal(
+            id: UUID().uuidString,
+            timestamp: Date(),
+            items: cachedItems,
+            totalCalories: totalCals,
+            totalProtein: totalProtein,
+            totalCarbs: totalCarbs,
+            totalFat: totalFat,
+            totalSugar: totalSugar,
+            mealType: "manual",
+            synced: false
+        )
+        
+        LocalMealCache.shared.addMeal(cachedMeal)
+        
         await MainActor.run {
             UserDataCache.shared.addMealEntry(mealEntry)
             AppLogger.shared.meal("💾 Saved manual meal to cache: \(mealEntry.name)")
@@ -260,8 +287,9 @@ struct ManualMealLogView: View {
             LocalDailyLogStore.shared.addMeal(loggedMeal)
         }
         
-        // 5️⃣ UPDATE UI IMMEDIATELY
+        // 5️⃣ NOTIFY UI IMMEDIATELY
         await MainActor.run {
+            NotificationCenter.default.post(name: NSNotification.Name("MealSaved"), object: nil)
             showSuccess = true
         }
         

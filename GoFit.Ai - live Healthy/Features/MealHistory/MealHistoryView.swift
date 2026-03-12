@@ -2,7 +2,7 @@ import SwiftUI
 
 struct MealHistoryView: View {
     @EnvironmentObject var auth: AuthViewModel
-    @StateObject private var logStore = LocalDailyLogStore.shared
+    @ObservedObject private var logStore = LocalDailyLogStore.shared
     @State private var selectedDate: Date = Date() // Default to current day
     @State private var showingDailyDetails = false
     
@@ -56,7 +56,12 @@ struct MealHistoryView: View {
                 DailyDetailsSheet(date: selectedDate, isPresented: $showingDailyDetails)
             }
             .onAppear {
-                _ = logStore.logs
+                // Force reload from disk to pick up any meals saved while on another tab
+                logStore.reloadFromDisk()
+            }
+            .onReceive(NotificationCenter.default.publisher(for: NSNotification.Name("MealSaved"))) { _ in
+                // Immediately reload when a new meal is saved from scanner
+                logStore.reloadFromDisk()
             }
         }
     }
@@ -167,24 +172,78 @@ struct MealHistoryView: View {
                     .foregroundColor(.secondary)
             }
             
-            ForEach(log.meals.prefix(3).sorted(by: { $0.timestamp > $1.timestamp })) { meal in
-                HStack {
-                    Image(systemName: meal.mealType.icon)
-                        .foregroundColor(Design.Colors.primary)
-                    Text(meal.mealType.displayName)
-                        .font(Design.Typography.body)
-                    Spacer()
-                    Text("\(Int(meal.totalCalories)) kcal")
-                        .font(Design.Typography.caption)
-                        .foregroundColor(.secondary)
+            ForEach(log.meals.sorted(by: { $0.timestamp > $1.timestamp })) { meal in
+                VStack(alignment: .leading, spacing: 6) {
+                    HStack {
+                        Image(systemName: meal.mealType.icon)
+                            .foregroundColor(Design.Colors.primary)
+                        Text(meal.mealType.displayName)
+                            .font(Design.Typography.body)
+                            .fontWeight(.medium)
+                        Spacer()
+                        Text("\(Int(meal.totalCalories)) kcal")
+                            .font(Design.Typography.caption)
+                            .fontWeight(.semibold)
+                            .foregroundColor(Design.Colors.calories)
+                        
+                        Text(formatTime(meal.timestamp))
+                            .font(.caption2)
+                            .foregroundColor(.secondary)
+                    }
+                    
+                    // Show individual food items
+                    if !meal.items.isEmpty {
+                        ForEach(meal.items.prefix(4)) { item in
+                            HStack(spacing: Design.Spacing.sm) {
+                                Circle()
+                                    .fill(Design.Colors.primary.opacity(0.3))
+                                    .frame(width: 5, height: 5)
+                                
+                                Text(item.name)
+                                    .font(Design.Typography.caption)
+                                    .foregroundColor(.secondary)
+                                    .lineLimit(1)
+                                
+                                Spacer()
+                                
+                                HStack(spacing: 6) {
+                                    Text("\(Int(item.calories)) kcal")
+                                        .font(.caption2)
+                                        .foregroundColor(.secondary)
+                                    
+                                    Text("P:\(Int(item.protein))g")
+                                        .font(.caption2)
+                                        .foregroundColor(Design.Colors.protein)
+                                }
+                            }
+                            .padding(.leading, 24)
+                        }
+                        
+                        if meal.items.count > 4 {
+                            Text("+ \(meal.items.count - 4) more items")
+                                .font(.caption2)
+                                .foregroundColor(Design.Colors.primary)
+                                .padding(.leading, 24)
+                        }
+                    }
+                    
+                    // Show macros summary row
+                    HStack(spacing: Design.Spacing.md) {
+                        Label("\(Int(meal.totalProtein))g", systemImage: "p.circle.fill")
+                            .font(.caption2)
+                            .foregroundColor(Design.Colors.protein)
+                        Label("\(Int(meal.totalCarbs))g", systemImage: "c.circle.fill")
+                            .font(.caption2)
+                            .foregroundColor(Design.Colors.carbs)
+                        Label("\(Int(meal.totalFat))g", systemImage: "f.circle.fill")
+                            .font(.caption2)
+                            .foregroundColor(Design.Colors.fat)
+                    }
+                    .padding(.leading, 24)
                 }
-            }
-            
-            if log.meals.count > 3 {
-                Text("+ \(log.meals.count - 3) more meals")
-                    .font(Design.Typography.caption)
-                    .foregroundColor(.secondary)
-                    .italic()
+                .padding(Design.Spacing.sm)
+                .background(Design.Colors.secondaryBackground.opacity(0.5))
+                .cornerRadius(Design.Radius.small)
             }
         }
         .padding(Design.Spacing.md)
@@ -261,5 +320,11 @@ struct MealHistoryView: View {
             formatter.dateStyle = .medium
             return formatter.string(from: date)
         }
+    }
+    
+    private func formatTime(_ date: Date) -> String {
+        let formatter = DateFormatter()
+        formatter.timeStyle = .short
+        return formatter.string(from: date)
     }
 }

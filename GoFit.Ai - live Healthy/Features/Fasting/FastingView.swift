@@ -1,12 +1,7 @@
 import SwiftUI
 
 struct FastingView: View {
-    @State private var fastingStart: Date? = nil
-    @State private var fastingWindowHours = 16
-    @State private var isFasting = false
-    @State private var timeRemaining: TimeInterval = 0
-    @State private var progress: Double = 0
-    @State private var streak: Int = 7
+    @ObservedObject private var model = FastingTimerModel.shared
     @Environment(\.dismiss) var dismiss
     @State private var animateTimer = false
 
@@ -26,7 +21,7 @@ struct FastingView: View {
                             .padding(.horizontal, Design.Spacing.md)
                             .delayedAppear(0.1)
                         
-                        if !isFasting {
+                        if !model.isFasting {
                             presetWindowsSection
                                 .padding(.horizontal, Design.Spacing.md)
                                 .delayedAppear(0.2)
@@ -35,6 +30,12 @@ struct FastingView: View {
                         streakCard
                             .padding(.horizontal, Design.Spacing.md)
                             .delayedAppear(0.3)
+                        
+                        if !model.fastingHistory.isEmpty {
+                            historyCard
+                                .padding(.horizontal, Design.Spacing.md)
+                                .delayedAppear(0.35)
+                        }
                         
                         actionButton
                             .padding(.horizontal, Design.Spacing.md)
@@ -56,7 +57,7 @@ struct FastingView: View {
                 }
             }
             .onReceive(Timer.publish(every: 1, on: .main, in: .common).autoconnect()) { _ in
-                updateTimer()
+                model.updateTimer()
             }
             .onAppear {
                 withAnimation(Design.Animation.spring) {
@@ -73,31 +74,35 @@ struct FastingView: View {
                 .frame(width: 220, height: 220)
 
             Circle()
-                .trim(from: 0, to: progress)
+                .trim(from: 0, to: model.progress)
                 .stroke(
                     Design.Colors.primaryGradient,
                     style: StrokeStyle(lineWidth: 20, lineCap: .round)
                 )
                 .frame(width: 220, height: 220)
                 .rotationEffect(.degrees(-90))
-                .animation(Design.Animation.spring, value: progress)
+                .animation(Design.Animation.spring, value: model.progress)
 
             VStack(spacing: 8) {
-                if isFasting {
-                    Text(timeString(from: timeRemaining))
+                if model.isFasting {
+                    Text(model.remainingString)
                         .font(Design.Typography.title)
                         .foregroundColor(Design.Colors.primary)
-                        .animation(.easeInOut(duration: 0.2), value: timeRemaining)
+                        .animation(.easeInOut(duration: 0.2), value: model.timeRemaining)
 
                     Text("remaining")
                         .font(Design.Typography.caption)
+                        .foregroundColor(.secondary)
+                    
+                    Text(model.elapsedString + " elapsed")
+                        .font(.caption2)
                         .foregroundColor(.secondary)
                 } else {
                     Text("Ready to Fast")
                         .font(Design.Typography.headline)
                         .foregroundColor(.secondary)
 
-                    Text("\(fastingWindowHours)h")
+                    Text("\(model.fastingWindowHours)h")
                         .font(Design.Typography.largeTitle)
                         .foregroundColor(Design.Colors.primary)
                 }
@@ -112,17 +117,17 @@ struct FastingView: View {
     private var statusCard: some View {
         VStack(spacing: Design.Spacing.md) {
             HStack {
-                Image(systemName: isFasting ? "timer" : "clock")
+                Image(systemName: model.isFasting ? "timer" : "clock")
                     .foregroundColor(Design.Colors.primary)
                     .font(.title3)
                 
-                Text(isFasting ? "Fasting in Progress" : "Not Fasting")
+                Text(model.isFasting ? "Fasting in Progress" : "Not Fasting")
                     .font(Design.Typography.headline)
                 
                 Spacer()
             }
             
-            if isFasting, let start = fastingStart {
+            if model.isFasting, let start = model.fastingStart {
                 Divider()
                 
                 HStack {
@@ -140,7 +145,7 @@ struct FastingView: View {
                         Text("Target")
                             .font(Design.Typography.caption)
                             .foregroundColor(.secondary)
-                        Text("\(fastingWindowHours) hours")
+                        Text("\(model.fastingWindowHours) hours")
                             .font(Design.Typography.subheadline)
                     }
                 }
@@ -163,22 +168,19 @@ struct FastingView: View {
                 PresetButton(hours: 16, label: "16:8") {
                     HapticManager.shared.mediumTap()
                     withAnimation(.easeInOut(duration: 0.2)) {
-                        fastingWindowHours = 16
-                        startFast()
+                        model.startFast(hours: 16)
                     }
                 }
                 PresetButton(hours: 18, label: "18:6") {
                     HapticManager.shared.mediumTap()
                     withAnimation(.easeInOut(duration: 0.2)) {
-                        fastingWindowHours = 18
-                        startFast()
+                        model.startFast(hours: 18)
                     }
                 }
                 PresetButton(hours: 20, label: "20:4") {
                     HapticManager.shared.mediumTap()
                     withAnimation(.easeInOut(duration: 0.2)) {
-                        fastingWindowHours = 20
-                        startFast()
+                        model.startFast(hours: 20)
                     }
                 }
             }
@@ -204,7 +206,7 @@ struct FastingView: View {
                     .foregroundColor(.secondary)
                 
                 HStack(alignment: .firstTextBaseline, spacing: 4) {
-                    Text("\(streak)")
+                    Text("\(model.streak)")
                         .font(Design.Typography.title)
                         .foregroundColor(.primary)
                     Text("days")
@@ -214,6 +216,49 @@ struct FastingView: View {
             }
             
             Spacer()
+            
+            VStack(alignment: .trailing, spacing: 4) {
+                Text("\(model.completedFasts)")
+                    .font(Design.Typography.headline)
+                    .foregroundColor(Design.Colors.primary)
+                Text("completed")
+                    .font(Design.Typography.caption)
+                    .foregroundColor(.secondary)
+            }
+        }
+        .padding(Design.Spacing.lg)
+        .background(Design.Colors.cardBackground)
+        .cornerRadius(Design.Radius.large)
+        .shadow(color: Color.primary.opacity(0.06), radius: 12, x: 0, y: 4)
+    }
+    
+    // MARK: - History Card
+    private var historyCard: some View {
+        VStack(alignment: .leading, spacing: Design.Spacing.md) {
+            Text("Recent Fasts")
+                .font(Design.Typography.headline)
+            
+            ForEach(model.fastingHistory.prefix(5)) { record in
+                HStack {
+                    Image(systemName: record.completed ? "checkmark.circle.fill" : "xmark.circle")
+                        .foregroundColor(record.completed ? .green : .orange)
+                    
+                    VStack(alignment: .leading, spacing: 2) {
+                        Text(record.startDate.formatted(date: .abbreviated, time: .shortened))
+                            .font(Design.Typography.caption)
+                        Text(record.actualHoursFormatted)
+                            .font(Design.Typography.subheadline)
+                            .fontWeight(.medium)
+                    }
+                    
+                    Spacer()
+                    
+                    Text("\(record.targetHours)h target")
+                        .font(.caption)
+                        .foregroundColor(.secondary)
+                }
+                .padding(.vertical, 4)
+            }
         }
         .padding(Design.Spacing.lg)
         .background(Design.Colors.cardBackground)
@@ -226,26 +271,24 @@ struct FastingView: View {
         Button(action: {
             HapticManager.shared.mediumTap()
             withAnimation(.spring(response: 0.3, dampingFraction: 0.7)) {
-                if isFasting {
-                    endFast()
-                    HapticManager.shared.warning()
+                if model.isFasting {
+                    model.endFast()
                 } else {
-                    startFast()
-                    HapticManager.shared.success()
+                    model.startFast()
                 }
             }
         }) {
             HStack {
-                Image(systemName: isFasting ? "stop.circle.fill" : "play.circle.fill")
+                Image(systemName: model.isFasting ? "stop.circle.fill" : "play.circle.fill")
                     .font(.title3)
-                Text(isFasting ? "End Fast" : "Start Fast")
+                Text(model.isFasting ? "End Fast" : "Start Fast")
                     .font(Design.Typography.headline)
             }
             .foregroundColor(.white)
             .frame(maxWidth: .infinity)
             .padding(Design.Spacing.md)
             .background(
-                isFasting ?
+                model.isFasting ?
                 LinearGradient(
                     colors: [Color.red, Color.red.opacity(0.8)],
                     startPoint: .leading,
@@ -257,50 +300,6 @@ struct FastingView: View {
             .shadow(color: Design.Colors.primary.opacity(0.3), radius: 12, x: 0, y: 6)
         }
         .buttonStyle(SmoothButtonStyle())
-    }
-    
-    // MARK: - Functions
-    func startFast() {
-        withAnimation(Design.Animation.spring) {
-        fastingStart = Date()
-        isFasting = true
-        timeRemaining = TimeInterval(fastingWindowHours * 3600)
-            progress = 0
-        }
-    }
-    
-    func endFast() {
-        withAnimation(Design.Animation.spring) {
-        fastingStart = nil
-        isFasting = false
-        timeRemaining = 0
-            progress = 0
-        }
-    }
-    
-    func updateTimer() {
-        guard isFasting, let start = fastingStart else { return }
-        let elapsed = Date().timeIntervalSince(start)
-        let total = TimeInterval(fastingWindowHours * 3600)
-        timeRemaining = max(0, total - elapsed)
-        
-        // Prevent division by zero
-        if total > 0 {
-            progress = min(1.0, elapsed / total)
-        } else {
-            progress = 0
-        }
-        
-        if timeRemaining == 0 {
-            endFast()
-        }
-    }
-    
-    func timeString(from seconds: TimeInterval) -> String {
-        let h = Int(seconds) / 3600
-        let m = (Int(seconds) % 3600) / 60
-        let s = Int(seconds) % 60
-        return String(format: "%02d:%02d:%02d", h, m, s)
     }
 }
 

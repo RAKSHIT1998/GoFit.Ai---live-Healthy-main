@@ -40,10 +40,10 @@ router.post('/meal/share', authenticateToken, async (req, res) => {
       visibility,
       sharedWith: sharedWith || [],
       metadata: {
-        calories: meal.totalCalories,
-        protein: meal.totalProtein,
-        carbs: meal.totalCarbs,
-        fats: meal.totalFats
+        calories: meal.totalCalories || 0,
+        protein: meal.totalProtein || 0,
+        carbs: meal.totalCarbs || 0,
+        fats: meal.totalFat || 0
       }
     });
 

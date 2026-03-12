@@ -437,6 +437,25 @@ class WebSocketService: ObservableObject {
         )
 
         self.latestMessage = notification
+        
+        // Show local notification for incoming message
+        Task { @MainActor in
+            NotificationService.shared.showLocalNotification(
+                title: "💬 \(senderName)",
+                body: message
+            )
+        }
+        
+        // Post notification for in-app banner
+        NotificationCenter.default.post(
+            name: NSNotification.Name("NewMessageReceived"),
+            object: nil,
+            userInfo: [
+                "senderName": senderName,
+                "message": message,
+                "senderId": senderId
+            ]
+        )
     }
     
     // MARK: - Connection Lifecycle

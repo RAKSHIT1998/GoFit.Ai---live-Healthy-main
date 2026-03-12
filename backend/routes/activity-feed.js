@@ -177,10 +177,10 @@ router.post('/share/meal/:mealId', authenticateToken, async (req, res) => {
           metadata: {
             mealName: meal.mealName,
             mealType: meal.mealType,
-            calories: meal.totalCalories,
-            protein: meal.totalProtein,
-            carbs: meal.totalCarbs,
-            fats: meal.totalFats
+            calories: meal.totalCalories || 0,
+            protein: meal.totalProtein || 0,
+            carbs: meal.totalCarbs || 0,
+            fats: meal.totalFat || 0
           }
         });
         return activity.save();

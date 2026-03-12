@@ -8,11 +8,13 @@ struct RootView: View {
     @EnvironmentObject var adManager: AdManager
 
     @AppStorage("pendingFriendInviteId") private var pendingFriendInviteId: String = ""
+    @AppStorage("hasSeenFirstTimeAppTutorial") private var hasSeenFirstTimeAppTutorial: Bool = false
     
     @State private var hasCheckedSubscriptionAfterLogin = false
     @State private var hasShownInitialAd = false
     @State private var showSplash = true
     @State private var isAppReady = false
+    @State private var showFirstTimeTutorial = false
     
     var body: some View {
         ZStack {
@@ -105,6 +107,10 @@ struct RootView: View {
                 await MainActor.run {
                     isAppReady = true
                 }
+
+                await MainActor.run {
+                    evaluateTutorialPresentation()
+                }
                 
                 // Show app open ad if user doesn't have subscription (after splash)
                 if auth.isLoggedIn && !hasShownInitialAd && !purchases.hasActiveSubscription {
@@ -132,6 +138,7 @@ struct RootView: View {
                     
                     await MainActor.run {
                         hasCheckedSubscriptionAfterLogin = true
+                        evaluateTutorialPresentation()
                     }
                     
                     // Show app open ad if user doesn't have subscription
@@ -162,6 +169,18 @@ struct RootView: View {
                 healthKit.stopPeriodicSync()
             }
         }
+        .onChange(of: showSplash) { _, _ in
+            evaluateTutorialPresentation()
+        }
+        .onChange(of: purchases.requiresSubscription) { _, _ in
+            evaluateTutorialPresentation()
+        }
+        .fullScreenCover(isPresented: $showFirstTimeTutorial) {
+            FirstTimeTutorialView {
+                hasSeenFirstTimeAppTutorial = true
+                showFirstTimeTutorial = false
+            }
+        }
         .onChange(of: purchases.subscriptionStatus) { oldValue, newValue in
             // Bugfix: When subscription status changes (e.g., after purchase), immediately
             // update requiresSubscription/showPaywall to dismiss blocking paywall.
@@ -175,6 +194,19 @@ struct RootView: View {
         }
         .onOpenURL { url in
             handleInviteURL(url)
+        }
+    }
+
+    private func evaluateTutorialPresentation() {
+        let canShowMainContent = auth.isLoggedIn && hasCheckedSubscriptionAfterLogin && !purchases.requiresSubscription
+        let shouldShow = auth.didFinishOnboarding
+            && canShowMainContent
+            && isAppReady
+            && !showSplash
+            && !hasSeenFirstTimeAppTutorial
+
+        if shouldShow && !showFirstTimeTutorial {
+            showFirstTimeTutorial = true
         }
     }
 

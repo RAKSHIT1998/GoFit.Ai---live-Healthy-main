@@ -6,6 +6,8 @@ struct HomeDashboardView: View {
     @EnvironmentObject var purchases: PurchaseManager
     @StateObject private var healthKit = HealthKitService.shared
     @ObservedObject private var streakManager = StreakManager.shared
+    @ObservedObject private var fastingModel = FastingTimerModel.shared
+    @State private var showingSleepTracker = false
 
     @State private var showingScanner = false
     @State private var showingHistory = false
@@ -36,6 +38,11 @@ struct HomeDashboardView: View {
 
     @State private var isLoading = false
     @State private var animateCards = false
+    
+    // Inline AI Recommendations
+    @State private var aiRecommendation: RecommendationResponse?
+    @State private var aiRecommendationLoading = false
+    @State private var isUsingFallback = true
 
     var body: some View {
         NavigationView {
@@ -62,6 +69,10 @@ struct HomeDashboardView: View {
                         quickActionsSection
                             .delayedAppear(0.2)
                         
+                        // Fasting Card - Prominent inline card
+                        fastingCard
+                            .delayedAppear(0.23)
+                        
                         // Sleep Tracker Card
                         SleepCard()
                             .delayedAppear(0.25)
@@ -76,8 +87,17 @@ struct HomeDashboardView: View {
                             .delayedAppear(0.4)
                         sugarMeterCard
                             .delayedAppear(0.5)
-                        aiRecommendationsCard
+                        
+                        // Inline AI Workout Recommendations
+                        aiWorkoutSection
+                            .delayedAppear(0.55)
+                        
+                        // Inline AI Meal Recommendations
+                        aiMealSection
                             .delayedAppear(0.6)
+                        
+                        aiRecommendationsCard
+                            .delayedAppear(0.65)
                     }
                     .padding(.horizontal, Design.Spacing.md)
                     .padding(.bottom, Design.Spacing.xl)
@@ -91,6 +111,7 @@ struct HomeDashboardView: View {
                     await loadSummary()
                     await loadWaterIntake()
                     await loadHealthData()
+                    await loadInlineRecommendations()
                     if healthKit.isAuthorized {
                         await healthKit.readTodayData()
                         try? await healthKit.syncToBackend()
@@ -138,6 +159,9 @@ struct HomeDashboardView: View {
             .sheet(isPresented: $showingFasting) {
                 FastingView()
             }
+            .sheet(isPresented: $showingSleepTracker) {
+                SleepTrackerView()
+            }
             .sheet(isPresented: $showingWorkout) {
                 WorkoutSuggestionsView().environmentObject(auth)
             }
@@ -175,6 +199,9 @@ struct HomeDashboardView: View {
                     _ = await (targetCalories, liquidGoal, summary, water, backendHealth)
 
                     await syncHealthData()
+                    
+                    // Load inline AI recommendations
+                    await loadInlineRecommendations()
                 }
             }
             .onReceive(NotificationCenter.default.publisher(for: NSNotification.Name("MealSaved"))) { _ in
@@ -451,6 +478,85 @@ struct HomeDashboardView: View {
                 }
                 .buttonStyle(SmoothButtonStyle())
             }
+            
+            // Second row: Fasting + Sleep
+            HStack(spacing: Design.Spacing.md) {
+                Button {
+                    HapticManager.shared.mediumTap()
+                    withAnimation(.easeInOut(duration: 0.2)) {
+                        showingFasting = true
+                    }
+                } label: {
+                    VStack(spacing: 12) {
+                        ZStack {
+                            Image(systemName: "timer")
+                                .font(.title)
+                                .foregroundColor(.white)
+                                .frame(width: 60, height: 60)
+                                .background(
+                                    LinearGradient(
+                                        colors: [.orange, .red],
+                                        startPoint: .topLeading,
+                                        endPoint: .bottomTrailing
+                                    )
+                                )
+                                .clipShape(Circle())
+                            
+                            if fastingModel.isFasting {
+                                Circle()
+                                    .fill(.green)
+                                    .frame(width: 14, height: 14)
+                                    .overlay(
+                                        Circle().stroke(Design.Colors.cardBackground, lineWidth: 2)
+                                    )
+                                    .offset(x: 20, y: -20)
+                            }
+                        }
+                        
+                        Text("Fasting")
+                            .font(Design.Typography.caption)
+                            .foregroundColor(.primary)
+                    }
+                    .frame(maxWidth: .infinity)
+                    .padding(.vertical, Design.Spacing.md)
+                    .background(Design.Colors.cardBackground)
+                    .cornerRadius(16)
+                    .shadow(color: Color.primary.opacity(0.06), radius: 8, x: 0, y: 2)
+                }
+                .buttonStyle(SmoothButtonStyle())
+                
+                Button {
+                    HapticManager.shared.mediumTap()
+                    withAnimation(.easeInOut(duration: 0.2)) {
+                        showingSleepTracker = true
+                    }
+                } label: {
+                    VStack(spacing: 12) {
+                        Image(systemName: "moon.stars.fill")
+                            .font(.title)
+                            .foregroundColor(.white)
+                            .frame(width: 60, height: 60)
+                            .background(
+                                LinearGradient(
+                                    colors: [.purple, .indigo],
+                                    startPoint: .topLeading,
+                                    endPoint: .bottomTrailing
+                                )
+                            )
+                            .clipShape(Circle())
+                        
+                        Text("Sleep")
+                            .font(Design.Typography.caption)
+                            .foregroundColor(.primary)
+                    }
+                    .frame(maxWidth: .infinity)
+                    .padding(.vertical, Design.Spacing.md)
+                    .background(Design.Colors.cardBackground)
+                    .cornerRadius(16)
+                    .shadow(color: Color.primary.opacity(0.06), radius: 8, x: 0, y: 2)
+                }
+                .buttonStyle(SmoothButtonStyle())
+            }
         }
     }
 
@@ -648,6 +754,487 @@ struct HomeDashboardView: View {
         .shadow(color: Color.primary.opacity(0.06), radius: 10, x: 0, y: 2)
     }
 
+    // MARK: - Fasting Card (Prominent Inline)
+    private var fastingCard: some View {
+        Button {
+            HapticManager.shared.lightTap()
+            showingFasting = true
+        } label: {
+            VStack(alignment: .leading, spacing: Design.Spacing.md) {
+                HStack {
+                    HStack(spacing: 8) {
+                        ZStack {
+                            Circle()
+                                .fill(
+                                    LinearGradient(
+                                        colors: [.orange.opacity(0.2), .red.opacity(0.15)],
+                                        startPoint: .topLeading,
+                                        endPoint: .bottomTrailing
+                                    )
+                                )
+                                .frame(width: 40, height: 40)
+                            
+                            Image(systemName: "timer")
+                                .font(.system(size: 18))
+                                .foregroundColor(.orange)
+                        }
+                        
+                        Text("Intermittent Fasting")
+                            .font(.headline)
+                            .foregroundColor(.primary)
+                    }
+                    
+                    Spacer()
+                    
+                    if fastingModel.isFasting {
+                        Text("Active")
+                            .font(.caption2)
+                            .fontWeight(.semibold)
+                            .foregroundColor(.green)
+                            .padding(.horizontal, 8)
+                            .padding(.vertical, 3)
+                            .background(Color.green.opacity(0.15))
+                            .cornerRadius(8)
+                    }
+                    
+                    Image(systemName: "chevron.right")
+                        .font(.caption)
+                        .foregroundColor(.secondary)
+                }
+                
+                if fastingModel.isFasting {
+                    // Active fasting state
+                    HStack(spacing: Design.Spacing.lg) {
+                        VStack(alignment: .leading, spacing: 4) {
+                            Text(fastingModel.remainingString)
+                                .font(.system(size: 28, weight: .bold, design: .rounded))
+                                .foregroundColor(.primary)
+                            Text("remaining")
+                                .font(.caption)
+                                .foregroundColor(.secondary)
+                        }
+                        
+                        Spacer()
+                        
+                        VStack(alignment: .trailing, spacing: 4) {
+                            Text(fastingModel.elapsedString)
+                                .font(.headline)
+                                .foregroundColor(Design.Colors.primary)
+                            Text("elapsed")
+                                .font(.caption)
+                                .foregroundColor(.secondary)
+                        }
+                    }
+                    
+                    // Progress bar
+                    GeometryReader { geo in
+                        ZStack(alignment: .leading) {
+                            RoundedRectangle(cornerRadius: 6)
+                                .fill(Color.gray.opacity(0.15))
+                                .frame(height: 10)
+                            
+                            RoundedRectangle(cornerRadius: 6)
+                                .fill(
+                                    LinearGradient(
+                                        colors: [.orange, Design.Colors.primary],
+                                        startPoint: .leading,
+                                        endPoint: .trailing
+                                    )
+                                )
+                                .frame(width: geo.size.width * fastingModel.progress, height: 10)
+                                .animation(.easeInOut(duration: 0.3), value: fastingModel.progress)
+                        }
+                    }
+                    .frame(height: 10)
+                    
+                    HStack {
+                        Text("\(fastingModel.fastingWindowHours):\(24 - fastingModel.fastingWindowHours) window")
+                            .font(.caption)
+                            .foregroundColor(.secondary)
+                        Spacer()
+                        Text("\(Int(fastingModel.progress * 100))%")
+                            .font(.caption)
+                            .fontWeight(.semibold)
+                            .foregroundColor(.orange)
+                    }
+                } else {
+                    // Not fasting — quick start options
+                    HStack(spacing: Design.Spacing.md) {
+                        ForEach([("16:8", 16), ("18:6", 18), ("20:4", 20)], id: \.0) { label, hours in
+                            Button {
+                                HapticManager.shared.mediumTap()
+                                withAnimation(.spring(response: 0.3, dampingFraction: 0.7)) {
+                                    fastingModel.startFast(hours: hours)
+                                }
+                            } label: {
+                                VStack(spacing: 4) {
+                                    Text("\(hours)h")
+                                        .font(.headline)
+                                        .foregroundColor(Design.Colors.primary)
+                                    Text(label)
+                                        .font(.caption2)
+                                        .foregroundColor(.secondary)
+                                }
+                                .frame(maxWidth: .infinity)
+                                .padding(.vertical, 10)
+                                .background(Design.Colors.primary.opacity(0.08))
+                                .cornerRadius(12)
+                            }
+                        }
+                    }
+                    
+                    if fastingModel.streak > 0 {
+                        HStack(spacing: 4) {
+                            Image(systemName: "flame.fill")
+                                .font(.caption)
+                                .foregroundColor(.orange)
+                            Text("\(fastingModel.streak) day streak")
+                                .font(.caption)
+                                .foregroundColor(.secondary)
+                            Spacer()
+                            Text("\(fastingModel.completedFasts) fasts completed")
+                                .font(.caption)
+                                .foregroundColor(.secondary)
+                        }
+                    }
+                }
+            }
+            .padding(Design.Spacing.lg)
+            .background(Design.Colors.cardBackground)
+            .cornerRadius(16)
+            .shadow(color: Color.primary.opacity(0.06), radius: 10, x: 0, y: 2)
+        }
+        .buttonStyle(.plain)
+        .onReceive(Timer.publish(every: 1, on: .main, in: .common).autoconnect()) { _ in
+            if fastingModel.isFasting {
+                fastingModel.updateTimer()
+            }
+        }
+    }
+    
+    // MARK: - Inline AI Workout Section
+    private var aiWorkoutSection: some View {
+        VStack(alignment: .leading, spacing: Design.Spacing.md) {
+            HStack {
+                Image(systemName: "figure.run")
+                    .foregroundColor(Design.Colors.steps)
+                    .font(.title3)
+                Text("Today's Workouts")
+                    .font(Design.Typography.headline)
+                    .foregroundColor(.primary)
+                
+                Spacer()
+                
+                if isUsingFallback {
+                    Text("Built-in")
+                        .font(.caption2)
+                        .foregroundColor(.secondary)
+                        .padding(.horizontal, 6)
+                        .padding(.vertical, 2)
+                        .background(Color.gray.opacity(0.15))
+                        .cornerRadius(4)
+                } else {
+                    HStack(spacing: 2) {
+                        Image(systemName: "sparkles")
+                            .font(.caption2)
+                        Text("AI")
+                            .font(.caption2)
+                    }
+                    .foregroundColor(Design.Colors.primary)
+                    .padding(.horizontal, 6)
+                    .padding(.vertical, 2)
+                    .background(Design.Colors.primary.opacity(0.1))
+                    .cornerRadius(4)
+                }
+                
+                Button {
+                    HapticManager.shared.lightTap()
+                    showingWorkout = true
+                } label: {
+                    Text("See All")
+                        .font(Design.Typography.caption)
+                        .foregroundColor(Design.Colors.primary)
+                }
+            }
+            
+            if aiRecommendationLoading && aiRecommendation == nil {
+                HStack {
+                    Spacer()
+                    ProgressView()
+                        .scaleEffect(0.8)
+                    Text("Loading workouts...")
+                        .font(Design.Typography.caption)
+                        .foregroundColor(.secondary)
+                    Spacer()
+                }
+                .padding(Design.Spacing.lg)
+            } else if let rec = aiRecommendation, !rec.workoutPlan.exercises.isEmpty {
+                ForEach(Array(rec.workoutPlan.exercises.prefix(3).enumerated()), id: \.offset) { index, exercise in
+                    Button {
+                        HapticManager.shared.lightTap()
+                        showingWorkout = true
+                    } label: {
+                        HStack(spacing: Design.Spacing.md) {
+                            ZStack {
+                                Circle()
+                                    .fill(Design.Colors.primaryGradient)
+                                    .frame(width: 44, height: 44)
+                                
+                                Image(systemName: RecommendationVisualService.shared.getExerciseIcon(for: exercise.name))
+                                    .font(.system(size: 20, weight: .semibold))
+                                    .foregroundColor(.white)
+                            }
+                            
+                            VStack(alignment: .leading, spacing: 2) {
+                                Text(exercise.name)
+                                    .font(Design.Typography.subheadline)
+                                    .fontWeight(.medium)
+                                    .foregroundColor(.primary)
+                                    .lineLimit(1)
+                                
+                                HStack(spacing: Design.Spacing.sm) {
+                                    Label("\(exercise.duration) min", systemImage: "clock.fill")
+                                        .font(.caption2)
+                                        .foregroundColor(.secondary)
+                                    
+                                    Label("\(exercise.calories) kcal", systemImage: "flame.fill")
+                                        .font(.caption2)
+                                        .foregroundColor(Design.Colors.calories)
+                                    
+                                    if let difficulty = exercise.difficulty {
+                                        Text(difficulty.capitalized)
+                                            .font(.caption2)
+                                            .padding(.horizontal, 4)
+                                            .padding(.vertical, 1)
+                                            .background(workoutDifficultyColor(difficulty).opacity(0.2))
+                                            .foregroundColor(workoutDifficultyColor(difficulty))
+                                            .cornerRadius(4)
+                                    }
+                                }
+                            }
+                            
+                            Spacer()
+                            
+                            Image(systemName: "chevron.right")
+                                .font(.caption)
+                                .foregroundColor(.secondary)
+                        }
+                        .padding(Design.Spacing.sm)
+                    }
+                    
+                    if index < min(rec.workoutPlan.exercises.count, 3) - 1 {
+                        Divider()
+                            .padding(.leading, 56)
+                    }
+                }
+                
+                if rec.workoutPlan.exercises.count > 3 {
+                    Button {
+                        HapticManager.shared.lightTap()
+                        showingWorkout = true
+                    } label: {
+                        Text("+ \(rec.workoutPlan.exercises.count - 3) more exercises")
+                            .font(Design.Typography.caption)
+                            .foregroundColor(Design.Colors.primary)
+                            .frame(maxWidth: .infinity, alignment: .center)
+                            .padding(.top, 4)
+                    }
+                }
+            } else {
+                VStack(spacing: Design.Spacing.sm) {
+                    Image(systemName: "figure.run")
+                        .font(.title2)
+                        .foregroundColor(.secondary.opacity(0.4))
+                    Text("Tap to get workout suggestions")
+                        .font(Design.Typography.caption)
+                        .foregroundColor(.secondary)
+                }
+                .frame(maxWidth: .infinity)
+                .padding(Design.Spacing.md)
+                .onTapGesture {
+                    HapticManager.shared.lightTap()
+                    showingWorkout = true
+                }
+            }
+        }
+        .padding(Design.Spacing.lg)
+        .background(Design.Colors.cardBackground)
+        .cornerRadius(16)
+        .shadow(color: Color.primary.opacity(0.06), radius: 10, x: 0, y: 2)
+    }
+    
+    // MARK: - Inline AI Meal Section
+    private var aiMealSection: some View {
+        VStack(alignment: .leading, spacing: Design.Spacing.md) {
+            HStack {
+                Image(systemName: "fork.knife")
+                    .foregroundColor(Design.Colors.calories)
+                    .font(.title3)
+                Text("What to Eat Today")
+                    .font(Design.Typography.headline)
+                    .foregroundColor(.primary)
+                
+                Spacer()
+                
+                if isUsingFallback {
+                    Text("Built-in")
+                        .font(.caption2)
+                        .foregroundColor(.secondary)
+                        .padding(.horizontal, 6)
+                        .padding(.vertical, 2)
+                        .background(Color.gray.opacity(0.15))
+                        .cornerRadius(4)
+                } else {
+                    HStack(spacing: 2) {
+                        Image(systemName: "sparkles")
+                            .font(.caption2)
+                        Text("AI")
+                            .font(.caption2)
+                    }
+                    .foregroundColor(Design.Colors.primary)
+                    .padding(.horizontal, 6)
+                    .padding(.vertical, 2)
+                    .background(Design.Colors.primary.opacity(0.1))
+                    .cornerRadius(4)
+                }
+                
+                Button {
+                    HapticManager.shared.lightTap()
+                    showingWorkout = true
+                } label: {
+                    Text("See All")
+                        .font(Design.Typography.caption)
+                        .foregroundColor(Design.Colors.primary)
+                }
+            }
+            
+            if aiRecommendationLoading && aiRecommendation == nil {
+                HStack {
+                    Spacer()
+                    ProgressView()
+                        .scaleEffect(0.8)
+                    Text("Loading meal plan...")
+                        .font(Design.Typography.caption)
+                        .foregroundColor(.secondary)
+                    Spacer()
+                }
+                .padding(Design.Spacing.lg)
+            } else if let rec = aiRecommendation {
+                let allMeals: [(String, String, [RecommendationMealItem])] = [
+                    ("Breakfast", "sunrise.fill", rec.mealPlan.breakfast),
+                    ("Lunch", "sun.max.fill", rec.mealPlan.lunch),
+                    ("Dinner", "moon.fill", rec.mealPlan.dinner),
+                    ("Snacks", "leaf.fill", rec.mealPlan.snacks)
+                ].filter { !$0.2.isEmpty }
+                
+                if allMeals.isEmpty {
+                    VStack(spacing: Design.Spacing.sm) {
+                        Image(systemName: "fork.knife")
+                            .font(.title2)
+                            .foregroundColor(.secondary.opacity(0.4))
+                        Text("Tap to get meal suggestions")
+                            .font(Design.Typography.caption)
+                            .foregroundColor(.secondary)
+                    }
+                    .frame(maxWidth: .infinity)
+                    .padding(Design.Spacing.md)
+                    .onTapGesture {
+                        HapticManager.shared.lightTap()
+                        showingWorkout = true
+                    }
+                } else {
+                    ForEach(Array(allMeals.enumerated()), id: \.offset) { index, mealGroup in
+                        let (title, icon, meals) = mealGroup
+                        
+                        Button {
+                            HapticManager.shared.lightTap()
+                            showingWorkout = true
+                        } label: {
+                            VStack(alignment: .leading, spacing: 6) {
+                                HStack {
+                                    Image(systemName: icon)
+                                        .foregroundColor(Design.Colors.primary)
+                                        .font(.subheadline)
+                                    Text(title)
+                                        .font(Design.Typography.subheadline)
+                                        .fontWeight(.semibold)
+                                        .foregroundColor(.primary)
+                                    Spacer()
+                                    
+                                    let totalCals = meals.reduce(0) { $0 + Int($1.calories) }
+                                    Text("\(totalCals) kcal")
+                                        .font(.caption)
+                                        .foregroundColor(Design.Colors.calories)
+                                        .fontWeight(.medium)
+                                }
+                                
+                                ForEach(meals.prefix(2)) { meal in
+                                    HStack(spacing: Design.Spacing.sm) {
+                                        Circle()
+                                            .fill(Design.Colors.primary.opacity(0.3))
+                                            .frame(width: 6, height: 6)
+                                        
+                                        Text(meal.name)
+                                            .font(.caption)
+                                            .foregroundColor(.secondary)
+                                            .lineLimit(1)
+                                        
+                                        Spacer()
+                                        
+                                        Text("\(Int(meal.calories)) kcal")
+                                            .font(.caption2)
+                                            .foregroundColor(.secondary)
+                                    }
+                                    .padding(.leading, 20)
+                                }
+                                
+                                if meals.count > 2 {
+                                    Text("+ \(meals.count - 2) more")
+                                        .font(.caption2)
+                                        .foregroundColor(Design.Colors.primary)
+                                        .padding(.leading, 20)
+                                }
+                            }
+                            .padding(.vertical, 4)
+                        }
+                        
+                        if index < allMeals.count - 1 {
+                            Divider()
+                        }
+                    }
+                }
+            } else {
+                VStack(spacing: Design.Spacing.sm) {
+                    Image(systemName: "fork.knife")
+                        .font(.title2)
+                        .foregroundColor(.secondary.opacity(0.4))
+                    Text("Tap to get meal suggestions")
+                        .font(Design.Typography.caption)
+                        .foregroundColor(.secondary)
+                }
+                .frame(maxWidth: .infinity)
+                .padding(Design.Spacing.md)
+                .onTapGesture {
+                    HapticManager.shared.lightTap()
+                    showingWorkout = true
+                }
+            }
+        }
+        .padding(Design.Spacing.lg)
+        .background(Design.Colors.cardBackground)
+        .cornerRadius(16)
+        .shadow(color: Color.primary.opacity(0.06), radius: 10, x: 0, y: 2)
+    }
+    
+    private func workoutDifficultyColor(_ difficulty: String) -> Color {
+        switch difficulty.lowercased() {
+        case "easy", "beginner": return .green
+        case "medium", "moderate", "intermediate": return .orange
+        case "hard", "advanced", "expert": return .red
+        default: return .secondary
+        }
+    }
+    
     // MARK: - AI Recommendations (Clean White Design)
     private var aiRecommendationsCard: some View {
         Button {
@@ -1070,5 +1657,67 @@ struct HomeDashboardView: View {
             }
         }
     }
+    
+    // MARK: - Load Inline AI Recommendations
+    private func loadInlineRecommendations() async {
+        await MainActor.run { aiRecommendationLoading = true }
+        
+        // 1. Load built-in fallback data immediately
+        let goal = auth.goal.isEmpty ? "maintain" : auth.goal
+        let activityLevel = "moderate"
+        let dietaryPreferences = auth.dietPrefs
+        
+        let fallbackMeals = FallbackDataService.shared.getRandomMeals(goal: goal, count: 4, useTimestamp: false, dietaryPreferences: dietaryPreferences)
+        let fallbackWorkouts = FallbackDataService.shared.getRandomWorkouts(activityLevel: activityLevel, count: 4, useTimestamp: false)
+        
+        let fallbackRecommendation = RecommendationResponse(
+            mealPlan: fallbackMeals,
+            workoutPlan: fallbackWorkouts,
+            hydrationGoal: HydrationGoal(targetLiters: 2.5),
+            insights: [
+                "✨ Daily rotating recipes and workouts",
+                "🍽️ Complete ingredients and cooking instructions",
+                "💪 Detailed workout instructions with sets & reps"
+            ]
+        )
+        
+        await MainActor.run {
+            aiRecommendation = fallbackRecommendation
+            isUsingFallback = true
+            aiRecommendationLoading = false
+        }
+        
+        // 2. Try to load AI recommendations from backend
+        guard auth.isLoggedIn,
+              let token = AuthService.shared.readToken()?.accessToken, !token.isEmpty else {
+            return
+        }
+        
+        do {
+            let response: RecommendationResponse = try await NetworkManager.shared.request(
+                "recommendations/daily",
+                method: "GET",
+                body: nil
+            )
+            
+            let hasMeals = !response.mealPlan.breakfast.isEmpty ||
+                          !response.mealPlan.lunch.isEmpty ||
+                          !response.mealPlan.dinner.isEmpty ||
+                          !response.mealPlan.snacks.isEmpty
+            let hasWorkouts = !response.workoutPlan.exercises.isEmpty
+            
+            if hasMeals || hasWorkouts {
+                await MainActor.run {
+                    aiRecommendation = response
+                    isUsingFallback = false
+                    print("✅ AI recommendations loaded for home dashboard")
+                }
+            }
+        } catch {
+            #if DEBUG
+            print("⚠️ AI recommendations unavailable for home, using built-in: \(error.localizedDescription)")
+            #endif
+            // Keep fallback data - no need to do anything
+        }
+    }
 }
-

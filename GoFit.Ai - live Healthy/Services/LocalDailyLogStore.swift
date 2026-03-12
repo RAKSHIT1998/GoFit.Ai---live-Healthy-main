@@ -48,21 +48,13 @@ final class LocalDailyLogStore: ObservableObject {
         }
     }
     
-    private func persist() {
-        // This method is called from within sync blocks, so we need to persist asynchronously
-        // to avoid deadlocks. The data is already captured by the caller's sync block context.
-        // We'll encode and write on a background queue to avoid blocking.
-        DispatchQueue.global(qos: .utility).async { [weak self] in
+    private func persist(_ logsToSave: [DailyLog]) {
+        // Dispatch on storageLock so that any subsequent load() (storageLock.sync)
+        // will wait for this write to complete first — prevents stale reads.
+        storageLock.async { [weak self] in
             guard let self = self else { return }
-            
-            // Capture current state synchronously
-            let logsToPersist: [DailyLog] = self.storageLock.sync {
-                return self.logs
-            }
-            
-            // Persist outside the lock
             do {
-                let data = try JSONEncoder().encode(logsToPersist)
+                let data = try JSONEncoder().encode(logsToSave)
                 try data.write(to: self.storageURL, options: [.atomic])
             } catch {
                 print("⚠️ Failed to persist daily logs: \(error)")
@@ -115,7 +107,7 @@ final class LocalDailyLogStore: ObservableObject {
                 self.logs = updatedLogs
             }
             
-            persist()
+            persist(updatedLogs)
             print("✅ Added meal to daily log: \(meal.mealType.displayName)")
         }
     }
@@ -130,7 +122,7 @@ final class LocalDailyLogStore: ObservableObject {
                 DispatchQueue.main.async {
                     self.logs = updatedLogs
                 }
-                persist()
+                persist(updatedLogs)
             }
         }
     }
@@ -160,7 +152,7 @@ final class LocalDailyLogStore: ObservableObject {
                 self.logs = updatedLogs
             }
             
-            persist()
+            persist(updatedLogs)
             print("✅ Added liquid intake: \(entry.amount)L \(entry.beverageType.displayName)")
         }
     }
@@ -175,7 +167,7 @@ final class LocalDailyLogStore: ObservableObject {
                 DispatchQueue.main.async {
                     self.logs = updatedLogs
                 }
-                persist()
+                persist(updatedLogs)
             }
         }
     }
@@ -204,7 +196,7 @@ final class LocalDailyLogStore: ObservableObject {
                 self.logs = updatedLogs
             }
             
-            persist()
+            persist(updatedLogs)
         }
     }
     
@@ -230,7 +222,7 @@ final class LocalDailyLogStore: ObservableObject {
                 self.logs = updatedLogs
             }
             
-            persist()
+            persist(updatedLogs)
         }
     }
     
@@ -301,6 +293,13 @@ final class LocalDailyLogStore: ObservableObject {
         return total / Double(recentLogs.count)
     }
     
+    // MARK: - Reload
+    
+    /// Force reload logs from disk — use when external writes may have occurred
+    func reloadFromDisk() {
+        load()
+    }
+    
     // MARK: - Cleanup
     
     /// Remove logs older than maxDays
@@ -311,11 +310,14 @@ final class LocalDailyLogStore: ObservableObject {
             let cutoff = calendar.startOfDay(for: cutoffDate)
             
             let beforeCount = logs.count
-            logs = logs.filter { $0.date >= cutoff }
-            let afterCount = logs.count
+            let filteredLogs = logs.filter { $0.date >= cutoff }
+            let afterCount = filteredLogs.count
             
             if beforeCount != afterCount {
-                persist()
+                DispatchQueue.main.async {
+                    self.logs = filteredLogs
+                }
+                persist(filteredLogs)
                 print("🧹 Cleaned up \(beforeCount - afterCount) old daily logs")
             }
         }
@@ -324,8 +326,11 @@ final class LocalDailyLogStore: ObservableObject {
     /// Clear all logs
     func clearAll() {
         storageLock.sync {
-            logs.removeAll()
-            persist()
+            let emptyLogs: [DailyLog] = []
+            DispatchQueue.main.async {
+                self.logs = emptyLogs
+            }
+            persist(emptyLogs)
         }
     }
 }
