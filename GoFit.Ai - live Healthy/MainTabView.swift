@@ -34,6 +34,7 @@ struct MainTabView: View {
         }
         .accentColor(Design.Colors.primary)
         .background(Design.Colors.background)
+        .withRewardToasts()
         .onChange(of: selectedTab) { oldValue, newValue in
             withAnimation(Design.Animation.springFast) {
                 previousTab = newValue

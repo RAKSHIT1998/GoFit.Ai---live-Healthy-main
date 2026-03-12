@@ -85,8 +85,6 @@ struct HomeDashboardView: View {
                             .delayedAppear(0.35)
                         waterIntakeCard
                             .delayedAppear(0.4)
-                        sugarMeterCard
-                            .delayedAppear(0.5)
                         
                         // Inline AI Workout Recommendations
                         aiWorkoutSection
@@ -224,6 +222,11 @@ struct HomeDashboardView: View {
                         
                         // Award points for logging a meal
                         streakManager.logMeal()
+                        
+                        // Check water goal for bonus XP
+                        if waterIntake >= liquidIntakeGoal && liquidIntakeGoal > 0 {
+                            RewardEngine.shared.rewardWaterGoal()
+                        }
                     }
                     syncWatchMetrics(
                         calories: localTotals.calories,
@@ -265,56 +268,22 @@ struct HomeDashboardView: View {
         .padding(.vertical, Design.Spacing.sm)
     }
 
-    // MARK: - Main Stats (Clean White Design)
+    // MARK: - Main Stats (Circular Meter Cluster)
     private var mainStatsCard: some View {
         VStack(spacing: Design.Spacing.lg) {
-            // Header with Share Button
+            // Header row
             HStack {
-                VStack(alignment: .leading, spacing: 8) {
+                VStack(alignment: .leading, spacing: 4) {
                     HStack(spacing: 4) {
-                        Text("Calories")
-                            .font(Design.Typography.subheadline)
-                            .foregroundColor(.secondary)
+                        Text("Today's Nutrition")
+                            .font(Design.Typography.headline)
+                            .foregroundColor(.primary)
                         
-                        // AI badge to show this is AI-calculated
                         if targetCalories != nil {
                             Image(systemName: "sparkles")
                                 .font(.caption2)
                                 .foregroundColor(Design.Colors.primary)
                         }
-                    }
-                    
-                    HStack(alignment: .firstTextBaseline, spacing: 8) {
-                        Text(todayCalories)
-                            .font(Design.Typography.largeTitle)
-                            .fontWeight(.bold)
-                            .foregroundColor(.primary)
-                        
-                        // Show target calories if available
-                        if let target = targetCalories {
-                            Text("/ \(target)")
-                                .font(Design.Typography.title3)
-                                .foregroundColor(.secondary)
-                        }
-                    }
-                    
-                    // Progress bar for calories
-                    if let target = targetCalories, target > 0, todayCalories != "—", let current = Int(todayCalories) {
-                        let progress = min(Double(current) / Double(target), 1.0)
-                        GeometryReader { geo in
-                            ZStack(alignment: .leading) {
-                                RoundedRectangle(cornerRadius: 8)
-                                    .fill(Color.gray.opacity(0.1))
-                                    .frame(height: 8)
-                                
-                                RoundedRectangle(cornerRadius: 8)
-                                    .fill(progress >= 1.0 ? Design.Colors.sugar : Design.Colors.primary)
-                                    .frame(width: geo.size.width * min(progress, 1.0), height: 8)
-                                    .animation(Design.Animation.smooth, value: progress)
-                            }
-                        }
-                        .frame(height: 8)
-                        .padding(.top, 4)
                     }
                 }
                 
@@ -328,66 +297,152 @@ struct HomeDashboardView: View {
                         .font(.title3)
                         .foregroundColor(Design.Colors.primary)
                 }
+            }
+            
+            // Central calorie ring + burned
+            HStack(spacing: Design.Spacing.lg) {
+                // Main calorie circle
+                ZStack {
+                    Circle()
+                        .stroke(Color.gray.opacity(0.12), lineWidth: 14)
+                    
+                    let calorieProgress: Double = {
+                        guard let target = targetCalories, target > 0,
+                              todayCalories != "—",
+                              let current = Int(todayCalories) else { return 0 }
+                        return min(Double(current) / Double(target), 1.0)
+                    }()
+                    
+                    Circle()
+                        .trim(from: 0, to: calorieProgress)
+                        .stroke(
+                            AngularGradient(
+                                colors: [Design.Colors.calories, Design.Colors.calories.opacity(0.6)],
+                                center: .center,
+                                angle: .degrees(-90)
+                            ),
+                            style: StrokeStyle(lineWidth: 14, lineCap: .round)
+                        )
+                        .rotationEffect(.degrees(-90))
+                        .animation(Design.Animation.smooth, value: calorieProgress)
+                    
+                    VStack(spacing: 2) {
+                        Text(todayCalories)
+                            .font(.system(size: 28, weight: .bold, design: .rounded))
+                            .foregroundColor(.primary)
+                        
+                        if let target = targetCalories {
+                            Text("/ \(target)")
+                                .font(.system(size: 12, design: .rounded))
+                                .foregroundColor(.secondary)
+                        }
+                        
+                        Text("kcal")
+                            .font(.system(size: 10, weight: .medium, design: .rounded))
+                            .foregroundColor(Design.Colors.calories)
+                    }
+                }
+                .frame(width: 130, height: 130)
                 
-                VStack(alignment: .trailing, spacing: 8) {
-                    Text("Burned")
-                        .font(Design.Typography.subheadline)
-                        .foregroundColor(.secondary)
-                    Text("\(Int(healthKit.todayActiveCalories))")
-                        .font(Design.Typography.title)
-                        .fontWeight(.bold)
-                        .foregroundColor(Design.Colors.steps)
+                // Burned + macro summary
+                VStack(alignment: .leading, spacing: Design.Spacing.md) {
+                    HStack(spacing: 8) {
+                        Image(systemName: "flame.fill")
+                            .foregroundColor(Design.Colors.steps)
+                            .font(.caption)
+                        VStack(alignment: .leading, spacing: 0) {
+                            Text("\(Int(healthKit.todayActiveCalories))")
+                                .font(.system(.headline, design: .rounded))
+                                .fontWeight(.bold)
+                                .foregroundColor(Design.Colors.steps)
+                            Text("Burned")
+                                .font(.system(size: 10))
+                                .foregroundColor(.secondary)
+                        }
+                    }
+                    
+                    let calorieProgress: Double = {
+                        guard let target = targetCalories, target > 0,
+                              todayCalories != "—",
+                              let current = Int(todayCalories) else { return 0 }
+                        return min(Double(current) / Double(target), 1.0)
+                    }()
+                    
+                    Text("\(Int(calorieProgress * 100))% of goal")
+                        .font(.system(size: 11, weight: .medium, design: .rounded))
+                        .foregroundColor(calorieProgress >= 1.0 ? Design.Colors.sugar : Design.Colors.primary)
+                        .padding(.horizontal, 8)
+                        .padding(.vertical, 3)
+                        .background(
+                            (calorieProgress >= 1.0 ? Design.Colors.sugar : Design.Colors.primary).opacity(0.1)
+                        )
+                        .cornerRadius(8)
                 }
             }
             
             Divider()
             
-            // Macros
-            HStack(spacing: Design.Spacing.md) {
-                VStack(spacing: 4) {
-                    Text(todayProtein)
-                        .font(Design.Typography.headline)
-                        .fontWeight(.bold)
-                        .foregroundColor(Design.Colors.protein)
-                    Text("Protein")
-                        .font(Design.Typography.caption)
-                        .foregroundColor(.secondary)
-                }
-                .frame(maxWidth: .infinity)
+            // Macro Rings Cluster
+            HStack(spacing: Design.Spacing.sm) {
+                macroRing(
+                    value: todayProteinValue,
+                    maxValue: 120,
+                    label: "Protein",
+                    display: todayProtein,
+                    color: Design.Colors.protein
+                )
                 
-                Divider()
-                    .frame(height: 40)
+                macroRing(
+                    value: todayCarbsValue,
+                    maxValue: 250,
+                    label: "Carbs",
+                    display: todayCarbs,
+                    color: Design.Colors.carbs
+                )
                 
-                VStack(spacing: 4) {
-                    Text(todayCarbs)
-                        .font(Design.Typography.headline)
-                        .fontWeight(.bold)
-                        .foregroundColor(Design.Colors.carbs)
-                    Text("Carbs")
-                        .font(Design.Typography.caption)
-                        .foregroundColor(.secondary)
-                }
-                .frame(maxWidth: .infinity)
-                
-                Divider()
-                    .frame(height: 40)
-                
-                VStack(spacing: 4) {
-                    Text(todayFat)
-                        .font(Design.Typography.headline)
-                        .fontWeight(.bold)
-                        .foregroundColor(Design.Colors.fat)
-                    Text("Fat")
-                        .font(Design.Typography.caption)
-                        .foregroundColor(.secondary)
-                }
-                .frame(maxWidth: .infinity)
+                macroRing(
+                    value: todayFatValue,
+                    maxValue: 80,
+                    label: "Fat",
+                    display: todayFat,
+                    color: Design.Colors.fat
+                )
             }
         }
         .padding(Design.Spacing.lg)
         .background(Design.Colors.cardBackground)
         .cornerRadius(16)
         .shadow(color: Color.primary.opacity(0.06), radius: 10, x: 0, y: 2)
+    }
+    
+    private func macroRing(value: Double, maxValue: Double, label: String, display: String, color: Color) -> some View {
+        VStack(spacing: 6) {
+            ZStack {
+                Circle()
+                    .stroke(Color.gray.opacity(0.12), lineWidth: 6)
+                
+                Circle()
+                    .trim(from: 0, to: maxValue > 0 ? min(value / maxValue, 1.0) : 0)
+                    .stroke(
+                        color,
+                        style: StrokeStyle(lineWidth: 6, lineCap: .round)
+                    )
+                    .rotationEffect(.degrees(-90))
+                    .animation(Design.Animation.smooth, value: value)
+                
+                VStack(spacing: 0) {
+                    Text(display)
+                        .font(.system(size: 14, weight: .bold, design: .rounded))
+                        .foregroundColor(color)
+                }
+            }
+            .frame(width: 70, height: 70)
+            
+            Text(label)
+                .font(.system(size: 11, weight: .medium, design: .rounded))
+                .foregroundColor(.secondary)
+        }
+        .frame(maxWidth: .infinity)
     }
     
 
@@ -638,120 +693,127 @@ struct HomeDashboardView: View {
         }
     }
 
-    // MARK: - Water Intake (Clean White Design)
+    // MARK: - Water & Blood Sugar Meter Cluster (Circular)
     private var waterIntakeCard: some View {
-        VStack(alignment: .leading, spacing: Design.Spacing.md) {
-            HStack {
-                Label("Water Intake", systemImage: "drop.fill")
-                    .foregroundColor(Design.Colors.water)
-                    .font(Design.Typography.headline)
-
-                Spacer()
-
-                Text("\(String(format: "%.1f", waterIntake))L")
-                    .font(Design.Typography.title2)
-                    .fontWeight(.bold)
-                    .foregroundColor(Design.Colors.water)
-            }
-
-            let progress: Double = {
-                guard liquidIntakeGoal > 0,
-                      waterIntake.isFinite,
-                      !waterIntake.isNaN else {
-                    return 0.0
-                }
-                return min(waterIntake / liquidIntakeGoal, 1.0)
-            }()
-            
-            GeometryReader { geo in
-                ZStack(alignment: .leading) {
-                    RoundedRectangle(cornerRadius: 12)
-                        .fill(Design.Colors.secondaryBackground)
-                        .frame(height: 16)
+        HStack(spacing: Design.Spacing.md) {
+            // Water Ring
+            Button {
+                HapticManager.shared.lightTap()
+                showingLiquidLog = true
+            } label: {
+                VStack(spacing: Design.Spacing.sm) {
+                    let waterProgress: Double = {
+                        guard liquidIntakeGoal > 0,
+                              waterIntake.isFinite,
+                              !waterIntake.isNaN else {
+                            return 0.0
+                        }
+                        return min(waterIntake / liquidIntakeGoal, 1.0)
+                    }()
                     
-                    RoundedRectangle(cornerRadius: 12)
-                        .fill(Design.Colors.water)
-                        .frame(width: geo.size.width * progress, height: 16)
-                        .animation(Design.Animation.smooth, value: progress)
-                }
-            }
-            .frame(height: 16)
-
-            HStack {
-                Text("Goal: \(String(format: "%.1f", liquidIntakeGoal))L")
-                    .font(Design.Typography.caption)
-                    .foregroundColor(.secondary)
-                
-                Spacer()
-                
-                Text("\(Int(progress * 100))%")
-                    .font(Design.Typography.caption)
-                    .fontWeight(.semibold)
-                    .foregroundColor(Design.Colors.water)
-            }
-        }
-        .padding(Design.Spacing.lg)
-        .background(Design.Colors.cardBackground)
-        .cornerRadius(16)
-        .shadow(color: Color.primary.opacity(0.06), radius: 10, x: 0, y: 2)
-    }
-
-    // MARK: - Sugar Meter Card
-    private var sugarMeterCard: some View {
-        VStack(alignment: .leading, spacing: Design.Spacing.md) {
-            HStack {
-                Label("Sugar Intake", systemImage: "chart.bar.fill")
-                    .foregroundColor(Design.Colors.sugar)
-                    .font(Design.Typography.headline)
-
-                Spacer()
-
-                Text("\(String(format: "%.1f", todaySugar))g")
-                    .font(Design.Typography.title2)
-                    .fontWeight(.bold)
-                    .foregroundColor(Design.Colors.sugar)
-            }
-
-            let progress: Double = {
-                guard AppConstants.defaultSugarGoal > 0,
-                      todaySugar.isFinite,
-                      !todaySugar.isNaN else {
-                    return 0.0
-                }
-                return min(todaySugar / AppConstants.defaultSugarGoal, 1.0)
-            }()
-            
-            GeometryReader { geo in
-                ZStack(alignment: .leading) {
-                    RoundedRectangle(cornerRadius: 12)
-                        .fill(Color.gray.opacity(0.1))
-                        .frame(height: 16)
+                    ZStack {
+                        Circle()
+                            .stroke(Color.gray.opacity(0.12), lineWidth: 10)
+                        
+                        Circle()
+                            .trim(from: 0, to: waterProgress)
+                            .stroke(
+                                AngularGradient(
+                                    colors: [Design.Colors.water, Design.Colors.water.opacity(0.5)],
+                                    center: .center,
+                                    angle: .degrees(-90)
+                                ),
+                                style: StrokeStyle(lineWidth: 10, lineCap: .round)
+                            )
+                            .rotationEffect(.degrees(-90))
+                            .animation(Design.Animation.smooth, value: waterProgress)
+                        
+                        VStack(spacing: 2) {
+                            Image(systemName: "drop.fill")
+                                .font(.system(size: 16))
+                                .foregroundColor(Design.Colors.water)
+                            Text("\(String(format: "%.1f", waterIntake))L")
+                                .font(.system(size: 16, weight: .bold, design: .rounded))
+                                .foregroundColor(.primary)
+                            Text("\(Int(waterProgress * 100))%")
+                                .font(.system(size: 10, weight: .medium, design: .rounded))
+                                .foregroundColor(Design.Colors.water)
+                        }
+                    }
+                    .frame(width: 110, height: 110)
                     
-                    RoundedRectangle(cornerRadius: 12)
-                        .fill(Design.Colors.sugar)
-                        .frame(width: geo.size.width * progress, height: 16)
-                        .animation(Design.Animation.smooth, value: progress)
+                    Text("Water")
+                        .font(.system(size: 12, weight: .semibold, design: .rounded))
+                        .foregroundColor(.primary)
+                    
+                    Text("Goal: \(String(format: "%.1f", liquidIntakeGoal))L")
+                        .font(.system(size: 10, design: .rounded))
+                        .foregroundColor(.secondary)
                 }
+                .frame(maxWidth: .infinity)
+                .padding(Design.Spacing.md)
+                .background(Design.Colors.cardBackground)
+                .cornerRadius(16)
+                .shadow(color: Color.primary.opacity(0.06), radius: 8, x: 0, y: 2)
             }
-            .frame(height: 16)
-
-            HStack {
+            .buttonStyle(.plain)
+            
+            // Blood Sugar Ring
+            VStack(spacing: Design.Spacing.sm) {
+                let sugarProgress: Double = {
+                    guard AppConstants.defaultSugarGoal > 0,
+                          todaySugar.isFinite,
+                          !todaySugar.isNaN else {
+                        return 0.0
+                    }
+                    return min(todaySugar / AppConstants.defaultSugarGoal, 1.0)
+                }()
+                
+                ZStack {
+                    Circle()
+                        .stroke(Color.gray.opacity(0.12), lineWidth: 10)
+                    
+                    Circle()
+                        .trim(from: 0, to: sugarProgress)
+                        .stroke(
+                            AngularGradient(
+                                colors: [Design.Colors.sugar, Design.Colors.sugar.opacity(0.5)],
+                                center: .center,
+                                angle: .degrees(-90)
+                            ),
+                            style: StrokeStyle(lineWidth: 10, lineCap: .round)
+                        )
+                        .rotationEffect(.degrees(-90))
+                        .animation(Design.Animation.smooth, value: sugarProgress)
+                    
+                    VStack(spacing: 2) {
+                        Image(systemName: "drop.halffull")
+                            .font(.system(size: 16))
+                            .foregroundColor(Design.Colors.sugar)
+                        Text("\(String(format: "%.1f", todaySugar))g")
+                            .font(.system(size: 16, weight: .bold, design: .rounded))
+                            .foregroundColor(.primary)
+                        Text("\(Int(sugarProgress * 100))%")
+                            .font(.system(size: 10, weight: .medium, design: .rounded))
+                            .foregroundColor(Design.Colors.sugar)
+                    }
+                }
+                .frame(width: 110, height: 110)
+                
+                Text("Blood Sugar")
+                    .font(.system(size: 12, weight: .semibold, design: .rounded))
+                    .foregroundColor(.primary)
+                
                 Text("Goal: \(String(format: "%.0f", AppConstants.defaultSugarGoal))g")
-                    .font(Design.Typography.caption)
+                    .font(.system(size: 10, design: .rounded))
                     .foregroundColor(.secondary)
-                
-                Spacer()
-                
-                Text("\(Int(progress * 100))%")
-                    .font(Design.Typography.caption)
-                    .fontWeight(.semibold)
-                    .foregroundColor(Design.Colors.sugar)
             }
+            .frame(maxWidth: .infinity)
+            .padding(Design.Spacing.md)
+            .background(Design.Colors.cardBackground)
+            .cornerRadius(16)
+            .shadow(color: Color.primary.opacity(0.06), radius: 8, x: 0, y: 2)
         }
-        .padding(Design.Spacing.lg)
-        .background(Design.Colors.cardBackground)
-        .cornerRadius(16)
-        .shadow(color: Color.primary.opacity(0.06), radius: 10, x: 0, y: 2)
     }
 
     // MARK: - Fasting Card (Prominent Inline)
@@ -1379,18 +1441,24 @@ struct HomeDashboardView: View {
             let fat = summary.fat.isFinite && !summary.fat.isNaN ? summary.fat : 0
             let sugar = (summary.sugar ?? 0).isFinite && !(summary.sugar ?? 0).isNaN ? (summary.sugar ?? 0) : 0
 
-            // Update UI with backend data (may be more accurate)
+            // Update UI with the higher of local vs backend data (prevents zeroing out)
+            let mergedCals = max(calories, localTotals.calories)
+            let mergedProtein = max(protein, localTotals.protein)
+            let mergedCarbs = max(carbs, localTotals.carbs)
+            let mergedFat = max(fat, localTotals.fat)
+            let mergedSugar = max(sugar, localTotals.sugar)
+            
             await MainActor.run {
-                todayCalories = "\(Int(calories))"
-                todayProtein = "\(Int(protein))g"
-                todayCarbs = "\(Int(carbs))g"
-                todayFat = "\(Int(fat))g"
-                todaySugar = sugar
-                todayCaloriesValue = calories
-                todayProteinValue = protein
-                todayCarbsValue = carbs
-                todayFatValue = fat
-                todaySugarValue = sugar
+                todayCalories = "\(Int(mergedCals))"
+                todayProtein = "\(Int(mergedProtein))g"
+                todayCarbs = "\(Int(mergedCarbs))g"
+                todayFat = "\(Int(mergedFat))g"
+                todaySugar = mergedSugar
+                todayCaloriesValue = mergedCals
+                todayProteinValue = mergedProtein
+                todayCarbsValue = mergedCarbs
+                todayFatValue = mergedFat
+                todaySugarValue = mergedSugar
                 
                 // Update daily challenge progress
                 DailyChallengeManager.shared.updateProgress(for: .calories, value: calories)

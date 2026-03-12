@@ -51,6 +51,8 @@ struct MealScannerView3: View {
     @State private var showFlash = false
     @State private var isCapturing = false
     @State private var showSaveSuccess = false
+    @State private var showBubbles = false
+    @State private var showCelebration = false
     
     var body: some View {
         NavigationView {
@@ -160,6 +162,24 @@ struct MealScannerView3: View {
                 if let resp = uploadResult, let items = resp.parsedItems, !items.isEmpty {
                     ScrollView {
                         VStack(spacing: 24) {
+                            // Captured food image with nutrition bubbles
+                            if let capturedImg = capturedImage, showBubbles {
+                                let firstItem = items.first
+                                ScanResultWithBubbles(
+                                    image: capturedImg,
+                                    calories: firstItem?.calories ?? 0,
+                                    protein: firstItem?.protein ?? 0,
+                                    carbs: firstItem?.carbs ?? 0,
+                                    fat: firstItem?.fat ?? 0,
+                                    itemName: firstItem?.name ?? "Food"
+                                )
+                                .frame(height: 280)
+                                .cornerRadius(20)
+                                .padding(.horizontal)
+                                .padding(.top, 12)
+                                .transition(.scale.combined(with: .opacity))
+                            }
+                            
                             VStack(spacing: 12) {
                                 Image(systemName: "checkmark.circle.fill")
                                     .font(.system(size: Design.Scale.value(60, textStyle: .title1)))
@@ -347,6 +367,7 @@ struct MealScannerView3: View {
                                     uploadResult = nil
                                     capturedImage = nil
                                     isCapturing = false
+                                    showBubbles = false
                                     // Trigger camera restart by incrementing trigger
                                     // This will cause CameraView to restart the session
                                     captureTrigger += 1
@@ -492,9 +513,18 @@ struct MealScannerView3: View {
                     uploadResult = nil
                     capturedImage = nil
                     isCapturing = false
+                    showBubbles = false
+                    showCelebration = false
                 }
             } message: {
-                Text("Your meal has been saved successfully.")
+                Text("Your meal has been saved successfully.\n+\(RewardEngine.XPValues.mealLogged) XP earned! 🎉")
+            }
+            .overlay {
+                if showCelebration {
+                    MealLogCelebration(isShowing: $showCelebration)
+                        .ignoresSafeArea()
+                        .allowsHitTesting(false)
+                }
             }
         }
     }
@@ -617,6 +647,12 @@ struct MealScannerView3: View {
             await MainActor.run {
             uploadResult = resp
                 errorMsg = nil // Clear any previous errors
+                
+                // Trigger bubble animation & reward
+                withAnimation(.spring(response: 0.5, dampingFraction: 0.7)) {
+                    showBubbles = true
+                }
+                RewardEngine.shared.rewardMealScan()
             }
         } catch {
             // All retries failed - show error message to user
@@ -753,7 +789,16 @@ struct MealScannerView3: View {
         // Post notification to refresh UI immediately
         await MainActor.run {
             NotificationCenter.default.post(name: NSNotification.Name("MealSaved"), object: nil)
-            showSaveSuccess = true
+            
+            // Celebration + reward
+            RewardEngine.shared.rewardMealLog()
+            withAnimation(.spring(response: 0.3, dampingFraction: 0.6)) {
+                showCelebration = true
+            }
+            
+            DispatchQueue.main.asyncAfter(deadline: .now() + 1.2) {
+                showSaveSuccess = true
+            }
         }
         
         // Then sync to backend in background (non-blocking)
