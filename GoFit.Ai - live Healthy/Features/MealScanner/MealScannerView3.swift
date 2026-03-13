@@ -62,282 +62,6 @@ struct MealScannerView3: View {
                 resultsSection
                 errorSection
             }
-
-                // Results Section
-                if let resp = uploadResult, let items = resp.parsedItems, !items.isEmpty {
-                    ScrollView {
-                        VStack(spacing: 24) {
-                            // Captured food image with nutrition bubbles
-                            if let capturedImg = capturedImage, showBubbles {
-                                let firstItem = items.first
-                                ScanResultWithBubbles(
-                                    image: capturedImg,
-                                    calories: firstItem?.calories ?? 0,
-                                    protein: firstItem?.protein ?? 0,
-                                    carbs: firstItem?.carbs ?? 0,
-                                    fat: firstItem?.fat ?? 0,
-                                    itemName: firstItem?.name ?? "Food"
-                                )
-                                .frame(height: 280)
-                                .cornerRadius(20)
-                                .padding(.horizontal)
-                                .padding(.top, 12)
-                                .transition(.scale.combined(with: .opacity))
-                            }
-                            
-                            VStack(spacing: 12) {
-                                Image(systemName: "checkmark.circle.fill")
-                                    .font(.system(size: Design.Scale.value(60, textStyle: .title1)))
-                                    .foregroundColor(Design.Colors.primary)
-                                    .symbolEffect(.bounce, value: uploadResult != nil)
-                                    .delayedAppear(0)
-                                
-                                Text("Meal Detected!")
-                                    .font(Design.Typography.title)
-                                    .foregroundColor(.primary)
-                                    .delayedAppear(0.05)
-                                
-                                Text("\(items.count) item\(items.count == 1 ? "" : "s") found")
-                                    .font(.subheadline)
-                                    .foregroundColor(.secondary)
-                                    .delayedAppear(0.1)
-                            }
-                            .padding(.top, 20)
-                            
-                            ForEach(Array(items.enumerated()), id: \.element.name) { index, item in
-                                VStack(spacing: 0) {
-                                    HStack {
-                                        Image(systemName: "fork.knife.circle.fill")
-                                            .font(.title2)
-                                            .foregroundColor(.white)
-                                        
-                                        Text(item.name)
-                                            .font(Design.Typography.title2)
-                                            .foregroundColor(.white)
-                                        
-                                        Spacer()
-                                    }
-                                    .padding(20)
-                                    .background(
-                                        LinearGradient(
-                                            colors: [Design.Colors.primary, Design.Colors.primary.opacity(0.7)],
-                                            startPoint: .leading,
-                                            endPoint: .trailing
-                                        )
-                                    )
-                                    
-                                    VStack(spacing: 16) {
-                                        LazyVGrid(columns: [
-                                            GridItem(.flexible()),
-                                            GridItem(.flexible()),
-                                            GridItem(.flexible())
-                                        ], spacing: 16) {
-                                            NutritionMetricCard(
-                                                value: item.calories.map { "\(Int($0))" } ?? "—",
-                                                label: "Calories",
-                                                color: Design.Colors.calories,
-                                                icon: "flame.fill"
-                                            )
-                                            
-                                            NutritionMetricCard(
-                                                value: item.protein.map { "\(Int($0))g" } ?? "—",
-                                                label: "Protein",
-                                                color: Design.Colors.protein,
-                                                icon: "figure.strengthtraining.traditional"
-                                            )
-                                            
-                                            NutritionMetricCard(
-                                                value: item.carbs.map { "\(Int($0))g" } ?? "—",
-                                                label: "Carbs",
-                                                color: Design.Colors.carbs,
-                                                icon: "leaf.fill"
-                                            )
-                                        }
-                                        
-                                        HStack(spacing: 16) {
-                                            NutritionMetricCard(
-                                                value: item.fat.map { "\(Int($0))g" } ?? "—",
-                                                label: "Fat",
-                                                color: Design.Colors.fat,
-                                                icon: "drop.fill"
-                                            )
-                                            
-                                            NutritionMetricCard(
-                                                value: item.sugar.map { "\(Int($0))g" } ?? "—",
-                                                label: "Sugar",
-                                                color: Design.Colors.sugar,
-                                                icon: "sparkles"
-                                            )
-                                        }
-                                        
-                                        if let portion = item.portionSize {
-                                            HStack {
-                                                Image(systemName: "ruler.fill")
-                                                    .foregroundColor(.secondary)
-                                            Text("Portion: \(portion)")
-                                                    .font(.subheadline)
-                                                .foregroundColor(.secondary)
-                                            }
-                                            .padding(.top, 8)
-                                        }
-                                    }
-                                    .padding(20)
-                                    .background(Design.Colors.cardBackground)
-                                }
-                                .cornerRadius(20)
-                                .shadow(color: Color.black.opacity(0.1), radius: 15, x: 0, y: 5)
-                                .padding(.horizontal)
-                                .delayedAppear(Double(index) * 0.1 + 0.15)
-                                .transition(.moveAndFade)
-                            }
-                                
-                            VStack(spacing: 12) {
-                                Button {
-                                    HapticManager.shared.mediumTap()
-                                    Task {
-                                        await logMealImmediately(resp: resp)
-                                    }
-                                } label: {
-                                    HStack {
-                                        if isUploading {
-                                            ProgressView()
-                                                .tint(.white)
-                                                .frame(width: 20, height: 20)
-                                        } else {
-                                            Image(systemName: "checkmark.circle.fill")
-                                                .font(.title3)
-                                        }
-                                        Text(isUploading ? "Saving..." : "Log This Meal")
-                                            .font(Design.Typography.headline)
-                                        Spacer()
-                                        if !isUploading {
-                                            Image(systemName: "arrow.right")
-                                                .font(.title3)
-                                        }
-                                    }
-                                    .foregroundColor(.white)
-                                    .padding(18)
-                                    .background(
-                                        LinearGradient(
-                                            colors: isUploading ? [Color.gray, Color.gray.opacity(0.8)] : [Design.Colors.primary, Design.Colors.primary.opacity(0.8)],
-                                            startPoint: .leading,
-                                            endPoint: .trailing
-                                        )
-                                    )
-                                    .cornerRadius(16)
-                                    .shadow(color: Design.Colors.primary.opacity(0.3), radius: 10, x: 0, y: 5)
-                                }
-                                .disabled(isUploading)
-                                
-                                // Edit Before Logging Button
-                                Button {
-                                    let items = resp.parsedItems ?? []
-                                    editableItems = items.map { item in
-                                        EditableParsedItem(
-                                            name: item.name,
-                                            qtyText: item.portionSize ?? "",
-                                            calories: item.calories ?? 0,
-                                            protein: item.protein ?? 0,
-                                            carbs: item.carbs ?? 0,
-                                            fat: item.fat ?? 0,
-                                            sugar: item.sugar ?? 0
-                                        )
-                                    }
-                                    showEditScreen = true
-                                } label: {
-                                    HStack {
-                                        Image(systemName: "pencil.circle.fill")
-                                            .font(.title3)
-                                        Text("Edit Before Logging")
-                                            .font(Design.Typography.body)
-                                            .fontWeight(.medium)
-                                        Spacer()
-                                        Image(systemName: "arrow.right")
-                                            .font(.title3)
-                                    }
-                                    .foregroundColor(.primary)
-                                    .padding(16)
-                                    .background(Design.Colors.cardBackground)
-                                    .cornerRadius(16)
-                                    .overlay(
-                                        RoundedRectangle(cornerRadius: 16)
-                                            .stroke(Color.secondary.opacity(0.3), lineWidth: 1)
-                                    )
-                                }
-                                .disabled(isUploading)
-                                
-                                // Dismiss Button
-                                Button {
-                                    // Reset to allow new scan
-                                    uploadResult = nil
-                                    capturedImage = nil
-                                    isCapturing = false
-                                    showBubbles = false
-                                    // Trigger camera restart by incrementing trigger
-                                    // This will cause CameraView to restart the session
-                                    captureTrigger += 1
-                                } label: {
-                                    HStack {
-                                        Image(systemName: "xmark.circle.fill")
-                                            .font(.title3)
-                                        Text("Scan Another Meal")
-                                .font(Design.Typography.headline)
-                                    }
-                                    .foregroundColor(.primary)
-                                    .padding(18)
-                                    .background(Design.Colors.cardBackground)
-                                    .cornerRadius(16)
-                                    .overlay(
-                                        RoundedRectangle(cornerRadius: 16)
-                                            .stroke(Color.secondary.opacity(0.3), lineWidth: 1)
-                                    )
-                                }
-                            }
-                            .padding(.horizontal)
-                            .padding(.top, 8)
-                            .padding(.bottom, 20)
-                        }
-                    }
-                    .background(Design.Colors.background)
-                    .transition(.move(edge: .bottom).combined(with: .opacity))
-                }
-                
-                if let err = errorMsg {
-                    VStack(spacing: 12) {
-                        Image(systemName: err.contains("No food") ? "photo.badge.exclamationmark" : "exclamationmark.triangle.fill")
-                            .font(.system(size: Design.Scale.value(40, textStyle: .title3)))
-                            .foregroundColor(err.contains("No food") ? .orange : .red)
-                        
-                    Text(err)
-                            .font(.body)
-                            .foregroundColor(.primary)
-                            .multilineTextAlignment(.center)
-                            .padding(.horizontal)
-                        
-                        Button {
-                            // Clear error and allow retry
-                            errorMsg = nil
-                            capturedImage = nil
-                            isCapturing = false
-                        } label: {
-                            Text("Try Again")
-                                .font(.headline)
-                                .foregroundColor(.white)
-                                .padding(.horizontal, 24)
-                                .padding(.vertical, 12)
-                                .background(Design.Colors.primary)
-                                .cornerRadius(12)
-                        }
-                    }
-                    .padding(24)
-                        .background(Design.Colors.cardBackground)
-                    .cornerRadius(16)
-                    .shadow(color: Color.black.opacity(0.1), radius: 10, x: 0, y: 5)
-                    .padding(.horizontal)
-                    .padding(.vertical, 20)
-                    .transition(.move(edge: .bottom).combined(with: .opacity))
-                }
-            }
             .navigationTitle("Scan Food")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
@@ -354,6 +78,382 @@ struct MealScannerView3: View {
                 }
                 
                 // Prevent multiple simultaneous uploads
+
+        private var cameraSection: some View {
+            ZStack {
+                CameraView(capturedImage: $capturedImage, captureTrigger: captureTrigger)
+                    .frame(maxWidth: .infinity, maxHeight: .infinity)
+                    .ignoresSafeArea()
+
+                if showFlash {
+                    Color.white
+                        .ignoresSafeArea()
+                        .opacity(0.8)
+                        .animation(.easeOut(duration: 0.1), value: showFlash)
+                }
+
+                VStack {
+                    HStack {
+                        Spacer()
+                        Button {
+                            HapticManager.shared.lightTap()
+                            withAnimation(.easeInOut(duration: 0.2)) {
+                                showPicker = true
+                            }
+                        } label: {
+                            Image(systemName: "photo.on.rectangle.angled")
+                                .font(.title2)
+                                .foregroundColor(.white)
+                                .padding(12)
+                                .background(Color.primary.opacity(0.5))
+                                .clipShape(Circle())
+                        }
+                        .padding()
+                    }
+
+                    Spacer()
+
+                    Button(action: {
+                        guard !isCapturing else { return }
+                        isCapturing = true
+
+                        HapticManager.shared.mediumTap()
+                        captureTrigger += 1
+
+                        withAnimation(.easeOut(duration: 0.05)) {
+                            showFlash = true
+                        }
+                        DispatchQueue.main.asyncAfter(deadline: .now() + 0.05) {
+                            showFlash = false
+                        }
+
+                        DispatchQueue.main.asyncAfter(deadline: .now() + 0.2) {
+                            isCapturing = false
+                        }
+                    }) {
+                        ZStack {
+                            Circle()
+                                .fill(isCapturing ? Color.gray : Color.white)
+                                .frame(width: 70, height: 70)
+                                .animation(.easeInOut(duration: 0.1), value: isCapturing)
+
+                            Circle()
+                                .stroke(Color.white, lineWidth: 4)
+                                .frame(width: 80, height: 80)
+
+                            if isCapturing {
+                                ProgressView()
+                                    .tint(.black)
+                            } else {
+                                Image(systemName: "camera.fill")
+                                    .font(.title2)
+                                    .foregroundColor(.black)
+                            }
+                        }
+                    }
+                    .disabled(isCapturing)
+                    .padding(.bottom, 40)
+                }
+            }
+        }
+
+        @ViewBuilder
+        private var uploadingSection: some View {
+            if isUploading {
+                VStack(spacing: 16) {
+                    ProgressView()
+                        .scaleEffect(1.5)
+                        .tint(Design.Colors.primary)
+                    Text("Analyzing with AI...")
+                        .font(Design.Typography.headline)
+                        .foregroundColor(.primary)
+                        .smoothFadeIn()
+                    Text("Detecting food items and nutrition")
+                        .font(Design.Typography.caption)
+                        .foregroundColor(.secondary)
+                    Text("This may take up to 60 seconds")
+                        .font(Design.Typography.caption2)
+                        .foregroundColor(.secondary)
+                        .padding(.top, 4)
+                }
+                .frame(maxWidth: .infinity)
+                .padding(.vertical, 40)
+                .background(Design.Colors.background)
+            }
+        }
+
+        @ViewBuilder
+        private var resultsSection: some View {
+            if let resp = uploadResult, let items = resp.parsedItems, !items.isEmpty {
+                ScrollView {
+                    VStack(spacing: 24) {
+                        if let capturedImg = capturedImage, showBubbles {
+                            let firstItem = items.first
+                            ScanResultWithBubbles(
+                                image: capturedImg,
+                                calories: firstItem?.calories ?? 0,
+                                protein: firstItem?.protein ?? 0,
+                                carbs: firstItem?.carbs ?? 0,
+                                fat: firstItem?.fat ?? 0,
+                                itemName: firstItem?.name ?? "Food"
+                            )
+                            .frame(height: 280)
+                            .cornerRadius(20)
+                            .padding(.horizontal)
+                            .padding(.top, 12)
+                            .transition(.scale.combined(with: .opacity))
+                        }
+
+                        VStack(spacing: 12) {
+                            Image(systemName: "checkmark.circle.fill")
+                                .font(.system(size: Design.Scale.value(60, textStyle: .title1)))
+                                .foregroundColor(Design.Colors.primary)
+                                .symbolEffect(.bounce, value: uploadResult != nil)
+                                .delayedAppear(0)
+
+                            Text("Meal Detected!")
+                                .font(Design.Typography.title)
+                                .foregroundColor(.primary)
+                                .delayedAppear(0.05)
+
+                            Text("\(items.count) item\(items.count == 1 ? "" : "s") found")
+                                .font(.subheadline)
+                                .foregroundColor(.secondary)
+                                .delayedAppear(0.1)
+                        }
+                        .padding(.top, 20)
+
+                        ForEach(Array(items.enumerated()), id: \.element.name) { index, item in
+                            VStack(spacing: 0) {
+                                HStack {
+                                    Image(systemName: "fork.knife.circle.fill")
+                                        .font(.title2)
+                                        .foregroundColor(.white)
+
+                                    Text(item.name)
+                                        .font(Design.Typography.title2)
+                                        .foregroundColor(.white)
+
+                                    Spacer()
+                                }
+                                .padding(20)
+                                .background(
+                                    LinearGradient(
+                                        colors: [Design.Colors.primary, Design.Colors.primary.opacity(0.7)],
+                                        startPoint: .leading,
+                                        endPoint: .trailing
+                                    )
+                                )
+
+                                VStack(spacing: 16) {
+                                    LazyVGrid(columns: [
+                                        GridItem(.flexible()),
+                                        GridItem(.flexible()),
+                                        GridItem(.flexible())
+                                    ], spacing: 16) {
+                                        NutritionMetricCard(
+                                            value: item.calories.map { "\(Int($0))" } ?? "—",
+                                            label: "Calories",
+                                            color: Design.Colors.calories,
+                                            icon: "flame.fill"
+                                        )
+
+                                        NutritionMetricCard(
+                                            value: item.protein.map { "\(Int($0))g" } ?? "—",
+                                            label: "Protein",
+                                            color: Design.Colors.protein,
+                                            icon: "figure.strengthtraining.traditional"
+                                        )
+
+                                        NutritionMetricCard(
+                                            value: item.carbs.map { "\(Int($0))g" } ?? "—",
+                                            label: "Carbs",
+                                            color: Design.Colors.carbs,
+                                            icon: "leaf.fill"
+                                        )
+                                    }
+
+                                    HStack(spacing: 16) {
+                                        NutritionMetricCard(
+                                            value: item.fat.map { "\(Int($0))g" } ?? "—",
+                                            label: "Fat",
+                                            color: Design.Colors.fat,
+                                            icon: "drop.fill"
+                                        )
+
+                                        NutritionMetricCard(
+                                            value: item.sugar.map { "\(Int($0))g" } ?? "—",
+                                            label: "Sugar",
+                                            color: Design.Colors.sugar,
+                                            icon: "sparkles"
+                                        )
+                                    }
+
+                                    if let portion = item.portionSize {
+                                        HStack {
+                                            Image(systemName: "ruler.fill")
+                                                .foregroundColor(.secondary)
+                                            Text("Portion: \(portion)")
+                                                .font(.subheadline)
+                                                .foregroundColor(.secondary)
+                                        }
+                                        .padding(.top, 8)
+                                    }
+                                }
+                                .padding(20)
+                                .background(Design.Colors.cardBackground)
+                            }
+                            .cornerRadius(20)
+                            .shadow(color: Color.black.opacity(0.1), radius: 15, x: 0, y: 5)
+                            .padding(.horizontal)
+                            .delayedAppear(Double(index) * 0.1 + 0.15)
+                            .transition(.moveAndFade)
+                        }
+
+                        VStack(spacing: 12) {
+                            Button {
+                                HapticManager.shared.mediumTap()
+                                Task {
+                                    await logMealImmediately(resp: resp)
+                                }
+                            } label: {
+                                HStack {
+                                    if isUploading {
+                                        ProgressView()
+                                            .tint(.white)
+                                            .frame(width: 20, height: 20)
+                                    } else {
+                                        Image(systemName: "checkmark.circle.fill")
+                                            .font(.title3)
+                                    }
+                                    Text(isUploading ? "Saving..." : "Log This Meal")
+                                        .font(Design.Typography.headline)
+                                    Spacer()
+                                    if !isUploading {
+                                        Image(systemName: "arrow.right")
+                                            .font(.title3)
+                                    }
+                                }
+                                .foregroundColor(.white)
+                                .padding(18)
+                                .background(
+                                    LinearGradient(
+                                        colors: isUploading ? [Color.gray, Color.gray.opacity(0.8)] : [Design.Colors.primary, Design.Colors.primary.opacity(0.8)],
+                                        startPoint: .leading,
+                                        endPoint: .trailing
+                                    )
+                                )
+                                .cornerRadius(16)
+                                .shadow(color: Design.Colors.primary.opacity(0.3), radius: 10, x: 0, y: 5)
+                            }
+                            .disabled(isUploading)
+
+                            Button {
+                                let items = resp.parsedItems ?? []
+                                editableItems = items.map { item in
+                                    EditableParsedItem(
+                                        name: item.name,
+                                        qtyText: item.portionSize ?? "",
+                                        calories: item.calories ?? 0,
+                                        protein: item.protein ?? 0,
+                                        carbs: item.carbs ?? 0,
+                                        fat: item.fat ?? 0,
+                                        sugar: item.sugar ?? 0
+                                    )
+                                }
+                                showEditScreen = true
+                            } label: {
+                                HStack {
+                                    Image(systemName: "pencil.circle.fill")
+                                        .font(.title3)
+                                    Text("Edit Before Logging")
+                                        .font(Design.Typography.body)
+                                        .fontWeight(.medium)
+                                    Spacer()
+                                    Image(systemName: "arrow.right")
+                                        .font(.title3)
+                                }
+                                .foregroundColor(.primary)
+                                .padding(16)
+                                .background(Design.Colors.cardBackground)
+                                .cornerRadius(16)
+                                .overlay(
+                                    RoundedRectangle(cornerRadius: 16)
+                                        .stroke(Color.secondary.opacity(0.3), lineWidth: 1)
+                                )
+                            }
+                            .disabled(isUploading)
+
+                            Button {
+                                uploadResult = nil
+                                capturedImage = nil
+                                isCapturing = false
+                                showBubbles = false
+                                captureTrigger += 1
+                            } label: {
+                                HStack {
+                                    Image(systemName: "xmark.circle.fill")
+                                        .font(.title3)
+                                    Text("Scan Another Meal")
+                                        .font(Design.Typography.headline)
+                                }
+                                .foregroundColor(.primary)
+                                .padding(18)
+                                .background(Design.Colors.cardBackground)
+                                .cornerRadius(16)
+                                .overlay(
+                                    RoundedRectangle(cornerRadius: 16)
+                                        .stroke(Color.secondary.opacity(0.3), lineWidth: 1)
+                                )
+                            }
+                        }
+                        .padding(.horizontal)
+                        .padding(.top, 8)
+                        .padding(.bottom, 20)
+                    }
+                }
+                .background(Design.Colors.background)
+                .transition(.move(edge: .bottom).combined(with: .opacity))
+            }
+        }
+
+        @ViewBuilder
+        private var errorSection: some View {
+            if let err = errorMsg {
+                VStack(spacing: 12) {
+                    Image(systemName: err.contains("No food") ? "photo.badge.exclamationmark" : "exclamationmark.triangle.fill")
+                        .font(.system(size: Design.Scale.value(40, textStyle: .title3)))
+                        .foregroundColor(err.contains("No food") ? .orange : .red)
+
+                    Text(err)
+                        .font(.body)
+                        .foregroundColor(.primary)
+                        .multilineTextAlignment(.center)
+                        .padding(.horizontal)
+
+                    Button {
+                        errorMsg = nil
+                        capturedImage = nil
+                        isCapturing = false
+                    } label: {
+                        Text("Try Again")
+                            .font(.headline)
+                            .foregroundColor(.white)
+                            .padding(.horizontal, 24)
+                            .padding(.vertical, 12)
+                            .background(Design.Colors.primary)
+                            .cornerRadius(12)
+                    }
+                }
+                .padding(24)
+                .background(Design.Colors.cardBackground)
+                .cornerRadius(16)
+                .shadow(color: Color.black.opacity(0.1), radius: 10, x: 0, y: 5)
+                .padding(.horizontal)
+                .padding(.vertical, 20)
+                .transition(.move(edge: .bottom).combined(with: .opacity))
+            }
+        }
                 guard !isUploading else {
                     print("⚠️ Already uploading, skipping new image")
                     return
@@ -431,6 +531,314 @@ struct MealScannerView3: View {
                         .allowsHitTesting(false)
                 }
             }
+        }
+    }
+    
+    // MARK: - Extracted Sub-Views
+    
+    private var cameraSection: some View {
+        ZStack {
+            CameraView(capturedImage: $capturedImage, captureTrigger: captureTrigger)
+                .frame(maxWidth: .infinity, maxHeight: .infinity)
+                .ignoresSafeArea()
+            
+            if showFlash {
+                Color.white
+                    .ignoresSafeArea()
+                    .opacity(0.8)
+                    .animation(.easeOut(duration: 0.1), value: showFlash)
+            }
+            
+            VStack {
+                HStack {
+                    Spacer()
+                    Button {
+                        HapticManager.shared.lightTap()
+                        withAnimation(.easeInOut(duration: 0.2)) {
+                            showPicker = true
+                        }
+                    } label: {
+                        Image(systemName: "photo.on.rectangle.angled")
+                            .font(.title2)
+                            .foregroundColor(.white)
+                            .padding(12)
+                            .background(Color.primary.opacity(0.5))
+                            .clipShape(Circle())
+                    }
+                    .padding()
+                }
+                Spacer()
+                
+                Button(action: {
+                    guard !isCapturing else { return }
+                    isCapturing = true
+                    HapticManager.shared.mediumTap()
+                    captureTrigger += 1
+                    withAnimation(.easeOut(duration: 0.05)) { showFlash = true }
+                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.05) { showFlash = false }
+                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.2) { isCapturing = false }
+                }) {
+                    ZStack {
+                        Circle()
+                            .fill(isCapturing ? Color.gray : Color.white)
+                            .frame(width: 70, height: 70)
+                            .animation(.easeInOut(duration: 0.1), value: isCapturing)
+                        Circle()
+                            .stroke(Color.white, lineWidth: 4)
+                            .frame(width: 80, height: 80)
+                        if isCapturing {
+                            ProgressView().tint(.black)
+                        } else {
+                            Image(systemName: "camera.fill")
+                                .font(.title2)
+                                .foregroundColor(.black)
+                        }
+                    }
+                }
+                .disabled(isCapturing)
+                .padding(.bottom, 40)
+            }
+        }
+    }
+    
+    @ViewBuilder
+    private var uploadingSection: some View {
+        if isUploading {
+            VStack(spacing: 16) {
+                ProgressView()
+                    .scaleEffect(1.5)
+                    .tint(Design.Colors.primary)
+                Text("Analyzing with AI...")
+                    .font(Design.Typography.headline)
+                    .foregroundColor(.primary)
+                    .smoothFadeIn()
+                Text("Detecting food items and nutrition")
+                    .font(Design.Typography.caption)
+                    .foregroundColor(.secondary)
+                Text("This may take up to 60 seconds")
+                    .font(Design.Typography.caption2)
+                    .foregroundColor(.secondary)
+                    .padding(.top, 4)
+            }
+            .frame(maxWidth: .infinity)
+            .padding(.vertical, 40)
+            .background(Design.Colors.background)
+        }
+    }
+    
+    @ViewBuilder
+    private var resultsSection: some View {
+        if let resp = uploadResult, let items = resp.parsedItems, !items.isEmpty {
+            ScrollView {
+                VStack(spacing: 24) {
+                    resultsBubblesHeader(items: items)
+                    resultsFoodCards(items: items)
+                    resultsActionButtons(resp: resp)
+                }
+            }
+            .background(Design.Colors.background)
+            .transition(.move(edge: .bottom).combined(with: .opacity))
+        }
+    }
+    
+    @ViewBuilder
+    private func resultsBubblesHeader(items: [ParsedItem]) -> some View {
+        if let capturedImg = capturedImage, showBubbles {
+            let firstItem = items.first
+            ScanResultWithBubbles(
+                image: capturedImg,
+                calories: firstItem?.calories ?? 0,
+                protein: firstItem?.protein ?? 0,
+                carbs: firstItem?.carbs ?? 0,
+                fat: firstItem?.fat ?? 0,
+                itemName: firstItem?.name ?? "Food"
+            )
+            .frame(height: 280)
+            .cornerRadius(20)
+            .padding(.horizontal)
+            .padding(.top, 12)
+            .transition(.scale.combined(with: .opacity))
+        }
+        
+        VStack(spacing: 12) {
+            Image(systemName: "checkmark.circle.fill")
+                .font(.system(size: Design.Scale.value(60, textStyle: .title1)))
+                .foregroundColor(Design.Colors.primary)
+                .symbolEffect(.bounce, value: uploadResult != nil)
+                .delayedAppear(0)
+            
+            Text("Meal Detected!")
+                .font(Design.Typography.title)
+                .foregroundColor(.primary)
+                .delayedAppear(0.05)
+            
+            Text("\(items.count) item\(items.count == 1 ? "" : "s") found")
+                .font(.subheadline)
+                .foregroundColor(.secondary)
+                .delayedAppear(0.1)
+        }
+        .padding(.top, 20)
+    }
+    
+    private func resultsFoodCards(items: [ParsedItem]) -> some View {
+        ForEach(Array(items.enumerated()), id: \.element.name) { index, item in
+            VStack(spacing: 0) {
+                HStack {
+                    Image(systemName: "fork.knife.circle.fill")
+                        .font(.title2)
+                        .foregroundColor(.white)
+                    Text(item.name)
+                        .font(Design.Typography.title2)
+                        .foregroundColor(.white)
+                    Spacer()
+                }
+                .padding(20)
+                .background(
+                    LinearGradient(
+                        colors: [Design.Colors.primary, Design.Colors.primary.opacity(0.7)],
+                        startPoint: .leading,
+                        endPoint: .trailing
+                    )
+                )
+                
+                VStack(spacing: 16) {
+                    LazyVGrid(columns: [
+                        GridItem(.flexible()),
+                        GridItem(.flexible()),
+                        GridItem(.flexible())
+                    ], spacing: 16) {
+                        NutritionMetricCard(value: item.calories.map { "\(Int($0))" } ?? "—", label: "Calories", color: Design.Colors.calories, icon: "flame.fill")
+                        NutritionMetricCard(value: item.protein.map { "\(Int($0))g" } ?? "—", label: "Protein", color: Design.Colors.protein, icon: "figure.strengthtraining.traditional")
+                        NutritionMetricCard(value: item.carbs.map { "\(Int($0))g" } ?? "—", label: "Carbs", color: Design.Colors.carbs, icon: "leaf.fill")
+                    }
+                    
+                    HStack(spacing: 16) {
+                        NutritionMetricCard(value: item.fat.map { "\(Int($0))g" } ?? "—", label: "Fat", color: Design.Colors.fat, icon: "drop.fill")
+                        NutritionMetricCard(value: item.sugar.map { "\(Int($0))g" } ?? "—", label: "Sugar", color: Design.Colors.sugar, icon: "sparkles")
+                    }
+                    
+                    if let portion = item.portionSize {
+                        HStack {
+                            Image(systemName: "ruler.fill").foregroundColor(.secondary)
+                            Text("Portion: \(portion)").font(.subheadline).foregroundColor(.secondary)
+                        }
+                        .padding(.top, 8)
+                    }
+                }
+                .padding(20)
+                .background(Design.Colors.cardBackground)
+            }
+            .cornerRadius(20)
+            .shadow(color: Color.black.opacity(0.1), radius: 15, x: 0, y: 5)
+            .padding(.horizontal)
+            .delayedAppear(Double(index) * 0.1 + 0.15)
+            .transition(.moveAndFade)
+        }
+    }
+    
+    private func resultsActionButtons(resp: ServerMealResponse) -> some View {
+        VStack(spacing: 12) {
+            Button {
+                HapticManager.shared.mediumTap()
+                Task { await logMealImmediately(resp: resp) }
+            } label: {
+                HStack {
+                    if isUploading {
+                        ProgressView().tint(.white).frame(width: 20, height: 20)
+                    } else {
+                        Image(systemName: "checkmark.circle.fill").font(.title3)
+                    }
+                    Text(isUploading ? "Saving..." : "Log This Meal").font(Design.Typography.headline)
+                    Spacer()
+                    if !isUploading { Image(systemName: "arrow.right").font(.title3) }
+                }
+                .foregroundColor(.white)
+                .padding(18)
+                .background(
+                    LinearGradient(
+                        colors: isUploading ? [Color.gray, Color.gray.opacity(0.8)] : [Design.Colors.primary, Design.Colors.primary.opacity(0.8)],
+                        startPoint: .leading, endPoint: .trailing
+                    )
+                )
+                .cornerRadius(16)
+                .shadow(color: Design.Colors.primary.opacity(0.3), radius: 10, x: 0, y: 5)
+            }
+            .disabled(isUploading)
+            
+            Button {
+                let items = resp.parsedItems ?? []
+                editableItems = items.map { item in
+                    EditableParsedItem(name: item.name, qtyText: item.portionSize ?? "", calories: item.calories ?? 0, protein: item.protein ?? 0, carbs: item.carbs ?? 0, fat: item.fat ?? 0, sugar: item.sugar ?? 0)
+                }
+                showEditScreen = true
+            } label: {
+                HStack {
+                    Image(systemName: "pencil.circle.fill").font(.title3)
+                    Text("Edit Before Logging").font(Design.Typography.body).fontWeight(.medium)
+                    Spacer()
+                    Image(systemName: "arrow.right").font(.title3)
+                }
+                .foregroundColor(.primary)
+                .padding(16)
+                .background(Design.Colors.cardBackground)
+                .cornerRadius(16)
+                .overlay(RoundedRectangle(cornerRadius: 16).stroke(Color.secondary.opacity(0.3), lineWidth: 1))
+            }
+            .disabled(isUploading)
+            
+            Button {
+                uploadResult = nil; capturedImage = nil; isCapturing = false; showBubbles = false
+                captureTrigger += 1
+            } label: {
+                HStack {
+                    Image(systemName: "xmark.circle.fill").font(.title3)
+                    Text("Scan Another Meal").font(Design.Typography.headline)
+                }
+                .foregroundColor(.primary)
+                .padding(18)
+                .background(Design.Colors.cardBackground)
+                .cornerRadius(16)
+                .overlay(RoundedRectangle(cornerRadius: 16).stroke(Color.secondary.opacity(0.3), lineWidth: 1))
+            }
+        }
+        .padding(.horizontal)
+        .padding(.top, 8)
+        .padding(.bottom, 20)
+    }
+    
+    @ViewBuilder
+    private var errorSection: some View {
+        if let err = errorMsg {
+            VStack(spacing: 12) {
+                Image(systemName: err.contains("No food") ? "photo.badge.exclamationmark" : "exclamationmark.triangle.fill")
+                    .font(.system(size: Design.Scale.value(40, textStyle: .title3)))
+                    .foregroundColor(err.contains("No food") ? .orange : .red)
+                
+                Text(err)
+                    .font(.body)
+                    .foregroundColor(.primary)
+                    .multilineTextAlignment(.center)
+                    .padding(.horizontal)
+                
+                Button {
+                    errorMsg = nil; capturedImage = nil; isCapturing = false
+                } label: {
+                    Text("Try Again")
+                        .font(.headline)
+                        .foregroundColor(.white)
+                        .padding(.horizontal, 24)
+                        .padding(.vertical, 12)
+                        .background(Design.Colors.primary)
+                        .cornerRadius(12)
+                }
+            }
+            .padding(24)
+            .background(Design.Colors.cardBackground)
+            .cornerRadius(16)
+            .shadow(color: Color.black.opacity(0.1), radius: 10, x: 0, y: 5)
+            .padding(.horizontal)
+            .padding(.vertical, 20)
+            .transition(.move(edge: .bottom).combined(with: .opacity))
         }
     }
 

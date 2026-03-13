@@ -622,75 +622,57 @@ struct HomeDashboardView: View {
                 .font(Design.Typography.headline)
                 .foregroundColor(.primary)
 
-            HStack(spacing: Design.Spacing.md) {
-                VStack(spacing: 8) {
-                    Image(systemName: "figure.walk")
-                        .font(.title2)
-                        .foregroundColor(Design.Colors.steps)
-                        .frame(width: 50, height: 50)
-                        .background(Design.Colors.steps.opacity(0.1))
-                        .clipShape(Circle())
-                    
-                    Text("\(healthKit.todaySteps)")
-                        .font(Design.Typography.headline)
-                        .fontWeight(.bold)
-                        .transition(.scale)
-                    
-                    Text("Steps")
-                        .font(Design.Typography.caption)
-                        .foregroundColor(.secondary)
-                }
-                .frame(maxWidth: .infinity)
-                .padding(Design.Spacing.md)
-                .background(Design.Colors.cardBackground)
-                .cornerRadius(16)
-                .shadow(color: Color.primary.opacity(0.06), radius: 8, x: 0, y: 2)
+            LazyVGrid(columns: [
+                GridItem(.flexible(), spacing: Design.Spacing.md),
+                GridItem(.flexible(), spacing: Design.Spacing.md),
+                GridItem(.flexible(), spacing: Design.Spacing.md)
+            ], spacing: Design.Spacing.md) {
+                activityMetricCard(icon: "figure.walk", value: "\(healthKit.todaySteps)", label: "Steps", color: Design.Colors.steps)
+                activityMetricCard(icon: "flame.fill", value: "\(Int(healthKit.todayActiveCalories))", label: "Active Cal", color: Design.Colors.calories)
+                activityMetricCard(icon: "bolt.heart.fill", value: "\(Int(healthKit.todayRestingCalories))", label: "Resting Cal", color: .orange)
 
-                VStack(spacing: 8) {
-                    Image(systemName: "flame.fill")
-                        .font(.title2)
-                        .foregroundColor(Design.Colors.calories)
-                        .frame(width: 50, height: 50)
-                        .background(Design.Colors.calories.opacity(0.1))
-                        .clipShape(Circle())
-                    
-                    Text("\(Int(healthKit.todayActiveCalories))")
-                        .font(Design.Typography.headline)
-                        .fontWeight(.bold)
-                    
-                    Text("Calories")
-                        .font(Design.Typography.caption)
-                        .foregroundColor(.secondary)
-                }
-                .frame(maxWidth: .infinity)
-                .padding(Design.Spacing.md)
-                .background(Design.Colors.cardBackground)
-                .cornerRadius(16)
-                .shadow(color: Color.primary.opacity(0.06), radius: 8, x: 0, y: 2)
+                activityMetricCard(icon: "figure.walk.motion", value: healthKit.todayWalkingRunningDistance > 0 ? String(format: "%.1f km", healthKit.todayWalkingRunningDistance) : "—", label: "Walk/Run", color: .green)
+                activityMetricCard(icon: "bicycle", value: healthKit.todayCyclingDistance > 0 ? String(format: "%.1f km", healthKit.todayCyclingDistance) : "—", label: "Cycling", color: .mint)
+                activityMetricCard(icon: "stairs", value: "\(healthKit.todayFlightsClimbed)", label: "Flights", color: .indigo)
 
-                VStack(spacing: 8) {
-                    Image(systemName: "heart.fill")
-                        .font(.title2)
-                        .foregroundColor(Design.Colors.heart)
-                        .frame(width: 50, height: 50)
-                        .background(Design.Colors.heart.opacity(0.1))
-                        .clipShape(Circle())
-                    
-                    Text(healthKit.restingHeartRate > 0 ? "\(Int(healthKit.restingHeartRate))" : "—")
-                        .font(Design.Typography.headline)
-                        .fontWeight(.bold)
-                    
-                    Text("Heart Rate")
-                        .font(Design.Typography.caption)
-                        .foregroundColor(.secondary)
-                }
-                .frame(maxWidth: .infinity)
-                .padding(Design.Spacing.md)
-                .background(Design.Colors.cardBackground)
-                .cornerRadius(16)
-                .shadow(color: Color.primary.opacity(0.06), radius: 8, x: 0, y: 2)
+                activityMetricCard(icon: "bed.double.fill", value: healthKit.sleepHours > 0 ? String(format: "%.1f h", healthKit.sleepHours) : "—", label: "Sleep", color: .purple)
+                activityMetricCard(icon: "heart.fill", value: healthKit.restingHeartRate > 0 ? "\(Int(healthKit.restingHeartRate))" : "—", label: "Rest HR", color: Design.Colors.heart)
+                activityMetricCard(icon: "waveform.path.ecg", value: healthKit.heartRateVariability > 0 ? "\(Int(healthKit.heartRateVariability))" : "—", label: "HRV", color: .pink)
+
+                activityMetricCard(icon: "lungs.fill", value: healthKit.respiratoryRate > 0 ? String(format: "%.1f", healthKit.respiratoryRate) : "—", label: "Resp", color: .teal)
+                activityMetricCard(icon: "drop.fill", value: healthKit.bloodOxygen > 0 ? String(format: "%.0f%%", healthKit.bloodOxygen) : "—", label: "SpO₂", color: .blue)
+                activityMetricCard(icon: "brain.head.profile", value: healthKit.mindfulMinutes > 0 ? "\(Int(healthKit.mindfulMinutes))m" : "—", label: "Mindful", color: .cyan)
             }
         }
+    }
+
+    private func activityMetricCard(icon: String, value: String, label: String, color: Color) -> some View {
+        VStack(spacing: 8) {
+            Image(systemName: icon)
+                .font(.title3)
+                .foregroundColor(color)
+                .frame(width: 42, height: 42)
+                .background(color.opacity(0.12))
+                .clipShape(Circle())
+
+            Text(value)
+                .font(Design.Typography.caption)
+                .fontWeight(.bold)
+                .foregroundColor(.primary)
+                .lineLimit(1)
+                .minimumScaleFactor(0.7)
+
+            Text(label)
+                .font(Design.Typography.caption2)
+                .foregroundColor(.secondary)
+                .lineLimit(1)
+        }
+        .frame(maxWidth: .infinity)
+        .padding(.vertical, Design.Spacing.md)
+        .padding(.horizontal, 6)
+        .background(Design.Colors.cardBackground)
+        .cornerRadius(16)
+        .shadow(color: Color.primary.opacity(0.06), radius: 8, x: 0, y: 2)
     }
 
     // MARK: - Water & Blood Sugar Meter Cluster (Circular)
