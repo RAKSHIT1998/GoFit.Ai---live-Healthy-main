@@ -13,12 +13,15 @@ struct SocialHubView: View {
     @ObservedObject private var friendsService = FriendsService.shared
     @StateObject private var aiChallenges = AIChallengeService.shared
     
-    @State private var selectedSection: SocialSection = .friends
-    @State private var searchText = ""
+    @State private var selectedTab: SocialTab = .chats
+    @State private var showQuickAdd = false
     @State private var showError = false
     @State private var errorMessage = ""
     @State private var showPaywall = false
-    @State private var showQuickAdd = false
+    
+    // Keep for backward compat with old section references
+    @State private var searchText = ""
+    @State private var selectedSection: SocialSection = .chats
     
     enum SocialSection: String, CaseIterable {
         case friends = "Friends"
@@ -34,60 +37,41 @@ struct SocialHubView: View {
         }
     }
     
+    enum SocialTab: String, CaseIterable {
+        case chats = "Chats"
+        case friends = "Friends"
+        case challenges = "Challenges"
+    }
+    
     var body: some View {
         NavigationStack {
-            ZStack {
-                Design.Colors.background.ignoresSafeArea()
+            VStack(spacing: 0) {
+                // WhatsApp-style top tabs
+                topTabBar
                 
-                VStack(spacing: 0) {
-                    socialStatsBanner
-                    sectionPicker
-                    
-                    Divider()
-                        .padding(.top, 4)
-                    
-                    TabView(selection: $selectedSection) {
-                        friendsSection
-                            .tag(SocialSection.friends)
-                        
-                        aiChallengesSection
-                            .tag(SocialSection.aiChallenges)
-                        
-                        chatsSection
-                            .tag(SocialSection.chats)
-                    }
-                    .tabViewStyle(.page(indexDisplayMode: .never))
+                // Content
+                switch selectedTab {
+                case .chats:
+                    ConversationsView()
+                        .environmentObject(auth)
+                case .friends:
+                    friendsSection
+                case .challenges:
+                    challengesSection
                 }
             }
+            .background(Design.Colors.background.ignoresSafeArea())
             .navigationTitle("Social")
-            .navigationBarTitleDisplayMode(.large)
+            .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .navigationBarTrailing) {
-                    Button {
-                        showQuickAdd = true
-                    } label: {
-                        Image(systemName: "person.badge.plus")
-                            .foregroundColor(Design.Colors.primary)
-                    }
-                }
-                
-                ToolbarItem(placement: .navigationBarTrailing) {
-                    if friendsService.friendRequests.count > 0 {
+                    HStack(spacing: 14) {
                         Button {
-                            selectedSection = .friends
+                            showQuickAdd = true
                         } label: {
-                            ZStack(alignment: .topTrailing) {
-                                Image(systemName: "bell.fill")
-                                    .foregroundColor(Design.Colors.primary)
-                                
-                                Text("\(friendsService.friendRequests.count)")
-                                    .font(.system(size: 10, weight: .bold))
-                                    .foregroundColor(.white)
-                                    .frame(width: 16, height: 16)
-                                    .background(Color.red)
-                                    .clipShape(Circle())
-                                    .offset(x: 8, y: -6)
-                            }
+                            Image(systemName: "person.badge.plus")
+                                .font(.body)
+                                .foregroundColor(Design.Colors.primary)
                         }
                     }
                 }
@@ -118,82 +102,46 @@ struct SocialHubView: View {
         }
     }
     
-    // MARK: - Stats Banner
-    private var socialStatsBanner: some View {
-        ScrollView(.horizontal, showsIndicators: false) {
-            HStack(spacing: 12) {
-                StatChip(icon: "person.2.fill", value: "\(friendsService.friends.count)", label: "Friends", color: Design.Colors.primary)
-                StatChip(icon: "envelope.fill", value: "\(friendsService.friendRequests.count)", label: "Requests", color: .orange)
-                StatChip(icon: "bolt.fill", value: "\(aiChallenges.activeChallenges.count)", label: "Challenges", color: .purple)
-                StatChip(icon: "flame.fill", value: "\(StreakManager.shared.currentStreak)", label: "Streak", color: .red)
-                
-                if purchases.isPremiumActive {
-                    StatChip(icon: "star.fill", value: "\(aiChallenges.totalXPEarned)", label: "AI XP", color: .yellow)
-                }
-                
-                // Share progress chip
-                ShareLink(
-                    item: ViralEngagementManager.motivationalShareTexts.randomElement() ?? "Check out GoFit.Ai! #GoFitAi",
-                    subject: Text("My GoFit.Ai Progress"),
-                    message: Text(NutritionBroadcaster.shared.formattedSummary)
-                ) {
-                    HStack(spacing: 6) {
-                        Image(systemName: "square.and.arrow.up.fill")
-                            .font(.caption)
-                        Text("Share")
-                            .font(.caption.weight(.semibold))
+    // MARK: - WhatsApp-style Top Tabs
+    private var topTabBar: some View {
+        HStack(spacing: 0) {
+            ForEach(SocialTab.allCases, id: \.self) { tab in
+                Button {
+                    withAnimation(.easeInOut(duration: 0.2)) {
+                        selectedTab = tab
                     }
-                    .foregroundColor(.white)
-                    .padding(.horizontal, 14)
-                    .padding(.vertical, 10)
-                    .background(LinearGradient(colors: [.green, .mint], startPoint: .leading, endPoint: .trailing))
-                    .cornerRadius(12)
-                }
-            }
-            .padding(.horizontal, Design.Spacing.md)
-            .padding(.vertical, Design.Spacing.sm)
-        }
-    }
-    
-    // MARK: - Section Picker
-    private var sectionPicker: some View {
-        ScrollView(.horizontal, showsIndicators: false) {
-            HStack(spacing: 6) {
-                ForEach(SocialSection.allCases, id: \.self) { section in
-                    Button {
-                        withAnimation(.easeInOut(duration: 0.2)) {
-                            selectedSection = section
-                        }
-                        HapticManager.shared.lightTap()
-                    } label: {
-                        HStack(spacing: 6) {
-                            Image(systemName: section.icon)
-                                .font(.caption)
-                            Text(section.rawValue)
-                                .font(.subheadline.weight(.semibold))
+                    HapticManager.shared.lightTap()
+                } label: {
+                    VStack(spacing: 6) {
+                        HStack(spacing: 5) {
+                            Text(tab.rawValue)
+                                .font(.subheadline.weight(selectedTab == tab ? .bold : .medium))
+                                .foregroundColor(selectedTab == tab ? Design.Colors.primary : .secondary)
                             
-                            if section == .aiChallenges && !purchases.isPremiumActive {
-                                Image(systemName: "lock.fill")
-                                    .font(.caption2)
-                                    .foregroundColor(.yellow)
-                            }
-                            
-                            if section == .friends && friendsService.friendRequests.count > 0 {
-                                Circle()
-                                    .fill(Color.red)
-                                    .frame(width: 8, height: 8)
+                            // Badge for friend requests
+                            if tab == .friends && friendsService.friendRequests.count > 0 {
+                                Text("\(friendsService.friendRequests.count)")
+                                    .font(.system(size: 10, weight: .bold))
+                                    .foregroundColor(.white)
+                                    .frame(width: 18, height: 18)
+                                    .background(Color.red)
+                                    .clipShape(Circle())
                             }
                         }
-                        .foregroundColor(selectedSection == section ? .white : .secondary)
-                        .padding(.horizontal, 14)
-                        .padding(.vertical, 10)
-                        .background(selectedSection == section ? Design.Colors.primary : Design.Colors.cardBackground)
-                        .cornerRadius(12)
+                        
+                        // Underline indicator
+                        Rectangle()
+                            .fill(selectedTab == tab ? Design.Colors.primary : Color.clear)
+                            .frame(height: 2.5)
+                            .cornerRadius(1.5)
                     }
                 }
+                .frame(maxWidth: .infinity)
             }
-            .padding(.horizontal, Design.Spacing.md)
         }
+        .padding(.horizontal, Design.Spacing.md)
+        .padding(.top, 4)
+        .background(Design.Colors.background)
     }
     
     // MARK: - Friends Section
@@ -325,50 +273,62 @@ struct SocialHubView: View {
         }
     }
     
-    // MARK: - AI Challenges Section (Premium)
-    private var aiChallengesSection: some View {
+    // MARK: - Challenges Section (simplified)
+    private var challengesSection: some View {
         ScrollView {
             VStack(spacing: Design.Spacing.lg) {
                 if !purchases.isPremiumActive {
                     aiPremiumUpsell
                 } else {
-                    aiChallengeHeader
+                    // Simple header
+                    HStack {
+                        VStack(alignment: .leading, spacing: 4) {
+                            Text("AI Challenges")
+                                .font(Design.Typography.headline)
+                            Text("\(aiChallenges.activeChallenges.count) active")
+                                .font(Design.Typography.caption)
+                                .foregroundColor(.secondary)
+                        }
+                        Spacer()
+                        
+                        Button {
+                            Task { await aiChallenges.generateChallenges(forceRefresh: true) }
+                        } label: {
+                            Image(systemName: "arrow.clockwise")
+                                .font(.body.weight(.medium))
+                                .foregroundColor(Design.Colors.primary)
+                        }
+                    }
+                    .padding(.horizontal, Design.Spacing.md)
                     
                     if aiChallenges.isGenerating {
-                        VStack(spacing: 16) {
+                        VStack(spacing: 12) {
                             ProgressView()
-                                .scaleEffect(1.5)
-                            Text("AI is analyzing your fitness data...")
-                                .font(Design.Typography.body)
-                                .foregroundColor(.secondary)
-                            Text("Generating personalized challenges")
+                            Text("Generating challenges...")
                                 .font(Design.Typography.caption)
                                 .foregroundColor(.secondary)
                         }
                         .frame(maxWidth: .infinity)
-                        .padding(.top, 40)
+                        .padding(.top, 30)
                     } else if aiChallenges.activeChallenges.isEmpty {
-                        VStack(spacing: 20) {
+                        VStack(spacing: 16) {
                             Image(systemName: "sparkles")
-                                .font(.system(size: 50))
-                                .foregroundStyle(LinearGradient(colors: [Design.Colors.primary, .purple], startPoint: .topLeading, endPoint: .bottomTrailing))
-                            Text("Ready to generate challenges!")
-                                .font(Design.Typography.headline)
-                            
+                                .font(.system(size: 40))
+                                .foregroundColor(Design.Colors.primary.opacity(0.4))
+                            Text("No active challenges")
+                                .font(Design.Typography.body)
+                                .foregroundColor(.secondary)
                             Button {
                                 Task { await aiChallenges.generateChallenges(forceRefresh: true) }
                             } label: {
-                                HStack {
-                                    Image(systemName: "brain.head.profile")
-                                    Text("Generate AI Challenges")
-                                }
-                                .foregroundColor(.white)
-                                .padding(.horizontal, 24)
-                                .padding(.vertical, 14)
-                                .background(LinearGradient(colors: [Design.Colors.primary, .purple], startPoint: .leading, endPoint: .trailing))
-                                .cornerRadius(16)
+                                Text("Generate Challenges")
+                                    .font(.subheadline.weight(.semibold))
+                                    .foregroundColor(.white)
+                                    .padding(.horizontal, 20)
+                                    .padding(.vertical, 10)
+                                    .background(Design.Colors.primary)
+                                    .cornerRadius(12)
                             }
-                            .buttonStyle(SmoothButtonStyle())
                         }
                         .frame(maxWidth: .infinity)
                         .padding(.top, 30)
@@ -377,42 +337,6 @@ struct SocialHubView: View {
                             AIChallengeCard(challenge: challenge)
                         }
                         .padding(.horizontal, Design.Spacing.md)
-                        
-                        if !aiChallenges.completedChallenges.isEmpty {
-                            VStack(alignment: .leading, spacing: Design.Spacing.sm) {
-                                HStack {
-                                    Image(systemName: "checkmark.circle.fill")
-                                        .foregroundColor(.green)
-                                    Text("Completed (\(aiChallenges.completedChallenges.count))")
-                                        .font(Design.Typography.headline)
-                                    Spacer()
-                                }
-                                .padding(.horizontal, Design.Spacing.md)
-                                
-                                ForEach(aiChallenges.completedChallenges.suffix(3)) { challenge in
-                                    AIChallengeCard(challenge: challenge)
-                                        .opacity(0.6)
-                                }
-                                .padding(.horizontal, Design.Spacing.md)
-                            }
-                        }
-                        
-                        Button {
-                            Task { await aiChallenges.generateChallenges(forceRefresh: true) }
-                        } label: {
-                            HStack {
-                                Image(systemName: "arrow.clockwise")
-                                Text("Refresh Challenges")
-                            }
-                            .font(Design.Typography.subheadline)
-                            .foregroundColor(Design.Colors.primary)
-                            .padding(.horizontal, 20)
-                            .padding(.vertical, 12)
-                            .background(Design.Colors.primary.opacity(0.1))
-                            .cornerRadius(12)
-                        }
-                        .buttonStyle(SmoothButtonStyle())
-                        .padding(.top, Design.Spacing.sm)
                     }
                 }
             }
@@ -420,7 +344,7 @@ struct SocialHubView: View {
         }
     }
     
-    // MARK: - AI Challenge Header
+    // MARK: - AI Challenge Header (kept for reference)
     private var aiChallengeHeader: some View {
         VStack(spacing: Design.Spacing.md) {
             HStack(spacing: 16) {
@@ -534,10 +458,7 @@ struct SocialHubView: View {
         }
     }
     
-    // MARK: - Chats Section
-    private var chatsSection: some View {
-        ConversationsView()
-    }
+    // Chats section handled directly in body via ConversationsView()
     
     // MARK: - Invite
     private var inviteShareText: String {

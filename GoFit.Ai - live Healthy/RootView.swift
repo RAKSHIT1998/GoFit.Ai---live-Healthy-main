@@ -83,14 +83,13 @@ struct RootView: View {
                         await MainActor.run {
                             healthKit.checkAuthorizationStatus()
                         }
-                        let isAuthorized = await MainActor.run { healthKit.isAuthorized }
-                        if isAuthorized {
-                            await MainActor.run {
-                                healthKit.startPeriodicSync()
-                            }
-                            await healthKit.readTodayData()
-                            try? await healthKit.syncToBackend()
+                        // Always try to read data - Apple may have granted read
+                        // access even though we can't verify it via authorizationStatus.
+                        await MainActor.run {
+                            healthKit.startPeriodicSync()
                         }
+                        await healthKit.readTodayData()
+                        try? await healthKit.syncToBackend()
                     }()
                     
                     async let streakCheck: Void = {
@@ -150,11 +149,9 @@ struct RootView: View {
                     }
                     
                     healthKit.checkAuthorizationStatus()
-                    if healthKit.isAuthorized {
-                        healthKit.startPeriodicSync()
-                        await healthKit.readTodayData()
-                        try? await healthKit.syncToBackend()
-                    }
+                    healthKit.startPeriodicSync()
+                    await healthKit.readTodayData()
+                    try? await healthKit.syncToBackend()
                 }
 
                 if !pendingFriendInviteId.isEmpty {

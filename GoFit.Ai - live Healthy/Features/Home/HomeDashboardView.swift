@@ -110,10 +110,9 @@ struct HomeDashboardView: View {
                     await loadWaterIntake()
                     await loadHealthData()
                     await loadInlineRecommendations()
-                    if healthKit.isAuthorized {
-                        await healthKit.readTodayData()
-                        try? await healthKit.syncToBackend()
-                    }
+                    // Always try reading — user may have granted read access
+                    await healthKit.readTodayData()
+                    try? await healthKit.syncToBackend()
                 }
             }
             .navigationBarTitleDisplayMode(.inline)
@@ -198,6 +197,12 @@ struct HomeDashboardView: View {
 
                     await syncHealthData()
                     
+                    // Populate daily challenges with current data
+                    let mealCount = Double(LocalMealCache.shared.getTodayMeals().count)
+                    let totals = LocalMealCache.shared.getTodayTotals()
+                    DailyChallengeManager.shared.updateProgress(for: .meals, value: mealCount)
+                    DailyChallengeManager.shared.updateProgress(for: .protein, value: totals.protein)
+                    
                     // Load inline AI recommendations
                     await loadInlineRecommendations()
                 }
@@ -222,6 +227,11 @@ struct HomeDashboardView: View {
                         
                         // Award points for logging a meal
                         streakManager.logMeal()
+                        
+                        // Update daily challenge progress for meals + protein
+                        let mealCount = Double(LocalMealCache.shared.getTodayMeals().count)
+                        DailyChallengeManager.shared.updateProgress(for: .meals, value: mealCount)
+                        DailyChallengeManager.shared.updateProgress(for: .protein, value: localTotals.protein)
                         
                         // Check water goal for bonus XP
                         if waterIntake >= liquidIntakeGoal && liquidIntakeGoal > 0 {
@@ -1675,14 +1685,11 @@ struct HomeDashboardView: View {
                 try await healthKit.requestAuthorization()
             } catch {
                 print("⚠️ HealthKit authorization failed: \(error.localizedDescription)")
-                return
             }
         }
         
-        guard healthKit.isAuthorized else {
-            return
-        }
-        
+        // Always try to read — Apple doesn't reveal read authorization status,
+        // so isAuthorized may be false even when reads are granted.
         await healthKit.readTodayData()
         try? await healthKit.syncToBackend()
         print("✅ HealthKit data synced")

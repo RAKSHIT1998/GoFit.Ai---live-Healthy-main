@@ -61,17 +61,18 @@ class HealthKitService: ObservableObject {
             return
         }
         
+        // IMPORTANT: authorizationStatus(for:) only works for WRITE (share) types.
+        // For READ-ONLY types (heartRate, sleep, etc.), Apple never reveals
+        // whether the user granted access — it always returns .notDetermined.
+        // So we only check the types we requested WRITE access for.
         let stepType = HKQuantityType.quantityType(forIdentifier: .stepCount)!
         let caloriesType = HKQuantityType.quantityType(forIdentifier: .activeEnergyBurned)!
-        let heartType = HKQuantityType.quantityType(forIdentifier: .heartRate)!
         
         let stepStatus = healthStore.authorizationStatus(for: stepType)
         let caloriesStatus = healthStore.authorizationStatus(for: caloriesType)
-        let heartStatus = healthStore.authorizationStatus(for: heartType)
         
         isAuthorized = (stepStatus == .sharingAuthorized)
             && (caloriesStatus == .sharingAuthorized)
-            && (heartStatus == .sharingAuthorized)
     }
     
     func requestAuthorization() async throws {
@@ -110,10 +111,10 @@ class HealthKitService: ObservableObject {
         
         checkAuthorizationStatus()
         
-        // Read data immediately after authorization
-        if isAuthorized {
-            await readTodayData()
-        }
+        // Always try to read data after requesting authorization.
+        // Apple may grant read access even though we can't verify it
+        // (authorizationStatus only works for write types).
+        await readTodayData()
     }
     
     // MARK: - Data Reading
@@ -206,6 +207,8 @@ class HealthKitService: ObservableObject {
             let steps = Int(value)
             LocalDailyLogStore.shared.updateSteps(steps)
             self.todaySteps = steps
+            // Update daily challenge progress
+            DailyChallengeManager.shared.updateProgress(for: .steps, value: value)
         }
     }
     
@@ -214,6 +217,8 @@ class HealthKitService: ObservableObject {
             guard let self = self else { return }
             LocalDailyLogStore.shared.updateCaloriesBurned(calories)
             self.todayActiveCalories = calories
+            // Update daily challenge progress
+            DailyChallengeManager.shared.updateProgress(for: .calories, value: calories)
         }
     }
 
@@ -342,8 +347,9 @@ class HealthKitService: ObservableObject {
     // MARK: - Backend Sync
     
     func syncToBackend() async throws {
-        guard isAuthorized else {
-            throw HealthKitError.notAuthorized
+        // Allow sync if we have any data, even if write auth wasn't fully confirmed
+        guard HKHealthStore.isHealthDataAvailable() else {
+            throw HealthKitError.notAvailable
         }
         
         guard let token = AuthService.shared.readToken()?.accessToken else {
@@ -403,9 +409,8 @@ class HealthKitService: ObservableObject {
                 try? await Task.sleep(nanoseconds: 15 * 60 * 1_000_000_000) // 15 minutes
                 
                 guard let self = self,
-                      self.isAuthorized,
                       AuthService.shared.readToken() != nil else {
-                    return
+                    continue
                 }
                 
                 await self.readTodayData()

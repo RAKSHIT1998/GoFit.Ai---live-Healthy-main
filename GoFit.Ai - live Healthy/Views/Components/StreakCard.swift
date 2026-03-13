@@ -108,48 +108,49 @@ struct StreakCard: View {
             
             Divider()
             
-            // Achievements preview
-            HStack {
-                Text("Achievements")
-                    .font(.subheadline.weight(.semibold))
-                    .foregroundColor(.primary)
-                
-                Spacer()
-                
-                // Show recent unlocked achievements
-                HStack(spacing: -8) {
-                    ForEach(streakManager.achievements.suffix(3)) { achievement in
-                        Circle()
-                            .fill(Color.yellow.opacity(0.2))
-                            .frame(width: 32, height: 32)
-                            .overlay(
-                                Image(systemName: achievement.type.icon)
-                                    .font(.system(size: 16))
-                                    .foregroundColor(.orange)
-                            )
+            // Achievements preview — entire row is tappable
+            Button {
+                HapticManager.shared.lightTap()
+                showingAchievements = true
+            } label: {
+                HStack {
+                    Text("Achievements")
+                        .font(.subheadline.weight(.semibold))
+                        .foregroundColor(.primary)
+                    
+                    Spacer()
+                    
+                    // Show recent unlocked achievements
+                    HStack(spacing: -8) {
+                        ForEach(streakManager.achievements.suffix(3)) { achievement in
+                            Circle()
+                                .fill(Color.yellow.opacity(0.2))
+                                .frame(width: 32, height: 32)
+                                .overlay(
+                                    Image(systemName: achievement.type.icon)
+                                        .font(.system(size: 16))
+                                        .foregroundColor(.orange)
+                                )
+                        }
+                        
+                        if streakManager.achievements.count > 3 {
+                            Circle()
+                                .fill(Color.gray.opacity(0.2))
+                                .frame(width: 32, height: 32)
+                                .overlay(
+                                    Text("+\(streakManager.achievements.count - 3)")
+                                        .font(.caption2.weight(.semibold))
+                                        .foregroundColor(.secondary)
+                                )
+                        }
                     }
                     
-                    if streakManager.achievements.count > 3 {
-                        Circle()
-                            .fill(Color.gray.opacity(0.2))
-                            .frame(width: 32, height: 32)
-                            .overlay(
-                                Text("+\(streakManager.achievements.count - 3)")
-                                    .font(.caption2.weight(.semibold))
-                                    .foregroundColor(.secondary)
-                            )
-                    }
-                }
-                
-                Button {
-                    HapticManager.shared.lightTap()
-                    showingAchievements = true
-                } label: {
                     Image(systemName: "chevron.right")
                         .font(.caption)
                         .foregroundColor(.secondary)
                 }
             }
+            .buttonStyle(.plain)
         }
         .padding(Design.Spacing.lg)
         .background(Design.Colors.cardBackground)
