@@ -33,6 +33,8 @@ class WaterIntakeManager: ObservableObject {
     /// Log plain water intake (in liters)
     /// Example: logWater(0.5) for 500ml
     func logWater(_ liters: Double) {
+        let wasGoalMet = isGoalMet
+        
         let log = WaterLog(
             id: UUID().uuidString,
             liters: liters,
@@ -53,6 +55,11 @@ class WaterIntakeManager: ObservableObject {
         
         // Log the action
         logger.meal("💧 Logged water: \(liters)L (Total today: \(todayWaterIntake)L)")
+        
+        // Celebrate if goal just hit
+        if !wasGoalMet && isGoalMet {
+            GoFitSmartNotifications.shared.sendGoalHitNotification(type: "water")
+        }
         
         // Background sync
         Task {
