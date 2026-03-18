@@ -250,7 +250,6 @@ class ExerciseGifService: NSObject, ObservableObject {
 struct ExerciseDemoView: View {
     let exercise: Exercise
     let gifService = ExerciseGifService.shared
-    let giphyService = GiphyGifService.shared
     let visualService = RecommendationVisualService.shared
     
     @State private var gifData: Data?
@@ -397,27 +396,16 @@ struct ExerciseDemoView: View {
         
         isLoadingGif = true
         
-        // Try Giphy first
-        giphyService.fetchGifData(for: exercise.name) { result in
-            DispatchQueue.main.async {
-                switch result {
-                case .success(let data):
-                    self.gifData = data
-                    self.loadingError = nil
-                    self.isLoadingGif = false
-                case .failure(let error):
-                    // Fallback to local GIFs
-                    if let localGifData = self.gifService.getGifData(for: self.exercise.name) {
-                        self.gifData = localGifData
-                        self.loadingError = nil
-                    } else {
-                        self.loadingError = error.localizedDescription
-                        self.gifData = nil
-                    }
-                    self.isLoadingGif = false
-                }
-            }
+        // Use locally cached GIFs only — no Giphy API calls (saves money)
+        if let localGifData = gifService.getGifData(for: exercise.name) {
+            gifData = localGifData
+            loadingError = nil
+        } else {
+            // No local GIF available — SF Symbol fallback will show automatically
+            gifData = nil
+            loadingError = nil
         }
+        isLoadingGif = false
     }
 }
 
@@ -425,7 +413,6 @@ struct ExerciseDemoView: View {
 struct MealDemoView: View {
     let meal: RecommendationMealItem
     let gifService = ExerciseGifService.shared
-    let giphyService = GiphyGifService.shared
     let visualService = RecommendationVisualService.shared
     
     @State private var gifData: Data?
@@ -598,27 +585,16 @@ struct MealDemoView: View {
         hasLoadedGif = true
         isLoadingGif = true
         
-        // Try Giphy first for meal/cooking videos
-        giphyService.fetchGifData(for: meal.name) { result in
-            DispatchQueue.main.async {
-                switch result {
-                case .success(let data):
-                    self.gifData = data
-                    self.loadingError = nil
-                    self.isLoadingGif = false
-                case .failure(let error):
-                    // Fallback to local GIFs (if available)
-                    if let localGifData = self.gifService.getGifData(for: meal.name) {
-                        self.gifData = localGifData
-                        self.loadingError = nil
-                    } else {
-                        self.loadingError = error.localizedDescription
-                        self.gifData = nil
-                    }
-                    self.isLoadingGif = false
-                }
-            }
+        // Use locally cached GIFs only — no Giphy API calls (saves money)
+        if let localGifData = gifService.getGifData(for: meal.name) {
+            gifData = localGifData
+            loadingError = nil
+        } else {
+            // No local GIF — fallback visual will show automatically
+            gifData = nil
+            loadingError = nil
         }
+        isLoadingGif = false
     }
 }
 

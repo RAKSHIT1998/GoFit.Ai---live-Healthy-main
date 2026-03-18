@@ -12,7 +12,10 @@ struct ChatView: View {
     @State private var messageText = ""
     @State private var isSending = false
     @State private var isLoadingMessages = true
-    @State private var showSentConfirmation = false
+    @State private var replyingTo: MessageItem? = nil
+    @State private var showReactionPicker: String? = nil
+    @State private var reactions: [String: [String]] = [:]  // messageId -> [emoji]
+    @State private var isTyping = false
     @FocusState private var isTextFieldFocused: Bool
 
     var body: some View {
@@ -46,19 +49,44 @@ struct ChatView: View {
                         .frame(maxWidth: .infinity)
                         .padding(.top, 40)
                     } else if messages.isEmpty {
-                        VStack(spacing: 12) {
-                            Image(systemName: "bubble.left.and.bubble.right")
-                                .font(.system(size: 40))
-                                .foregroundColor(Design.Colors.primary.opacity(0.3))
-                            Text("No messages yet")
-                                .font(.headline)
+                        VStack(spacing: 16) {
+                            Spacer().frame(height: 40)
+
+                            ZStack {
+                                Circle()
+                                    .fill(Design.Colors.primary.opacity(0.08))
+                                    .frame(width: 100, height: 100)
+                                Image(systemName: "bubble.left.and.bubble.right.fill")
+                                    .font(.system(size: 40))
+                                    .foregroundStyle(
+                                        LinearGradient(colors: [Design.Colors.primary, .purple],
+                                                       startPoint: .topLeading, endPoint: .bottomTrailing)
+                                    )
+                            }
+
+                            Text("Start the conversation!")
+                                .font(Design.Typography.headline)
+                                .foregroundColor(.primary)
+
+                            Text("Say hello to \(friend.fullName ?? friend.username) \u{1F44B}")
+                                .font(Design.Typography.caption)
                                 .foregroundColor(.secondary)
-                            Text("Say hello to \(friend.fullName ?? friend.username)!")
-                                .font(.caption)
-                                .foregroundColor(.secondary)
+
+                            Button {
+                                messageText = "Hey! \u{1F44B}"
+                                isTextFieldFocused = true
+                            } label: {
+                                Text("Wave \u{1F44B}")
+                                    .font(.subheadline.weight(.semibold))
+                                    .foregroundColor(.white)
+                                    .padding(.horizontal, 24)
+                                    .padding(.vertical, 10)
+                                    .background(Design.Colors.primary)
+                                    .cornerRadius(20)
+                            }
+                            .buttonStyle(SmoothButtonStyle())
                         }
                         .frame(maxWidth: .infinity)
-                        .padding(.top, 60)
                     } else {
                         LazyVStack(spacing: 4) {
                             ForEach(Array(messages.enumerated()), id: \.element.id) { index, msg in
@@ -77,6 +105,18 @@ struct ChatView: View {
                                         insertion: .scale(scale: 0.8).combined(with: .opacity).combined(with: .move(edge: .bottom)),
                                         removal: .opacity
                                     ))
+                                    .onLongPressGesture {
+                                        withAnimation(.spring(response: 0.3)) {
+                                            showReactionPicker = showReactionPicker == msg.id ? nil : msg.id
+                                        }
+                                        HapticManager.shared.mediumTap()
+                                    }
+                                    .overlay(alignment: msg.senderId == currentUserId ? .topLeading : .topTrailing) {
+                                        if showReactionPicker == msg.id {
+                                            reactionPickerOverlay(for: msg)
+                                                .transition(.scale(scale: 0.5).combined(with: .opacity))
+                                        }
+                                    }
                             }
                         }
                         .padding(.vertical, 12)
@@ -102,6 +142,58 @@ struct ChatView: View {
             }
 
             Divider()
+
+            // Reply banner
+            if let reply = replyingTo {
+                HStack(spacing: 8) {
+                    Rectangle()
+                        .fill(Design.Colors.primary)
+                        .frame(width: 3)
+
+                    VStack(alignment: .leading, spacing: 2) {
+                        Text(reply.senderId == currentUserId ? "You" : reply.senderName)
+                            .font(.caption.bold())
+                            .foregroundColor(Design.Colors.primary)
+                        Text(reply.message)
+                            .font(.caption)
+                            .foregroundColor(.secondary)
+                            .lineLimit(1)
+                    }
+
+                    Spacer()
+
+                    Button {
+                        withAnimation { replyingTo = nil }
+                    } label: {
+                        Image(systemName: "xmark.circle.fill")
+                            .foregroundColor(.secondary)
+                    }
+                }
+                .padding(.horizontal, 12)
+                .padding(.vertical, 8)
+                .background(Design.Colors.cardBackground)
+                .transition(.move(edge: .bottom).combined(with: .opacity))
+            }
+
+            // Typing indicator
+            if isTyping {
+                HStack(spacing: 4) {
+                    Text("\(friend.fullName ?? friend.username) is typing")
+                        .font(.caption2)
+                        .foregroundColor(.secondary)
+                    HStack(spacing: 3) {
+                        ForEach(0..<3, id: \.self) { i in
+                            Circle()
+                                .fill(Color.secondary)
+                                .frame(width: 4, height: 4)
+                                .opacity(0.6)
+                        }
+                    }
+                }
+                .padding(.horizontal, 12)
+                .padding(.vertical, 4)
+                .transition(.opacity)
+            }
 
             // Input bar
             HStack(spacing: 8) {
@@ -253,14 +345,70 @@ struct ChatView: View {
                             .foregroundColor(.secondary)
                     }
                 }
+
+                reactionsRow(for: msg.id)
             }
             
             if !isMine { Spacer(minLength: 50) }
         }
         .padding(.horizontal, 12)
         .padding(.vertical, 2)
+        .contentShape(Rectangle())
+        .onTapGesture(count: 2) {
+            withAnimation { replyingTo = msg }
+            HapticManager.shared.lightTap()
+        }
     }
     
+    // MARK: - Reaction Picker
+    private func reactionPickerOverlay(for msg: MessageItem) -> some View {
+        HStack(spacing: 6) {
+            ForEach(["\u{1F525}", "\u{2764}\u{FE0F}", "\u{1F44D}", "\u{1F602}", "\u{1F622}", "\u{1F64F}"], id: \.self) { emoji in
+                Button {
+                    withAnimation(.spring(response: 0.3, dampingFraction: 0.6)) {
+                        var current = reactions[msg.id] ?? []
+                        if current.contains(emoji) {
+                            current.removeAll { $0 == emoji }
+                        } else {
+                            current.append(emoji)
+                        }
+                        reactions[msg.id] = current
+                        showReactionPicker = nil
+                    }
+                    HapticManager.shared.lightTap()
+                } label: {
+                    Text(emoji)
+                        .font(.system(size: 20))
+                        .padding(4)
+                }
+                .buttonStyle(.plain)
+            }
+        }
+        .padding(.horizontal, 10)
+        .padding(.vertical, 6)
+        .background(.ultraThinMaterial)
+        .cornerRadius(20)
+        .shadow(color: Color.black.opacity(0.15), radius: 10, x: 0, y: 4)
+        .offset(y: -10)
+    }
+
+    private func reactionsRow(for msgId: String) -> some View {
+        Group {
+            if let msgReactions = reactions[msgId], !msgReactions.isEmpty {
+                HStack(spacing: 2) {
+                    ForEach(msgReactions, id: \.self) { emoji in
+                        Text(emoji)
+                            .font(.system(size: 14))
+                    }
+                }
+                .padding(.horizontal, 6)
+                .padding(.vertical, 2)
+                .background(.ultraThinMaterial)
+                .cornerRadius(10)
+            }
+        }
+    }
+
     private func shouldShowTimestamp(at index: Int) -> Bool {
         guard index > 0 else { return true }
         let current = messages[index].createdAt
@@ -296,8 +444,18 @@ struct ChatView: View {
         let trimmed = messageText.trimmingCharacters(in: .whitespacesAndNewlines)
         guard !trimmed.isEmpty else { return }
         isSending = true
-        let textToSend = trimmed
-        messageText = "" // Clear immediately for responsive feel
+
+        // Build message with reply prefix if replying
+        var textToSend = trimmed
+        if let reply = replyingTo {
+            let replyName = reply.senderId == currentUserId ? "You" : reply.senderName
+            let shortQuote = String(reply.message.prefix(60))
+            textToSend = "[\u{21A9}\u{FE0F} \(replyName): \(shortQuote)]\n\(trimmed)"
+        }
+
+        messageText = ""
+        let savedReply = replyingTo
+        withAnimation { replyingTo = nil }
         
         messagesService.sendMessage(friendId: friend.id, message: textToSend) { result in
             DispatchQueue.main.async {
@@ -309,7 +467,8 @@ struct ChatView: View {
                     HapticManager.shared.lightTap()
                 } else {
                     // Put text back if send failed
-                    messageText = textToSend
+                    messageText = trimmed
+                    replyingTo = savedReply
                     HapticManager.shared.warning()
                 }
             }

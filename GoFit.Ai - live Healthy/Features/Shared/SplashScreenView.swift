@@ -77,7 +77,7 @@ struct SplashScreenView: View {
                         .shadow(color: .black.opacity(0.3), radius: 10)
                     
                     if showTagline {
-                        Text("Live Healthy • Be Happy")
+                        Text(funLoadingTagline())
                             .font(.system(size: 18, weight: .medium, design: .rounded))
                             .foregroundColor(.white.opacity(0.9))
                             .transition(.opacity.combined(with: .scale))
@@ -108,7 +108,7 @@ struct SplashScreenView: View {
                     .frame(height: 6)
                     .frame(maxWidth: 200)
                     
-                    Text("Loading your fitness journey...")
+                    Text(funLoadingMessage())
                         .font(.caption)
                         .foregroundColor(.white.opacity(0.7))
                 }
@@ -118,6 +118,35 @@ struct SplashScreenView: View {
         .onAppear {
             startAnimations()
         }
+    }
+    
+    // Fun randomized taglines
+    private func funLoadingTagline() -> String {
+        let taglines = [
+            "Live Healthy • Be Happy 💚",
+            "Your AI Fitness Bestie 🤖💪",
+            "Eat Smart • Train Hard • Win Big 🏆",
+            "Level Up Your Health Game ⚡️",
+            "Where Fitness Meets Fun 🎮🔥"
+        ]
+        let dayIndex = Calendar.current.component(.minute, from: Date())
+        return taglines[dayIndex % taglines.count]
+    }
+    
+    // Fun randomized loading messages
+    private func funLoadingMessage() -> String {
+        let messages = [
+            "Warming up your gains... 🏋️",
+            "Counting your muscles... 💪",
+            "Charging your fitness energy... ⚡️",
+            "Preparing your daily rewards... 🎁",
+            "Feeding the AI brain... 🧠✨",
+            "Unlocking beast mode... 🦁",
+            "Loading your fitness adventure... 🚀",
+            "Calibrating awesomeness... 🌟"
+        ]
+        let index = Calendar.current.component(.second, from: Date())
+        return messages[index % messages.count]
     }
     
     private func startAnimations() {

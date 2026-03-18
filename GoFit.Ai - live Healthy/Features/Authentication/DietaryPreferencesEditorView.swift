@@ -182,33 +182,12 @@ struct DietaryPreferencesEditorView: View {
     }
     
     private func regenerateRecommendations() async {
-        // Trigger recommendation regeneration with new dietary preferences
-        do {
-            guard let token = AuthService.shared.readToken()?.accessToken else {
-                return
-            }
-            
-            let url = NetworkManager.shared.baseURL.appendingPathComponent("recommendations/regenerate")
-            var request = URLRequest(url: url)
-            request.httpMethod = "POST"
-            request.setValue("application/json", forHTTPHeaderField: "Content-Type")
-            request.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
-            request.timeoutInterval = 60.0 // Longer timeout for AI generation
-            
-            // Send empty body for regenerate endpoint
-            request.httpBody = try JSONSerialization.data(withJSONObject: [:])
-            
-            let (_, response) = try await URLSession.shared.data(for: request)
-            
-            if let httpResponse = response as? HTTPURLResponse, httpResponse.statusCode == 200 {
-                print("✅ Recommendations regenerated with new dietary preferences")
-            } else {
-                print("⚠️ Failed to regenerate recommendations, but preferences were saved")
-            }
-        } catch {
-            print("⚠️ Error regenerating recommendations: \(error.localizedDescription)")
-            // Don't show error to user - preferences were saved successfully
-        }
+        // Invalidate cached recommendations so next view load fetches fresh ones
+        RecommendationCacheManager.shared.clearCache()
+        
+        // Skip the actual API call here — the WorkoutSuggestionsView will
+        // fetch fresh recommendations on its next appear (saves an API call).
+        print("✅ Recommendation cache cleared; fresh data will load on next view")
     }
 }
 

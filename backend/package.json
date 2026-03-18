@@ -19,7 +19,6 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "@google/generative-ai": "^0.2.1",
     "aws-sdk": "^2.1470.0",
     "axios": "^1.6.0",
     "bcryptjs": "^2.4.3",

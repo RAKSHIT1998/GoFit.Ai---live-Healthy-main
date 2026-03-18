@@ -52,50 +52,54 @@ struct HomeDashboardView: View {
 
                 ScrollView {
                     VStack(spacing: Design.Spacing.lg) {
-                        welcomeHeader
+                        
+                        // ━━━ SECTION 1: Welcome & Core Stats ━━━
+                        enhancedWelcomeHeader
                             .delayedAppear(0)
                         
-                        // Gamification: Streak and level card
-                        StreakCard()
-                            .delayedAppear(0.05)
-                        
                         mainStatsCard
-                            .delayedAppear(0.1)
-                        
-                        // Daily Challenges
-                        DailyChallengeCard()
-                            .delayedAppear(0.15)
+                            .delayedAppear(0.04)
                         
                         quickActionsSection
-                            .delayedAppear(0.2)
+                            .delayedAppear(0.08)
                         
-                        // Fasting Card - Prominent inline card
+                        // ━━━ SECTION 2: Social & Friends ━━━
+                        SocialActivityCard()
+                            .delayedAppear(0.12)
+                        
+                        FriendsLeaderboardCard()
+                            .delayedAppear(0.16)
+                        
+                        // ━━━ SECTION 3: Gamification ━━━
+                        StreakCard()
+                            .delayedAppear(0.20)
+                        
+                        DailyChallengeCard()
+                            .delayedAppear(0.24)
+                        
+                        // ━━━ SECTION 4: Health Tracking ━━━
+                        compactActivityHighlights
+                            .delayedAppear(0.28)
+                        
                         fastingCard
-                            .delayedAppear(0.23)
+                            .delayedAppear(0.32)
                         
-                        // Sleep Tracker Card
-                        SleepCard()
-                            .delayedAppear(0.25)
-                        
-                        // Daily motivational quote
-                        MotivationalQuoteCard()
-                            .delayedAppear(0.3)
-                        
-                        healthMetricsSection
-                            .delayedAppear(0.35)
                         waterIntakeCard
-                            .delayedAppear(0.4)
+                            .delayedAppear(0.36)
                         
-                        // Inline AI Workout Recommendations
+                        // ━━━ SECTION 5: AI Coaching ━━━
                         aiWorkoutSection
-                            .delayedAppear(0.55)
+                            .delayedAppear(0.40)
                         
-                        // Inline AI Meal Recommendations
                         aiMealSection
-                            .delayedAppear(0.6)
+                            .delayedAppear(0.44)
                         
-                        aiRecommendationsCard
-                            .delayedAppear(0.65)
+                        // ━━━ SECTION 6: Share & Grow ━━━
+                        ShareYourStoryCard()
+                            .delayedAppear(0.48)
+                        
+                        ReferAndEarnCard()
+                            .delayedAppear(0.52)
                     }
                     .padding(.horizontal, Design.Spacing.md)
                     .padding(.bottom, Design.Spacing.xl)
@@ -276,6 +280,94 @@ struct HomeDashboardView: View {
             Spacer()
         }
         .padding(.vertical, Design.Spacing.sm)
+    }
+    
+    // MARK: - Enhanced Welcome Header with Mascot
+    private var enhancedWelcomeHeader: some View {
+        VStack(spacing: Design.Spacing.md) {
+            HStack {
+                VStack(alignment: .leading, spacing: 4) {
+                    Text(timeBasedGreeting())
+                        .font(Design.Typography.subheadline)
+                        .foregroundColor(.secondary)
+                    
+                    HStack(spacing: 8) {
+                        Text(auth.name.isEmpty ? "User" : auth.name)
+                            .font(Design.Typography.title)
+                            .fontWeight(.bold)
+                            .foregroundColor(.primary)
+                        
+                        // Streak fire badge
+                        if streakManager.currentStreak > 0 {
+                            HStack(spacing: 3) {
+                                Text(streakManager.streakEmoji)
+                                    .font(.system(size: 14))
+                                Text("\(streakManager.currentStreak)")
+                                    .font(.system(size: 12, weight: .bold, design: .rounded))
+                                    .foregroundColor(.orange)
+                            }
+                            .padding(.horizontal, 6)
+                            .padding(.vertical, 3)
+                            .background(Color.orange.opacity(0.12))
+                            .cornerRadius(8)
+                        }
+                    }
+                }
+                
+                Spacer()
+                
+                // Mini mascot
+                MiniMascot(level: streakManager.level)
+            }
+            
+            // Dynamic sub-message based on time & progress
+            HStack(spacing: 6) {
+                Image(systemName: "sparkles")
+                    .font(.caption2)
+                    .foregroundColor(Design.Colors.primary)
+                Text(dynamicMotivation())
+                    .font(.system(.caption, design: .rounded))
+                    .foregroundColor(.secondary)
+                Spacer()
+            }
+        }
+        .padding(.vertical, Design.Spacing.sm)
+    }
+    
+    // MARK: - Time-Based Greeting
+    private func timeBasedGreeting() -> String {
+        let hour = Calendar.current.component(.hour, from: Date())
+        switch hour {
+        case 5..<9: return "Good morning! ☀️ Rise & grind,"
+        case 9..<12: return "Hey there! 💪 Keep crushing it,"
+        case 12..<14: return "Lunch time! 🍱 Fuel up,"
+        case 14..<17: return "Good afternoon! ⚡️ Stay strong,"
+        case 17..<20: return "Evening vibes! 🌅 Great work today,"
+        case 20..<23: return "Night mode! 🌙 Winding down,"
+        default: return "Burning the midnight oil? 🦉 Hey,"
+        }
+    }
+    
+    // MARK: - Dynamic Motivation
+    private func dynamicMotivation() -> String {
+        if streakManager.currentStreak >= 30 {
+            return "🔥 \(streakManager.currentStreak)-day streak! You're a fitness LEGEND!"
+        } else if streakManager.currentStreak >= 7 {
+            return "⚡️ \(streakManager.currentStreak)-day streak! Unstoppable energy!"
+        } else if streakManager.todayPoints > 50 {
+            return "🎯 \(streakManager.todayPoints) XP earned today! Keep going!"
+        } else if todayCalories != "—" && todayCalories != "0" {
+            return "🍏 \(todayCalories) kcal logged today. Nice tracking!"
+        } else {
+            let messages = [
+                "Ready to make today count? Let's go! 🚀",
+                "Your fitness journey continues! 🌟",
+                "Small steps, big results! 💫",
+                "Today is your day to shine! ✨"
+            ]
+            let dayIndex = Calendar.current.component(.day, from: Date())
+            return messages[dayIndex % messages.count]
+        }
     }
 
     // MARK: - Main Stats (Circular Meter Cluster)
@@ -683,6 +775,98 @@ struct HomeDashboardView: View {
         .background(Design.Colors.cardBackground)
         .cornerRadius(16)
         .shadow(color: Color.primary.opacity(0.06), radius: 8, x: 0, y: 2)
+    }
+
+    // MARK: - Compact Activity Highlights (replaces 12-metric grid)
+    private var compactActivityHighlights: some View {
+        VStack(alignment: .leading, spacing: 12) {
+            Text("Today's Activity")
+                .font(Design.Typography.headline)
+                .foregroundColor(.primary)
+            
+            // Top row: 4 key metrics
+            HStack(spacing: 10) {
+                compactMetric(
+                    icon: "figure.walk",
+                    value: "\(healthKit.todaySteps)",
+                    label: "Steps",
+                    color: Design.Colors.steps
+                )
+                compactMetric(
+                    icon: "flame.fill",
+                    value: "\(Int(healthKit.todayActiveCalories))",
+                    label: "Active Cal",
+                    color: Design.Colors.calories
+                )
+                compactMetric(
+                    icon: "heart.fill",
+                    value: healthKit.restingHeartRate > 0 ? "\(Int(healthKit.restingHeartRate))" : "—",
+                    label: "Heart Rate",
+                    color: Design.Colors.heart
+                )
+                compactMetric(
+                    icon: "bed.double.fill",
+                    value: healthKit.sleepHours > 0 ? String(format: "%.1fh", healthKit.sleepHours) : "—",
+                    label: "Sleep",
+                    color: .purple
+                )
+            }
+            
+            // Bottom row: 4 secondary metrics
+            HStack(spacing: 10) {
+                compactMetric(
+                    icon: "figure.walk.motion",
+                    value: healthKit.todayWalkingRunningDistance > 0 ? String(format: "%.1f km", healthKit.todayWalkingRunningDistance) : "—",
+                    label: "Distance",
+                    color: .green
+                )
+                compactMetric(
+                    icon: "stairs",
+                    value: "\(healthKit.todayFlightsClimbed)",
+                    label: "Flights",
+                    color: .indigo
+                )
+                compactMetric(
+                    icon: "drop.fill",
+                    value: healthKit.bloodOxygen > 0 ? String(format: "%.0f%%", healthKit.bloodOxygen) : "—",
+                    label: "SpO₂",
+                    color: .blue
+                )
+                compactMetric(
+                    icon: "waveform.path.ecg",
+                    value: healthKit.heartRateVariability > 0 ? "\(Int(healthKit.heartRateVariability))" : "—",
+                    label: "HRV",
+                    color: .pink
+                )
+            }
+        }
+        .padding(16)
+        .background(Design.Colors.cardBackground)
+        .cornerRadius(16)
+        .shadow(color: Color.primary.opacity(0.06), radius: 10, x: 0, y: 2)
+    }
+    
+    private func compactMetric(icon: String, value: String, label: String, color: Color) -> some View {
+        VStack(spacing: 6) {
+            Image(systemName: icon)
+                .font(.system(size: 16))
+                .foregroundColor(color)
+            
+            Text(value)
+                .font(.system(size: 13, weight: .bold, design: .rounded))
+                .foregroundColor(.primary)
+                .lineLimit(1)
+                .minimumScaleFactor(0.7)
+            
+            Text(label)
+                .font(.system(size: 10, weight: .medium, design: .rounded))
+                .foregroundColor(.secondary)
+                .lineLimit(1)
+        }
+        .frame(maxWidth: .infinity)
+        .padding(.vertical, 10)
+        .background(color.opacity(0.06))
+        .cornerRadius(12)
     }
 
     // MARK: - Water & Blood Sugar Meter Cluster (Circular)

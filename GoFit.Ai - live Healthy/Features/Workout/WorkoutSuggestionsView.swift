@@ -822,6 +822,32 @@ struct WorkoutSuggestionsView: View {
     }
     
     private func tryLoadAIRecommendations(forceRefresh: Bool = false) async {
+        let cacheManager = RecommendationCacheManager.shared
+        
+        // Serve from cache if not forcing refresh and cache is fresh
+        if !forceRefresh, let cached = cacheManager.loadCachedRecommendation() {
+            await MainActor.run {
+                recommendation = cached
+                isUsingFallback = false
+                isLoading = false
+                errorMessage = nil
+            }
+            return
+        }
+        
+        // Enforce cooldown on force-refresh to prevent API spam
+        if forceRefresh && !cacheManager.canRefresh {
+            print("⏳ Refresh on cooldown, serving cached data")
+            if let cached = cacheManager.loadCachedRecommendation() {
+                await MainActor.run {
+                    recommendation = cached
+                    isUsingFallback = false
+                    isLoading = false
+                }
+            }
+            return
+        }
+        
         if !forceRefresh {
             isLoading = true
             do { isLoading = false }
@@ -867,8 +893,9 @@ struct WorkoutSuggestionsView: View {
             #if DEBUG
             print("🔄 Refresh: Received new AI recommendations")
             #endif
-            
-            await MainActor.run {
+                        // Cache the response to avoid redundant API calls
+            RecommendationCacheManager.shared.cacheRecommendation(response, wasRefresh: forceRefresh)
+                        await MainActor.run {
                 recommendation = response
                 isUsingFallback = false
                 errorMessage = nil

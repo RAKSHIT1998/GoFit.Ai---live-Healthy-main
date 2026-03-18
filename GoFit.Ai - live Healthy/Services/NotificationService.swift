@@ -184,32 +184,17 @@ class NotificationService: ObservableObject {
         let randomOffset = Int.random(in: -12...12)
         let adjustedMinute = max(0, min(59, minute + randomOffset))
         
-        // Fetch AI-generated reminder content from backend
-        Task {
-            do {
-                let content = try await fetchAIMealReminder(mealType: mealType)
-                createNotification(
-                    identifier: identifier,
-                    title: content.title,
-                    body: content.body,
-                    hour: hour,
-                    minute: adjustedMinute,
-                    repeats: true
-                )
-            } catch {
-                // Use randomized fallback message from pool
-                let pool = ViralEngagementManager.mealReminderMessages
-                let msg = pool.randomElement() ?? (title: "Time to eat! 🍽️", body: "Don't forget your \(mealType).")
-                createNotification(
-                    identifier: identifier,
-                    title: msg.title,
-                    body: msg.body,
-                    hour: hour,
-                    minute: adjustedMinute,
-                    repeats: true
-                )
-            }
-        }
+        // Use local message pool — no API call needed (saves OpenAI cost)
+        let pool = ViralEngagementManager.mealReminderMessages
+        let msg = pool.randomElement() ?? (title: "Time to eat! 🍽️", body: "Don't forget your \(mealType).")
+        createNotification(
+            identifier: identifier,
+            title: msg.title,
+            body: msg.body,
+            hour: hour,
+            minute: adjustedMinute,
+            repeats: true
+        )
     }
     
     // MARK: - Water Reminders
@@ -225,31 +210,17 @@ class NotificationService: ObservableObject {
         // Add random time offset ±15 minutes
         let randomMinute = Int.random(in: 0...30)
         
-        Task {
-            do {
-                let content = try await fetchAIWaterReminder()
-                createNotification(
-                    identifier: identifier,
-                    title: content.title,
-                    body: content.body,
-                    hour: hour,
-                    minute: randomMinute,
-                    repeats: true
-                )
-            } catch {
-                // Use randomized fallback message
-                let pool = ViralEngagementManager.waterReminderMessages
-                let msg = pool.randomElement() ?? (title: "Stay Hydrated! 💧", body: "Time to drink water!")
-                createNotification(
-                    identifier: identifier,
-                    title: msg.title,
-                    body: msg.body,
-                    hour: hour,
-                    minute: randomMinute,
-                    repeats: true
-                )
-            }
-        }
+        // Use local message pool — no API call needed (saves OpenAI cost)
+        let pool = ViralEngagementManager.waterReminderMessages
+        let msg = pool.randomElement() ?? (title: "Stay Hydrated! 💧", body: "Time to drink water!")
+        createNotification(
+            identifier: identifier,
+            title: msg.title,
+            body: msg.body,
+            hour: hour,
+            minute: randomMinute,
+            repeats: true
+        )
     }
     
     // MARK: - Workout Reminders
@@ -267,31 +238,17 @@ class NotificationService: ObservableObject {
         let randomOffset = Int.random(in: -10...10)
         let adjustedMinute = max(0, min(59, minute + randomOffset))
         
-        Task {
-            do {
-                let content = try await fetchAIWorkoutReminder()
-                createNotification(
-                    identifier: identifier,
-                    title: content.title,
-                    body: content.body,
-                    hour: hour,
-                    minute: adjustedMinute,
-                    repeats: true
-                )
-            } catch {
-                // Use randomized fallback message
-                let pool = ViralEngagementManager.workoutReminderMessages
-                let msg = pool.randomElement() ?? (title: "Workout Time! 💪", body: "Time for your workout!")
-                createNotification(
-                    identifier: identifier,
-                    title: msg.title,
-                    body: msg.body,
-                    hour: hour,
-                    minute: adjustedMinute,
-                    repeats: true
-                )
-            }
-        }
+        // Use local message pool — no API call needed (saves OpenAI cost)
+        let pool = ViralEngagementManager.workoutReminderMessages
+        let msg = pool.randomElement() ?? (title: "Workout Time! 💪", body: "Time for your workout!")
+        createNotification(
+            identifier: identifier,
+            title: msg.title,
+            body: msg.body,
+            hour: hour,
+            minute: adjustedMinute,
+            repeats: true
+        )
     }
     
     // MARK: - Create Notification
@@ -319,86 +276,10 @@ class NotificationService: ObservableObject {
         }
     }
     
-    // MARK: - AI-Generated Content
-    
-    private func fetchAIMealReminder(mealType: String) async throws -> (title: String, body: String) {
-        guard let token = AuthService.shared.readToken()?.accessToken else {
-            throw NSError(domain: "NotificationError", code: 401, userInfo: [NSLocalizedDescriptionKey: "Not authenticated"])
-        }
-        
-        let url = URL(string: "\(NetworkManager.shared.baseURL.absoluteString)/notifications/meal-reminder")!
-        var request = URLRequest(url: url)
-        request.httpMethod = "POST"
-        request.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
-        request.setValue("application/json", forHTTPHeaderField: "Content-Type")
-        
-        let body: [String: Any] = ["mealType": mealType]
-        request.httpBody = try JSONSerialization.data(withJSONObject: body)
-        
-        let (data, response) = try await URLSession.shared.data(for: request)
-        guard let httpResponse = response as? HTTPURLResponse,
-              200...299 ~= httpResponse.statusCode else {
-            throw NSError(domain: "NotificationError", code: (response as? HTTPURLResponse)?.statusCode ?? 500, userInfo: [NSLocalizedDescriptionKey: "Failed to fetch AI reminder"])
-        }
-        
-        if let json = try JSONSerialization.jsonObject(with: data) as? [String: Any],
-           let title = json["title"] as? String,
-           let body = json["body"] as? String {
-            return (title, body)
-        }
-        
-        throw NSError(domain: "NotificationError", code: 500, userInfo: [NSLocalizedDescriptionKey: "Invalid response format"])
-    }
-    
-    private func fetchAIWaterReminder() async throws -> (title: String, body: String) {
-        guard let token = AuthService.shared.readToken()?.accessToken else {
-            throw NSError(domain: "NotificationError", code: 401, userInfo: [NSLocalizedDescriptionKey: "Not authenticated"])
-        }
-        
-        let url = URL(string: "\(NetworkManager.shared.baseURL.absoluteString)/notifications/water-reminder")!
-        var request = URLRequest(url: url)
-        request.httpMethod = "POST"
-        request.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
-        
-        let (data, response) = try await URLSession.shared.data(for: request)
-        guard let httpResponse = response as? HTTPURLResponse,
-              200...299 ~= httpResponse.statusCode else {
-            throw NSError(domain: "NotificationError", code: (response as? HTTPURLResponse)?.statusCode ?? 500, userInfo: [NSLocalizedDescriptionKey: "Failed to fetch AI reminder"])
-        }
-        
-        if let json = try JSONSerialization.jsonObject(with: data) as? [String: Any],
-           let title = json["title"] as? String,
-           let body = json["body"] as? String {
-            return (title, body)
-        }
-        
-        throw NSError(domain: "NotificationError", code: 500, userInfo: [NSLocalizedDescriptionKey: "Invalid response format"])
-    }
-    
-    private func fetchAIWorkoutReminder() async throws -> (title: String, body: String) {
-        guard let token = AuthService.shared.readToken()?.accessToken else {
-            throw NSError(domain: "NotificationError", code: 401, userInfo: [NSLocalizedDescriptionKey: "Not authenticated"])
-        }
-        
-        let url = URL(string: "\(NetworkManager.shared.baseURL.absoluteString)/notifications/workout-reminder")!
-        var request = URLRequest(url: url)
-        request.httpMethod = "POST"
-        request.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
-        
-        let (data, response) = try await URLSession.shared.data(for: request)
-        guard let httpResponse = response as? HTTPURLResponse,
-              200...299 ~= httpResponse.statusCode else {
-            throw NSError(domain: "NotificationError", code: (response as? HTTPURLResponse)?.statusCode ?? 500, userInfo: [NSLocalizedDescriptionKey: "Failed to fetch AI reminder"])
-        }
-        
-        if let json = try JSONSerialization.jsonObject(with: data) as? [String: Any],
-           let title = json["title"] as? String,
-           let body = json["body"] as? String {
-            return (title, body)
-        }
-        
-        throw NSError(domain: "NotificationError", code: 500, userInfo: [NSLocalizedDescriptionKey: "Invalid response format"])
-    }
+    // MARK: - AI-Generated Content (REMOVED)
+    // All notification text is now generated locally from ViralEngagementManager message pools.
+    // This eliminates 9+ OpenAI API calls per notification schedule cycle,
+    // saving significant GPT-4o token costs with zero UX impact.
     
     // MARK: - Update Settings
     

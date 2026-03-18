@@ -119,6 +119,10 @@ struct MealScannerView3: View {
             .sheet(isPresented: $showEditScreen) {
                 NavigationView {
                     EditParsedItemsView(items: $editableItems) { finalItems in
+                            // Record user edits as gold-standard training data 🧠
+                            if let img = capturedImage {
+                                HybridMealAnalyzer.shared.recordUserCorrection(image: img, correctedItems: finalItems)
+                            }
                             await saveFinalMeal(parsedItems: finalItems)
                     }
                 }
@@ -577,10 +581,14 @@ struct MealScannerView3: View {
         }
 
         do {
-            // Retry with exponential backoff - up to 10 attempts to get AI response
-            // Keep retrying until we get a successful AI analysis
-            let resp = try await RetryUtility.shared.retry(maxAttempts: 10) {
-                try await NetworkManager.shared.uploadMealImage(data: data, filename: "meal.jpg", userId: authVM.userId)
+            // 🧠 Self-learning hybrid analysis: local AI first, cloud fallback
+            // Every scan teaches the on-device AI, reducing cloud costs over time
+            let (resp, source) = try await RetryUtility.shared.retry(maxAttempts: 3) {
+                try await HybridMealAnalyzer.shared.analyze(
+                    image: image,
+                    imageData: data,
+                    userId: authVM.userId
+                )
             }
             await MainActor.run {
             uploadResult = resp
@@ -591,6 +599,10 @@ struct MealScannerView3: View {
                     showBubbles = true
                 }
                 RewardEngine.shared.rewardMealScan()
+                
+                #if DEBUG
+                print("🍽️ Scan complete via \(source.rawValue)")
+                #endif
             }
         } catch {
             // All retries failed - show error message to user

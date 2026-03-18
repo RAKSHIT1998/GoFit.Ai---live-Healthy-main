@@ -7,10 +7,124 @@ struct ConversationsView: View {
 
     @State private var conversations: [ConversationSummary] = []
     @State private var isLoading = true
-    @State private var isRefreshing = false
+    @State private var searchText = ""
+    @State private var showUnreadOnly = false
+
+    private var filteredConversations: [ConversationSummary] {
+        var result = conversations
+        if showUnreadOnly {
+            result = result.filter { $0.unreadCount > 0 }
+        }
+        if !searchText.isEmpty {
+            result = result.filter {
+                $0.friendName.localizedCaseInsensitiveContains(searchText) ||
+                ($0.lastMessage ?? "").localizedCaseInsensitiveContains(searchText)
+            }
+        }
+        return result
+    }
+
+    private var onlineFriends: [ConversationSummary] {
+        conversations.filter { webSocketService.onlineUsers.contains($0.friendId) }
+    }
 
     var body: some View {
         VStack(spacing: 0) {
+            // Search bar
+            HStack(spacing: 10) {
+                Image(systemName: "magnifyingglass")
+                    .foregroundColor(.gray)
+                TextField("Search chats...", text: $searchText)
+                    .textInputAutocapitalization(.never)
+                    .disableAutocorrection(true)
+                if !searchText.isEmpty {
+                    Button { searchText = "" } label: {
+                        Image(systemName: "xmark.circle.fill").foregroundColor(.gray)
+                    }
+                }
+            }
+            .padding(10)
+            .background(Color(.systemGray6))
+            .cornerRadius(12)
+            .padding(.horizontal, Design.Spacing.md)
+            .padding(.top, 8)
+
+            // Online friends stories row
+            if !onlineFriends.isEmpty {
+                ScrollView(.horizontal, showsIndicators: false) {
+                    HStack(spacing: 14) {
+                        ForEach(onlineFriends, id: \.id) { convo in
+                            NavigationLink {
+                                ChatView(
+                                    friend: Friend(
+                                        id: convo.friendId,
+                                        username: convo.friendName,
+                                        email: "",
+                                        fullName: convo.friendName,
+                                        profileImageUrl: convo.friendImage
+                                    ),
+                                    currentUserId: auth.userId ?? ""
+                                )
+                            } label: {
+                                VStack(spacing: 4) {
+                                    ZStack {
+                                        Circle()
+                                            .strokeBorder(
+                                                LinearGradient(
+                                                    colors: [Design.Colors.primary, .green],
+                                                    startPoint: .topLeading,
+                                                    endPoint: .bottomTrailing
+                                                ),
+                                                lineWidth: 2.5
+                                            )
+                                            .frame(width: 54, height: 54)
+
+                                        avatarPlaceholder(name: convo.friendName)
+                                            .frame(width: 46, height: 46)
+                                    }
+
+                                    Text(convo.friendName.components(separatedBy: " ").first ?? convo.friendName)
+                                        .font(.system(size: 10, weight: .medium, design: .rounded))
+                                        .foregroundColor(.primary)
+                                        .lineLimit(1)
+                                }
+                                .frame(width: 60)
+                            }
+                        }
+                    }
+                    .padding(.horizontal, Design.Spacing.md)
+                    .padding(.vertical, 10)
+                }
+            }
+
+            // Filter toggle
+            HStack {
+                Button {
+                    withAnimation { showUnreadOnly.toggle() }
+                    HapticManager.shared.lightTap()
+                } label: {
+                    HStack(spacing: 4) {
+                        Image(systemName: showUnreadOnly ? "envelope.badge.fill" : "envelope")
+                            .font(.caption)
+                        Text(showUnreadOnly ? "Unread" : "All")
+                            .font(.caption.weight(.medium))
+                    }
+                    .foregroundColor(showUnreadOnly ? .white : .secondary)
+                    .padding(.horizontal, 12)
+                    .padding(.vertical, 6)
+                    .background(showUnreadOnly ? Design.Colors.primary : Color.gray.opacity(0.08))
+                    .clipShape(Capsule())
+                }
+
+                Spacer()
+
+                Text("\(filteredConversations.count) chats")
+                    .font(.caption2)
+                    .foregroundColor(.secondary)
+            }
+            .padding(.horizontal, Design.Spacing.md)
+            .padding(.vertical, 6)
+
             if isLoading && conversations.isEmpty {
                 VStack(spacing: 12) {
                     ProgressView()
@@ -34,10 +148,20 @@ struct ConversationsView: View {
                 }
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
                 .padding(.top, 40)
+            } else if filteredConversations.isEmpty && !conversations.isEmpty {
+                VStack(spacing: 12) {
+                    Image(systemName: "magnifyingglass")
+                        .font(.system(size: 36))
+                        .foregroundColor(.secondary.opacity(0.3))
+                    Text("No matching chats")
+                        .font(Design.Typography.body)
+                        .foregroundColor(.secondary)
+                }
+                .frame(maxWidth: .infinity, maxHeight: .infinity)
+                .padding(.top, 40)
             } else {
-                ScrollView {
-                    LazyVStack(spacing: 8) {
-                        ForEach(Array(conversations.enumerated()), id: \.element.id) { index, convo in
+                List {
+                    ForEach(Array(filteredConversations.enumerated()), id: \.element.id) { index, convo in
                             NavigationLink {
                                 ChatView(
                                     friend: Friend(
@@ -56,14 +180,28 @@ struct ConversationsView: View {
                                 insertion: .move(edge: .trailing).combined(with: .opacity),
                                 removal: .move(edge: .leading).combined(with: .opacity)
                             ))
+                            .swipeActions(edge: .trailing, allowsFullSwipe: false) {
+                                Button(role: .destructive) {
+                                    // Archive placeholder
+                                } label: {
+                                    Label("Archive", systemImage: "archivebox.fill")
+                                }
+                                Button {
+                                    // Mute placeholder
+                                } label: {
+                                    Label("Mute", systemImage: "bell.slash.fill")
+                                }
+                                .tint(.orange)
+                            }
+                            .listRowSeparator(.hidden)
+                            .listRowInsets(EdgeInsets(top: 4, leading: 16, bottom: 4, trailing: 16))
+                            .listRowBackground(Color.clear)
                         }
                     }
-                    .padding(.horizontal, Design.Spacing.md)
-                    .padding(.top, 8)
-                }
-                .refreshable {
-                    await refreshConversations()
-                }
+                    .listStyle(.plain)
+                    .refreshable {
+                        await refreshConversations()
+                    }
             }
         }
         .onAppear {

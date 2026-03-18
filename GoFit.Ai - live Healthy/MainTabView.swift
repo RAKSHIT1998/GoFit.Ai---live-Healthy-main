@@ -5,6 +5,7 @@ struct MainTabView: View {
     @EnvironmentObject var purchases: PurchaseManager
     @State private var selectedTab = 0
     @State private var previousTab = 0
+    @State private var tabBounce: [Bool] = [false, false, false, false]
     
     var body: some View {
         TabView(selection: $selectedTab) {
@@ -36,6 +37,9 @@ struct MainTabView: View {
         .background(Design.Colors.background)
         .withRewardToasts()
         .onChange(of: selectedTab) { oldValue, newValue in
+            // Haptic feedback on tab switch
+            HapticManager.shared.lightTap()
+            
             withAnimation(Design.Animation.springFast) {
                 previousTab = newValue
             }
