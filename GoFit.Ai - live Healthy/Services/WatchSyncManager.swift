@@ -68,23 +68,62 @@ final class WatchSyncManager: NSObject, ObservableObject, WCSessionDelegate {
             case "openWaterLog":
                 NotificationCenter.default.post(name: .openWaterLogFromWatch, object: nil)
             case "logWater":
-                if let amount = message["amount"] as? Double, amount > 0 {
-                    WaterIntakeManager.shared.logWater(amount)
-                    GoFitWidgetDataStore.shared.refresh()
+                // Support both "amount" (legacy) and "liters" (new watch app) keys
+                let liters: Double
+                if let l = message["liters"] as? Double, l > 0 {
+                    liters = l
+                } else if let a = message["amount"] as? Double, a > 0 {
+                    liters = a
+                } else {
+                    break
                 }
+                WaterIntakeManager.shared.logWater(liters)
+                GoFitWidgetDataStore.shared.refresh()
+                // Send updated data back to watch
+                self.sendCurrentDataToWatch(session)
             case "logQuickMeal":
-                if let name = message["name"] as? String,
-                   let cal = message["calories"] as? Int {
-                    let item = MealItem(name: name, calories: Double(cal), protein: 0, carbs: 0, fat: 0, sugar: 0)
-                    let meal = LoggedMeal(timestamp: Date(), mealType: .snack, items: [item], totalCalories: Double(cal), totalProtein: 0, totalCarbs: 0, totalFat: 0, totalSugar: 0)
+                if let name = message["name"] as? String {
+                    // Support calories as both Int and Double
+                    let cal: Double
+                    if let c = message["calories"] as? Double {
+                        cal = c
+                    } else if let c = message["calories"] as? Int {
+                        cal = Double(c)
+                    } else {
+                        cal = 100
+                    }
+                    let item = MealItem(name: name, calories: cal, protein: 0, carbs: 0, fat: 0, sugar: 0)
+                    let meal = LoggedMeal(timestamp: Date(), mealType: .snack, items: [item], totalCalories: cal, totalProtein: 0, totalCarbs: 0, totalFat: 0, totalSugar: 0)
                     LocalDailyLogStore.shared.addMeal(meal)
                     GoFitWidgetDataStore.shared.refresh()
                     NotificationCenter.default.post(name: NSNotification.Name("MealSaved"), object: nil)
+                    // Send updated data back to watch
+                    self.sendCurrentDataToWatch(session)
                 }
+            case "requestSync":
+                // Watch app is asking for current data
+                self.sendCurrentDataToWatch(session)
             default:
                 break
             }
         }
+    }
+    
+    /// Send the current day's data to the watch app
+    @MainActor
+    private func sendCurrentDataToWatch(_ session: WCSession) {
+        guard session.isReachable else { return }
+        let water = WaterIntakeManager.shared
+        let log = LocalDailyLogStore.shared.getTodayLog()
+        let reply: [String: Any] = [
+            "waterLiters": water.todayWaterIntake,
+            "waterGoal": water.waterGoal,
+            "calories": log.totalCalories,
+            "protein": log.totalProtein,
+            "steps": Int(log.steps ?? 0),
+            "mealCount": log.meals.count
+        ]
+        session.sendMessage(reply, replyHandler: nil)
     }
 
     @MainActor
