@@ -72,11 +72,11 @@ struct MLDashboardView: View {
             
             Text("Your AI is Learning")
                 .font(Design.Typography.title2)
-                .foregroundColor(Design.Colors.textPrimary)
+                .foregroundColor(.primary)
             
             Text("Every meal scan makes the AI smarter.\nSoon it won't need the cloud at all!")
                 .font(Design.Typography.caption)
-                .foregroundColor(Design.Colors.textSecondary)
+                .foregroundColor(.secondary)
                 .multilineTextAlignment(.center)
         }
         .padding(.top)
@@ -91,7 +91,7 @@ struct MLDashboardView: View {
                     .foregroundColor(Design.Colors.primary)
                 Text("AI Performance")
                     .font(Design.Typography.headline)
-                    .foregroundColor(Design.Colors.textPrimary)
+                    .foregroundColor(.primary)
                 Spacer()
             }
             
@@ -132,7 +132,7 @@ struct MLDashboardView: View {
                 HStack {
                     Text("On-Device Success Rate")
                         .font(Design.Typography.caption)
-                        .foregroundColor(Design.Colors.textSecondary)
+                        .foregroundColor(.secondary)
                     Spacer()
                     Text("\(String(format: "%.0f", analyzer.localHitRate))%")
                         .font(Design.Typography.caption.bold())
@@ -160,7 +160,7 @@ struct MLDashboardView: View {
         }
         .padding()
         .background(Design.Colors.cardBackground)
-        .cornerRadius(Design.Radius.lg)
+        .cornerRadius(Design.Radius.large)
     }
     
     // MARK: - Dataset Growth Card
@@ -172,7 +172,7 @@ struct MLDashboardView: View {
                     .foregroundColor(.purple)
                 Text("Dataset Growth")
                     .font(Design.Typography.headline)
-                    .foregroundColor(Design.Colors.textPrimary)
+                    .foregroundColor(.primary)
                 Spacer()
             }
             
@@ -208,7 +208,7 @@ struct MLDashboardView: View {
         }
         .padding()
         .background(Design.Colors.cardBackground)
-        .cornerRadius(Design.Radius.lg)
+        .cornerRadius(Design.Radius.large)
     }
     
     // MARK: - Top Foods Card
@@ -220,7 +220,7 @@ struct MLDashboardView: View {
                     .foregroundColor(.orange)
                 Text("Most Learned Foods")
                     .font(Design.Typography.headline)
-                    .foregroundColor(Design.Colors.textPrimary)
+                    .foregroundColor(.primary)
                 Spacer()
             }
             
@@ -230,7 +230,7 @@ struct MLDashboardView: View {
                 HStack(spacing: Design.Spacing.sm) {
                     Text(food.key.capitalized)
                         .font(Design.Typography.caption)
-                        .foregroundColor(Design.Colors.textPrimary)
+                        .foregroundColor(.primary)
                         .frame(width: 100, alignment: .leading)
                         .lineLimit(1)
                     
@@ -249,14 +249,14 @@ struct MLDashboardView: View {
                     
                     Text("\(food.value)")
                         .font(Design.Typography.caption.monospacedDigit())
-                        .foregroundColor(Design.Colors.textSecondary)
+                        .foregroundColor(.secondary)
                         .frame(width: 30, alignment: .trailing)
                 }
             }
         }
         .padding()
         .background(Design.Colors.cardBackground)
-        .cornerRadius(Design.Radius.lg)
+        .cornerRadius(Design.Radius.large)
     }
     
     // MARK: - Training Readiness Card
@@ -268,7 +268,7 @@ struct MLDashboardView: View {
                     .foregroundColor(stats.isReadyForTraining ? .green : .orange)
                 Text("Training Readiness")
                     .font(Design.Typography.headline)
-                    .foregroundColor(Design.Colors.textPrimary)
+                    .foregroundColor(.primary)
                 Spacer()
             }
             
@@ -318,7 +318,7 @@ struct MLDashboardView: View {
                     Spacer()
                     Text("Next: \(nextMilestone.0) samples")
                         .font(Design.Typography.caption)
-                        .foregroundColor(Design.Colors.textSecondary)
+                        .foregroundColor(.secondary)
                 }
                 
                 let progress = min(1.0, Double(stats.totalSamples) / Double(nextMilestone.0))
@@ -342,7 +342,7 @@ struct MLDashboardView: View {
         }
         .padding()
         .background(Design.Colors.cardBackground)
-        .cornerRadius(Design.Radius.lg)
+        .cornerRadius(Design.Radius.large)
     }
     
     // MARK: - Actions Card
@@ -351,10 +351,10 @@ struct MLDashboardView: View {
         VStack(spacing: Design.Spacing.sm) {
             HStack {
                 Image(systemName: "wrench.and.screwdriver")
-                    .foregroundColor(Design.Colors.textSecondary)
+                    .foregroundColor(.secondary)
                 Text("Tools")
                     .font(Design.Typography.headline)
-                    .foregroundColor(Design.Colors.textPrimary)
+                    .foregroundColor(.primary)
                 Spacer()
             }
             
@@ -375,10 +375,10 @@ struct MLDashboardView: View {
                     }
                 }
                 .font(Design.Typography.body)
-                .foregroundColor(Design.Colors.textPrimary)
+                .foregroundColor(.primary)
                 .padding()
                 .background(Design.Colors.primary.opacity(0.1))
-                .cornerRadius(Design.Radius.md)
+                .cornerRadius(Design.Radius.medium)
             }
             .disabled(isExporting || stats.totalSamples == 0)
             
@@ -396,10 +396,10 @@ struct MLDashboardView: View {
                         .font(.caption)
                 }
                 .font(Design.Typography.body)
-                .foregroundColor(Design.Colors.textPrimary)
+                .foregroundColor(.primary)
                 .padding()
                 .background(Color.orange.opacity(0.1))
-                .cornerRadius(Design.Radius.md)
+                .cornerRadius(Design.Radius.medium)
             }
             
             // Clear all data
@@ -417,12 +417,12 @@ struct MLDashboardView: View {
                 .foregroundColor(.red)
                 .padding()
                 .background(Color.red.opacity(0.1))
-                .cornerRadius(Design.Radius.md)
+                .cornerRadius(Design.Radius.medium)
             }
         }
         .padding()
         .background(Design.Colors.cardBackground)
-        .cornerRadius(Design.Radius.lg)
+        .cornerRadius(Design.Radius.large)
     }
     
     // MARK: - Empty State
@@ -431,20 +431,20 @@ struct MLDashboardView: View {
         VStack(spacing: Design.Spacing.md) {
             Image(systemName: "camera.viewfinder")
                 .font(.system(size: 48))
-                .foregroundColor(Design.Colors.textSecondary.opacity(0.4))
+                .foregroundColor(.secondary.opacity(0.4))
             
             Text("No Training Data Yet")
                 .font(Design.Typography.headline)
-                .foregroundColor(Design.Colors.textPrimary)
+                .foregroundColor(.primary)
             
             Text("Start scanning meals! Every scan teaches the AI to recognize foods on its own, so it won't need the cloud.")
                 .font(Design.Typography.caption)
-                .foregroundColor(Design.Colors.textSecondary)
+                .foregroundColor(.secondary)
                 .multilineTextAlignment(.center)
         }
         .padding(Design.Spacing.xl)
         .background(Design.Colors.cardBackground)
-        .cornerRadius(Design.Radius.lg)
+        .cornerRadius(Design.Radius.large)
     }
     
     // MARK: - Helper Views
@@ -456,12 +456,12 @@ struct MLDashboardView: View {
                 .foregroundColor(color)
             Text(value)
                 .font(Design.Typography.caption.bold().monospacedDigit())
-                .foregroundColor(Design.Colors.textPrimary)
+                .foregroundColor(.primary)
                 .lineLimit(1)
                 .minimumScaleFactor(0.7)
             Text(label)
                 .font(.system(size: 9))
-                .foregroundColor(Design.Colors.textSecondary)
+                .foregroundColor(.secondary)
                 .lineLimit(1)
         }
         .frame(maxWidth: .infinity)
@@ -474,7 +474,7 @@ struct MLDashboardView: View {
                 .font(.system(size: 14))
             Text("\(label): \(current)/\(required)")
                 .font(Design.Typography.caption)
-                .foregroundColor(met ? .green : Design.Colors.textSecondary)
+                .foregroundColor(met ? .green : .secondary)
             Spacer()
         }
     }
