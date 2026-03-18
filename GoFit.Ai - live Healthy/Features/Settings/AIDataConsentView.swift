@@ -154,7 +154,7 @@ struct AIDataConsentView: View {
                     
                     // Privacy policy link
                     Button {
-                        if let url = URL(string: "https://github.com/RAKSHIT1998/GoFit.Ai---live-Healthy/blob/main/docs/PRIVACY_POLICY.md") {
+                        if let url = URL(string: "https://github.com/RAKSHIT1998/GoFit.Ai---live-Healthy-main/blob/main/docs/PRIVACY_POLICY.md") {
                             UIApplication.shared.open(url)
                         }
                     } label: {

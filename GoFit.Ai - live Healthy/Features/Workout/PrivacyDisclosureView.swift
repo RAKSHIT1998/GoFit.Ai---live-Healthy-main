@@ -159,7 +159,7 @@ struct PrivacyDisclosureView: View {
                                     .font(Design.Typography.headline)
                                     .foregroundColor(.primary)
                                 
-                                Link(destination: URL(string: "https://github.com/RAKSHIT1998/GoFit.Ai---live-Healthy/blob/main/docs/PRIVACY_POLICY.md") ?? URL(string: "about:blank")!) {
+                                Link(destination: URL(string: "https://github.com/RAKSHIT1998/GoFit.Ai---live-Healthy-main/blob/main/docs/PRIVACY_POLICY.md") ?? URL(string: "about:blank")!) {
                                     HStack(spacing: Design.Spacing.md) {
                                         Image(systemName: "doc.text.fill")
                                             .foregroundColor(Design.Colors.primary)

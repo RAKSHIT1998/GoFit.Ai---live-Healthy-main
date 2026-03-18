@@ -94,7 +94,7 @@ We may update this Privacy Policy from time to time. We will notify you of signi
 
 If you have questions about this Privacy Policy, contact us at:
 - **Email**: rakshitbargotra@gmail.com
-- **GitHub**: [github.com/RAKSHIT1998/GoFit.Ai---live-Healthy](https://github.com/RAKSHIT1998/GoFit.Ai---live-Healthy)
+- **GitHub**: [github.com/RAKSHIT1998/GoFit.Ai---live-Healthy](https://github.com/RAKSHIT1998/GoFit.Ai---live-Healthy-main)
 
 ---
 

@@ -112,7 +112,7 @@ These Terms shall be governed by and construed in accordance with applicable law
 
 For questions about these Terms, contact us at:
 - **Email**: rakshitbargotra@gmail.com
-- **GitHub**: [github.com/RAKSHIT1998/GoFit.Ai---live-Healthy](https://github.com/RAKSHIT1998/GoFit.Ai---live-Healthy)
+- **GitHub**: [github.com/RAKSHIT1998/GoFit.Ai---live-Healthy](https://github.com/RAKSHIT1998/GoFit.Ai---live-Healthy-main)
 
 ---
 
