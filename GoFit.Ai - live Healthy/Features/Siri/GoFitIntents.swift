@@ -1,18 +1,19 @@
 import AppIntents
 import Foundation
 
-// MARK: - Log Water Intent
-/// "Hey Siri, log water in GoFit" or "Hey Siri, I drank a glass of water"
-/// Logs water intake directly into the app without opening it.
+// MARK: - Log Water / Drink Intent
+/// "Hey Siri, log water in GoFit"
+/// "Hey Siri, I had 30ml whiskey with GoFit"
+/// "Hey Siri, I drank 180ml vodka with GoFit"
+/// Logs any liquid — water, coffee, alcohol, etc — without opening the app.
 struct LogWaterIntent: AppIntent {
-    static var title: LocalizedStringResource = "Log Water"
-    static var description = IntentDescription("Log water or liquid intake in GoFit")
+    static var title: LocalizedStringResource = "Log Water or Drink"
+    static var description = IntentDescription("Log water, beverages, or alcohol intake in GoFit")
     
-    // Siri will ask "How much water?" if not provided in the phrase
-    @Parameter(title: "Amount", description: "Amount of water in ml (e.g. 250 for a glass)")
+    @Parameter(title: "Amount (ml)", description: "Amount in ml (e.g. 30 for a shot, 250 for a glass, 500 for a bottle)")
     var amountML: Int?
     
-    @Parameter(title: "Drink Type", description: "Type of drink")
+    @Parameter(title: "Drink Type", description: "Type of drink (water, whiskey, vodka, beer, etc.)")
     var drinkType: DrinkTypeEntity?
     
     static var parameterSummary: some ParameterSummary {
@@ -21,62 +22,204 @@ struct LogWaterIntent: AppIntent {
     
     @MainActor
     func perform() async throws -> some IntentResult & ProvidesDialog {
-        let ml = amountML ?? 250 // Default: 1 glass = 250ml
-        let liters = Double(ml) / 1000.0
         let type = drinkType?.name ?? "water"
+        let typeLower = type.lowercased()
         
-        if type.lowercased() == "water" {
+        // Smart default amounts based on drink type
+        let ml: Int
+        if let provided = amountML {
+            ml = provided
+        } else {
+            ml = Self.defaultML(for: typeLower)
+        }
+        
+        let liters = Double(ml) / 1000.0
+        let calories = Self.estimateCalories(for: typeLower, ml: ml)
+        let isAlcohol = Self.isAlcoholicDrink(typeLower)
+        let abv = Self.estimateABV(for: typeLower)
+        
+        if typeLower == "water" {
             WaterIntakeManager.shared.logWater(liters)
         } else {
-            // Log as beverage with estimated calories
-            let calories = estimateCalories(for: type, ml: ml)
             WaterIntakeManager.shared.logBeverage(name: type, liters: liters, calories: calories)
         }
         
-        // Also reward the user
+        // Reward XP
         RewardEngine.shared.rewardMealLog()
+        
+        // Refresh widget data
+        GoFitWidgetDataStore.shared.refresh()
         
         let total = WaterIntakeManager.shared.todayWaterIntake
         let goal = WaterIntakeManager.shared.waterGoal
         let remaining = max(0, goal - total)
         
-        let emoji = type.lowercased() == "water" ? "💧" : "🥤"
+        // Build a fun response
+        var response = ""
+        if isAlcohol {
+            let standardDrinks = Self.standardDrinks(ml: ml, abv: abv)
+            let emoji = Self.alcoholEmoji(for: typeLower)
+            response = "\(emoji) Logged \(ml)ml \(type) (~\(Int(calories)) cal, \(String(format: "%.1f", standardDrinks)) std drinks)."
+            if standardDrinks >= 3 {
+                response += " Take it easy tonight! 😅"
+            } else if standardDrinks >= 2 {
+                response += " Enjoy responsibly! 🥂"
+            } else {
+                response += " Cheers! 🥂"
+            }
+        } else {
+            let emoji = typeLower == "water" ? "💧" : "🥤"
+            response = "\(emoji) Logged \(ml)ml of \(type) (~\(Int(calories)) cal)."
+        }
         
         if remaining <= 0 {
-            return .result(dialog: "\(emoji) Logged \(ml)ml of \(type)! You've hit your daily goal of \(String(format: "%.1f", goal))L — great job! 🎉")
+            response += " Daily liquid goal hit! 🎉"
         } else {
-            return .result(dialog: "\(emoji) Logged \(ml)ml of \(type). Total today: \(String(format: "%.1f", total))L. \(String(format: "%.1f", remaining))L to go!")
+            response += " Total: \(String(format: "%.1f", total))L / \(String(format: "%.1f", goal))L"
+        }
+        
+        return .result(dialog: "\(response)")
+    }
+    
+    // MARK: - Smart Defaults
+    
+    /// Default ml when user doesn't specify an amount
+    static func defaultML(for drink: String) -> Int {
+        if drink.contains("shot") || drink.contains("whiskey") || drink.contains("whisky")
+            || drink.contains("vodka") || drink.contains("rum") || drink.contains("gin")
+            || drink.contains("tequila") || drink.contains("brandy") || drink.contains("cognac")
+            || drink.contains("mezcal") || drink.contains("absinthe") || drink.contains("schnapps") {
+            return 30 // standard shot
+        } else if drink.contains("wine") || drink.contains("champagne") || drink.contains("prosecco") {
+            return 150 // standard wine pour
+        } else if drink.contains("beer") || drink.contains("ale") || drink.contains("lager")
+                    || drink.contains("stout") || drink.contains("cider") {
+            return 330 // standard can/bottle
+        } else if drink.contains("cocktail") || drink.contains("margarita") || drink.contains("mojito")
+                    || drink.contains("martini") || drink.contains("negroni") || drink.contains("daiquiri") {
+            return 200 // cocktail glass
+        } else if drink.contains("espresso") {
+            return 30
+        } else if drink.contains("coffee") || drink.contains("latte") || drink.contains("cappuccino") {
+            return 250
+        } else if drink.contains("tea") {
+            return 250
+        } else {
+            return 250 // default glass
         }
     }
     
-    private func estimateCalories(for drink: String, ml: Int) -> Double {
-        let name = drink.lowercased()
-        let multiplier = Double(ml) / 250.0 // per 250ml serving
+    // MARK: - Calorie Estimation
+    
+    static func estimateCalories(for drink: String, ml: Int) -> Double {
+        let d = Double(ml)
         
-        if name.contains("juice") || name.contains("orange") || name.contains("apple") {
-            return 110 * multiplier
-        } else if name.contains("coffee") || name.contains("espresso") {
-            return 5 * multiplier
-        } else if name.contains("latte") {
-            return 120 * multiplier
-        } else if name.contains("milk") {
-            return 100 * multiplier
-        } else if name.contains("tea") {
-            return 2 * multiplier
-        } else if name.contains("soda") || name.contains("cola") || name.contains("coke") {
-            return 140 * multiplier
-        } else if name.contains("smoothie") || name.contains("shake") {
-            return 200 * multiplier
-        } else if name.contains("beer") {
-            return 150 * multiplier
-        } else if name.contains("wine") {
-            return 125 * multiplier
-        } else if name.contains("energy") {
-            return 110 * multiplier
-        } else if name.contains("coconut") {
-            return 45 * multiplier
+        // --- Spirits (pure, ~220-250 cal per 100ml) ---
+        if drink.contains("whiskey") || drink.contains("whisky") || drink.contains("bourbon") {
+            return d * 2.5 // ~250 cal/100ml (40% ABV)
+        } else if drink.contains("vodka") {
+            return d * 2.3 // ~230 cal/100ml (40% ABV)
+        } else if drink.contains("rum") {
+            return d * 2.3
+        } else if drink.contains("gin") {
+            return d * 2.6
+        } else if drink.contains("tequila") {
+            return d * 2.3
+        } else if drink.contains("brandy") || drink.contains("cognac") {
+            return d * 2.4
+        } else if drink.contains("mezcal") || drink.contains("absinthe") {
+            return d * 2.8 // higher ABV
+        } else if drink.contains("schnapps") || drink.contains("liqueur") {
+            return d * 3.0 // sugar-heavy
         }
-        return 0 // Plain water or unknown
+        // --- Cocktails ---
+        else if drink.contains("cocktail") || drink.contains("margarita") || drink.contains("mojito")
+                    || drink.contains("martini") || drink.contains("daiquiri") || drink.contains("negroni") {
+            return d * 1.5 // ~150 cal/100ml (mixed)
+        }
+        // --- Wine ---
+        else if drink.contains("wine") {
+            return d * 0.85 // ~85 cal/100ml
+        } else if drink.contains("champagne") || drink.contains("prosecco") {
+            return d * 0.78
+        }
+        // --- Beer ---
+        else if drink.contains("beer") || drink.contains("ale") || drink.contains("lager")
+                    || drink.contains("stout") {
+            return d * 0.43 // ~43 cal/100ml
+        } else if drink.contains("cider") {
+            return d * 0.50
+        }
+        // --- Non-Alcoholic ---
+        else if drink.contains("juice") || drink.contains("orange") || drink.contains("apple") {
+            return d * 0.44
+        } else if drink.contains("coffee") || drink.contains("espresso") {
+            return d * 0.02
+        } else if drink.contains("latte") || drink.contains("cappuccino") {
+            return d * 0.48
+        } else if drink.contains("milk") {
+            return d * 0.40
+        } else if drink.contains("tea") {
+            return d * 0.01
+        } else if drink.contains("soda") || drink.contains("cola") || drink.contains("coke") {
+            return d * 0.42
+        } else if drink.contains("smoothie") || drink.contains("shake") {
+            return d * 0.60
+        } else if drink.contains("energy") {
+            return d * 0.45
+        } else if drink.contains("coconut") {
+            return d * 0.19
+        }
+        return 0 // Plain water
+    }
+    
+    // MARK: - Alcohol Helpers
+    
+    static func isAlcoholicDrink(_ drink: String) -> Bool {
+        let alcoholKeywords = [
+            "whiskey", "whisky", "bourbon", "scotch",
+            "vodka", "rum", "gin", "tequila", "mezcal",
+            "brandy", "cognac", "absinthe", "schnapps", "liqueur",
+            "beer", "ale", "lager", "stout", "cider",
+            "wine", "champagne", "prosecco",
+            "cocktail", "margarita", "mojito", "martini", "negroni", "daiquiri",
+            "sake", "soju"
+        ]
+        return alcoholKeywords.contains { drink.contains($0) }
+    }
+    
+    static func estimateABV(for drink: String) -> Double {
+        if drink.contains("absinthe") { return 0.60 }
+        if drink.contains("mezcal") { return 0.45 }
+        if drink.contains("whiskey") || drink.contains("whisky") || drink.contains("bourbon")
+            || drink.contains("scotch") || drink.contains("vodka") || drink.contains("rum")
+            || drink.contains("gin") || drink.contains("tequila") || drink.contains("brandy")
+            || drink.contains("cognac") { return 0.40 }
+        if drink.contains("schnapps") || drink.contains("liqueur") { return 0.25 }
+        if drink.contains("wine") || drink.contains("champagne") || drink.contains("prosecco") { return 0.13 }
+        if drink.contains("sake") || drink.contains("soju") { return 0.15 }
+        if drink.contains("beer") || drink.contains("ale") || drink.contains("lager")
+            || drink.contains("stout") { return 0.05 }
+        if drink.contains("cider") { return 0.05 }
+        if drink.contains("cocktail") || drink.contains("margarita") || drink.contains("mojito")
+            || drink.contains("martini") || drink.contains("negroni") || drink.contains("daiquiri") { return 0.15 }
+        return 0
+    }
+    
+    /// Standard drinks (1 std = 14g pure alcohol)
+    static func standardDrinks(ml: Int, abv: Double) -> Double {
+        let pureAlcoholGrams = Double(ml) * abv * 0.789
+        return pureAlcoholGrams / 14.0
+    }
+    
+    static func alcoholEmoji(for drink: String) -> String {
+        if drink.contains("whiskey") || drink.contains("whisky") || drink.contains("bourbon") || drink.contains("scotch") { return "🥃" }
+        if drink.contains("vodka") || drink.contains("gin") || drink.contains("martini") { return "🍸" }
+        if drink.contains("wine") || drink.contains("champagne") || drink.contains("prosecco") { return "🍷" }
+        if drink.contains("beer") || drink.contains("ale") || drink.contains("lager") || drink.contains("stout") { return "🍺" }
+        if drink.contains("cocktail") || drink.contains("margarita") || drink.contains("mojito") || drink.contains("daiquiri") { return "🍹" }
+        if drink.contains("sake") { return "🍶" }
+        return "🥃"
     }
 }
 
@@ -172,6 +315,9 @@ struct LogQuickMealIntent: AppIntent {
         // Reward
         RewardEngine.shared.rewardMealLog()
         
+        // Refresh widget data
+        GoFitWidgetDataStore.shared.refresh()
+        
         // Post notification to refresh UI
         NotificationCenter.default.post(name: NSNotification.Name("MealSaved"), object: nil)
         
@@ -210,7 +356,7 @@ struct CheckProgressIntent: AppIntent {
 }
 
 // MARK: - Drink Type Entity
-/// Custom entity so Siri understands drink types
+/// Custom entity so Siri understands drink types — including alcohol
 struct DrinkTypeEntity: AppEntity {
     var id: String
     var name: String
@@ -223,6 +369,7 @@ struct DrinkTypeEntity: AppEntity {
     }
     
     static let allDrinks: [DrinkTypeEntity] = [
+        // Non-Alcoholic
         .init(id: "water", name: "Water"),
         .init(id: "coffee", name: "Coffee"),
         .init(id: "tea", name: "Tea"),
@@ -233,6 +380,23 @@ struct DrinkTypeEntity: AppEntity {
         .init(id: "latte", name: "Latte"),
         .init(id: "coconut_water", name: "Coconut Water"),
         .init(id: "energy_drink", name: "Energy Drink"),
+        // Spirits
+        .init(id: "whiskey", name: "Whiskey"),
+        .init(id: "vodka", name: "Vodka"),
+        .init(id: "rum", name: "Rum"),
+        .init(id: "gin", name: "Gin"),
+        .init(id: "tequila", name: "Tequila"),
+        .init(id: "brandy", name: "Brandy"),
+        // Wine & Beer
+        .init(id: "wine", name: "Wine"),
+        .init(id: "beer", name: "Beer"),
+        .init(id: "champagne", name: "Champagne"),
+        .init(id: "cider", name: "Cider"),
+        // Cocktails
+        .init(id: "cocktail", name: "Cocktail"),
+        .init(id: "margarita", name: "Margarita"),
+        .init(id: "mojito", name: "Mojito"),
+        .init(id: "martini", name: "Martini"),
     ]
 }
 

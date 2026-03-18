@@ -3,16 +3,16 @@ import AppIntents
 // MARK: - App Shortcuts Provider
 /// Registers Siri phrases so users can say things like:
 ///   "Hey Siri, log water in GoFit"
-///   "Hey Siri, I had a glass of water with GoFit"
+///   "Hey Siri, I had 30ml whiskey with GoFit"
 ///   "Hey Siri, I ate a banana with GoFit"
 ///   "Hey Siri, GoFit progress"
 ///
-/// These work WITHOUT opening the app — Siri handles everything inline.
+/// Works WITHOUT opening the app — Siri handles everything inline.
 struct GoFitShortcuts: AppShortcutsProvider {
     
     static var appShortcuts: [AppShortcut] {
         
-        // MARK: - Water Logging
+        // MARK: - Water & Drink Logging (including alcohol)
         AppShortcut(
             intent: LogWaterIntent(),
             phrases: [
@@ -24,8 +24,11 @@ struct GoFitShortcuts: AppShortcutsProvider {
                 "I drank \(\.$amountML) ml with \(.applicationName)",
                 "Log \(\.$drinkType) in \(.applicationName)",
                 "I had \(\.$drinkType) with \(.applicationName)",
+                "I had \(\.$amountML) ml \(\.$drinkType) with \(.applicationName)",
+                "I drank \(\.$amountML) ml \(\.$drinkType) with \(.applicationName)",
+                "Log \(\.$amountML) ml \(\.$drinkType) in \(.applicationName)",
             ],
-            shortTitle: "Log Water",
+            shortTitle: "Log Water or Drink",
             systemImageName: "drop.fill"
         )
         
