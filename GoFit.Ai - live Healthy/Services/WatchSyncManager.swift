@@ -70,6 +70,16 @@ final class WatchSyncManager: NSObject, ObservableObject, WCSessionDelegate {
             case "logWater":
                 if let amount = message["amount"] as? Double, amount > 0 {
                     WaterIntakeManager.shared.logWater(amount)
+                    GoFitWidgetDataStore.shared.refresh()
+                }
+            case "logQuickMeal":
+                if let name = message["name"] as? String,
+                   let cal = message["calories"] as? Int {
+                    let item = MealItem(name: name, calories: Double(cal), protein: 0, carbs: 0, fat: 0, sugar: 0)
+                    let meal = LoggedMeal(timestamp: Date(), mealType: .snack, items: [item], totalCalories: Double(cal), totalProtein: 0, totalCarbs: 0, totalFat: 0, totalSugar: 0)
+                    LocalDailyLogStore.shared.addMeal(meal)
+                    GoFitWidgetDataStore.shared.refresh()
+                    NotificationCenter.default.post(name: NSNotification.Name("MealSaved"), object: nil)
                 }
             default:
                 break

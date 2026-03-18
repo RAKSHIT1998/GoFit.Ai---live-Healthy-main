@@ -1,18 +1,14 @@
 import Foundation
+import WidgetKit
 
 // MARK: - Widget Data Store
 /// Shared data bridge between the main app and the Widget extension.
-/// Writes to UserDefaults (app group) so the widget can read it.
-/// For simplicity, we use the standard UserDefaults (works if Widget is in same app target).
-/// If you later create a separate Widget extension target, switch to `UserDefaults(suiteName: "group.com.rakshit.gofitai")`.
+/// Writes to UserDefaults so the widget can read it.
 
 final class GoFitWidgetDataStore {
     static let shared = GoFitWidgetDataStore()
     
-    // Use standard UserDefaults for now (same process).
-    // For a true extension, use: UserDefaults(suiteName: "group.com.rakshit.gofitai")
     private let defaults = UserDefaults.standard
-    
     private let prefix = "widget_"
     
     private init() {}
@@ -36,20 +32,7 @@ final class GoFitWidgetDataStore {
         defaults.set(Date().timeIntervalSince1970, forKey: k("lastUpdate"))
         
         // Trigger widget reload
-        #if canImport(WidgetKit)
-        import_WidgetKit_reloadTimelines()
-        #endif
-    }
-    
-    /// Reload widget timelines (called separately to avoid import issues)
-    private func import_WidgetKit_reloadTimelines() {
-        // WidgetCenter is only available on iOS 14+
-        // We use dynamic dispatch to avoid hard-linking WidgetKit in main app
-        if let widgetCenter = NSClassFromString("WidgetCenter") as? NSObject.Type,
-           let shared = widgetCenter.perform(NSSelectorFromString("shared"))?.takeUnretainedValue(),
-           let _ = shared.perform(NSSelectorFromString("reloadAllTimelines")) {
-            print("✅ Widget timelines reloaded")
-        }
+        WidgetCenter.shared.reloadAllTimelines()
     }
     
     // MARK: - Read (called from widget)

@@ -43,6 +43,13 @@ struct GoFitAiApp: App {
                     // Initialize services
                     _ = NotificationService.shared
                     
+                    // Register smart notification categories & schedule
+                    GoFitSmartNotifications.shared.registerCategories()
+                    GoFitSmartNotifications.shared.scheduleSmartNotifications()
+                    
+                    // Refresh widget data
+                    GoFitWidgetDataStore.shared.refresh()
+                    
                     // Connect to WebSocket if authenticated
                     if let token = AuthService.shared.readToken()?.accessToken, !token.isEmpty {
                         webSocketService.connect()
@@ -78,6 +85,9 @@ struct GoFitAiApp: App {
                 .onChange(of: scenePhase) { oldPhase, newPhase in
                     // Show ad every time app becomes active
                     if newPhase == .active && oldPhase != .active {
+                        // Refresh widget with latest data
+                        GoFitWidgetDataStore.shared.refresh()
+                        
                         // Small delay to ensure app is fully loaded
                         Task {
                             try? await Task.sleep(nanoseconds: 500_000_000) // 0.5 second
