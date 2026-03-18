@@ -24,9 +24,6 @@ struct GoFitShortcuts: AppShortcutsProvider {
                 "I drank \(\.$amountML) ml with \(.applicationName)",
                 "Log \(\.$drinkType) in \(.applicationName)",
                 "I had \(\.$drinkType) with \(.applicationName)",
-                "I had \(\.$amountML) ml \(\.$drinkType) with \(.applicationName)",
-                "I drank \(\.$amountML) ml \(\.$drinkType) with \(.applicationName)",
-                "Log \(\.$amountML) ml \(\.$drinkType) in \(.applicationName)",
             ],
             shortTitle: "Log Water or Drink",
             systemImageName: "drop.fill"
