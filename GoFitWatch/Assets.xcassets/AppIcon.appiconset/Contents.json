@@ -4,17 +4,23 @@
       "idiom" : "watch",
       "scale" : "2x",
       "size" : "40x44"
-    },
+        ,
+        "filename" : "watch_40x44@2x.png"
+        },
     {
       "idiom" : "watch",
       "scale" : "2x",
       "size" : "44x50"
-    },
+        ,
+        "filename" : "watch_44x50@2x.png"
+        },
     {
       "idiom" : "watch",
       "scale" : "2x",
       "size" : "50x55"
-    }
+        ,
+        "filename" : "watch_50x55@2x.png"
+        }
   ],
   "info" : {
     "author" : "xcode",
