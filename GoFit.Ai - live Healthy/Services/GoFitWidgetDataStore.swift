@@ -3,15 +3,21 @@ import WidgetKit
 
 // MARK: - Widget Data Store
 /// Shared data bridge between the main app and the Widget extension.
-/// Writes to UserDefaults so the widget can read it.
+/// Uses App Group UserDefaults so both app and widget can read/write.
 
 final class GoFitWidgetDataStore {
     static let shared = GoFitWidgetDataStore()
     
-    private let defaults = UserDefaults.standard
+    /// App Group suite name — must match in both app and widget extension entitlements
+    static let appGroupID = "group.com.rakshit.gofitai"
+    
+    private let defaults: UserDefaults
     private let prefix = "widget_"
     
-    private init() {}
+    private init() {
+        // Use App Group UserDefaults for sharing data with widget extension
+        self.defaults = UserDefaults(suiteName: GoFitWidgetDataStore.appGroupID) ?? .standard
+    }
     
     // MARK: - Write (called from main app)
     
@@ -30,6 +36,7 @@ final class GoFitWidgetDataStore {
         defaults.set(log.totalFat, forKey: k("fat"))
         defaults.set(log.steps ?? 0, forKey: k("steps"))
         defaults.set(Date().timeIntervalSince1970, forKey: k("lastUpdate"))
+        defaults.synchronize()
         
         // Trigger widget reload
         WidgetCenter.shared.reloadAllTimelines()

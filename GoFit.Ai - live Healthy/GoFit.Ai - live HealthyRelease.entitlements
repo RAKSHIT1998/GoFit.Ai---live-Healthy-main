@@ -22,6 +22,12 @@
 	<array>
 		<string>applinks:gofit-ai-live-healthy-1.onrender.com</string>
 	</array>
+	<key>com.apple.developer.siri</key>
+	<true/>
+	<key>com.apple.security.application-groups</key>
+	<array>
+		<string>group.com.rakshit.gofitai</string>
+	</array>
 	<key>com.apple.security.app-sandbox</key>
 	<true/>
 	<key>com.apple.security.files.user-selected.read-only</key>
