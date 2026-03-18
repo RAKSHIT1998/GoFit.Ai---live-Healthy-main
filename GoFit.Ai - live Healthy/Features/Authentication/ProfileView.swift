@@ -804,7 +804,7 @@ struct ProfileView: View {
                 title: "Privacy Policy",
                 showChevron: true,
                 action: {
-                    if let url = URL(string: "https://gofit-ai-live-healthy-1.onrender.com/privacy") {
+                    if let url = URL(string: "https://github.com/RAKSHIT1998/GoFit.Ai---live-Healthy/blob/main/docs/PRIVACY_POLICY.md") {
                         UIApplication.shared.open(url)
                     }
                 }

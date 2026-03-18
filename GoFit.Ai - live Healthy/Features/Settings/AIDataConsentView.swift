@@ -47,16 +47,16 @@ struct AIDataConsentView: View {
                         Label("AI Service Provider", systemImage: "cloud")
                             .font(.headline)
                         
-                        Text("**Google Gemini AI**")
+                        Text("**OpenAI (GPT-4o)**")
                             .font(.subheadline)
                         
-                        Text("Your food photos are sent to Google's Gemini AI service for analysis. Google Gemini processes the image to identify food items and estimate nutritional values.")
+                        Text("Your food photos are analyzed using AI to identify food items and estimate nutritional values. Data is sent securely and is not permanently stored.")
                             .font(.caption)
                             .foregroundColor(.secondary)
                         
-                        Link(destination: URL(string: "https://ai.google.dev/gemini-api/terms")!) {
+                        Link(destination: URL(string: "https://openai.com/policies/privacy-policy")!) {
                             HStack {
-                                Text("View Google Gemini Terms")
+                                Text("View AI Privacy Policy")
                                     .font(.caption)
                                 Image(systemName: "arrow.up.right.square")
                                     .font(.caption)
@@ -74,7 +74,7 @@ struct AIDataConsentView: View {
                             .font(.headline)
                         
                         PrivacyPointRow(icon: "lock.fill", text: "Photos are sent securely over encrypted connections")
-                        PrivacyPointRow(icon: "trash", text: "Photos are not permanently stored by Google Gemini")
+                        PrivacyPointRow(icon: "trash", text: "Photos are not permanently stored by the AI service")
                         PrivacyPointRow(icon: "eye.slash", text: "No personally identifiable information is sent with your photos")
                         PrivacyPointRow(icon: "hand.raised.fill", text: "You can delete your meal history anytime")
                     }
@@ -110,8 +110,8 @@ struct AIDataConsentView: View {
                         Text("By continuing, you agree to:")
                             .font(.subheadline)
                         
-                        Text("• Share food photos with Google Gemini AI for analysis")
-                        Text("• Allow GoFit.Ai to send your photos to third-party AI services")
+                        Text("• Share food photos with AI for nutritional analysis")
+                        Text("• Allow GoFit.Ai to process your photos using AI services")
                         Text("• Accept that AI analysis may not always be 100% accurate")
                         
                         Text("You can manually log meals without using AI, or you can disable the meal scanner feature anytime in Settings.")
@@ -154,7 +154,7 @@ struct AIDataConsentView: View {
                     
                     // Privacy policy link
                     Button {
-                        if let url = URL(string: "https://gofit-ai-live-healthy-1.onrender.com/privacy") {
+                        if let url = URL(string: "https://github.com/RAKSHIT1998/GoFit.Ai---live-Healthy/blob/main/docs/PRIVACY_POLICY.md") {
                             UIApplication.shared.open(url)
                         }
                     } label: {

@@ -322,7 +322,7 @@ struct PaywallView: View {
             // Required Links (Apple Guidelines 3.1.2)
             VStack(spacing: Design.Spacing.sm) {
                 // Terms of Use (EULA) Link - Must be functional
-                if let termsURL = URL(string: "https://gofitai.org/terms-and-conditions") {
+                if let termsURL = URL(string: "https://github.com/RAKSHIT1998/GoFit.Ai---live-Healthy/blob/main/docs/TERMS_AND_CONDITIONS.md") {
                     Link(destination: termsURL) {
                         HStack(spacing: 4) {
                             Text("Terms of Use")
@@ -339,14 +339,14 @@ struct PaywallView: View {
                         .font(Design.Typography.caption)
                         .foregroundColor(Design.Colors.primary)
                         .onTapGesture {
-                            if let url = URL(string: "https://gofitai.org/terms-and-conditions") {
+                            if let url = URL(string: "https://github.com/RAKSHIT1998/GoFit.Ai---live-Healthy/blob/main/docs/TERMS_AND_CONDITIONS.md") {
                                 UIApplication.shared.open(url)
                             }
                         }
                 }
                 
                 // Privacy Policy Link - Must be functional
-                if let privacyURL = URL(string: "https://gofitai.org/privacy-policy") {
+                if let privacyURL = URL(string: "https://github.com/RAKSHIT1998/GoFit.Ai---live-Healthy/blob/main/docs/PRIVACY_POLICY.md") {
                     Link(destination: privacyURL) {
                         HStack(spacing: 4) {
                             Text("Privacy Policy")
@@ -363,7 +363,7 @@ struct PaywallView: View {
                         .font(Design.Typography.caption)
                         .foregroundColor(Design.Colors.primary)
                         .onTapGesture {
-                            if let url = URL(string: "https://gofitai.org/privacy-policy") {
+                            if let url = URL(string: "https://github.com/RAKSHIT1998/GoFit.Ai---live-Healthy/blob/main/docs/PRIVACY_POLICY.md") {
                                 UIApplication.shared.open(url)
                             }
                         }
