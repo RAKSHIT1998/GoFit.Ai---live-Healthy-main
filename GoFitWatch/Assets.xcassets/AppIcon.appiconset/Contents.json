@@ -23,6 +23,27 @@
       "size" : "50x55",
       "scale" : "2x",
       "filename" : "watch_50x55@2x.png"
+    },
+    {
+      "idiom" : "watch",
+      "role" : "app",
+      "subtype" : "38mm",
+      "size" : "40x44",
+      "scale" : "1x"
+    },
+    {
+      "idiom" : "watch",
+      "role" : "app",
+      "subtype" : "40mm",
+      "size" : "44x50",
+      "scale" : "1x"
+    },
+    {
+      "idiom" : "watch",
+      "role" : "app",
+      "subtype" : "44mm",
+      "size" : "50x55",
+      "scale" : "1x"
     }
   ],
   "info" : {
