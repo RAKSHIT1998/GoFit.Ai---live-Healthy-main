@@ -6,7 +6,7 @@
       "subtype" : "38mm",
       "size" : "40x44",
       "scale" : "2x",
-      "filename" : "watch_40x44@2x.png"
+      "filename" : "AppIcon-40x44@2x.png"
     },
     {
       "idiom" : "watch",
@@ -14,7 +14,7 @@
       "subtype" : "40mm",
       "size" : "44x50",
       "scale" : "2x",
-      "filename" : "watch_44x50@2x.png"
+      "filename" : "AppIcon-44x50@2x.png"
     },
     {
       "idiom" : "watch",
@@ -22,7 +22,7 @@
       "subtype" : "44mm",
       "size" : "50x55",
       "scale" : "2x",
-      "filename" : "watch_50x55@2x.png"
+      "filename" : "AppIcon-50x55@2x.png"
     },
     {
       "idiom" : "watch",
@@ -30,7 +30,7 @@
       "subtype" : "38mm",
       "size" : "40x44",
       "scale" : "1x",
-      "filename" : "watch_40x44.png"
+      "filename" : "AppIcon-40x44.png"
     },
     {
       "idiom" : "watch",
@@ -38,7 +38,7 @@
       "subtype" : "40mm",
       "size" : "44x50",
       "scale" : "1x",
-      "filename" : "watch_44x50.png"
+      "filename" : "AppIcon-44x50.png"
     },
     {
       "idiom" : "watch",
@@ -46,7 +46,7 @@
       "subtype" : "44mm",
       "size" : "50x55",
       "scale" : "1x",
-      "filename" : "watch_50x55.png"
+      "filename" : "AppIcon-50x55.png"
     }
   ],
   "info" : {
