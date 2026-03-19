@@ -6,6 +6,11 @@
 	<dict>
 		<key>NSExtensionPointIdentifier</key>
 		<string>com.apple.widgetkit-extension</string>
+		<key>NSExtensionAttributes</key>
+		<dict>
+			<key>EXExtensionPointIdentifier</key>
+			<string>com.apple.widgetkit-extension</string>
+		</dict>
 	</dict>
 	<key>CFBundleIdentifier</key>
 	<string>com.rakshit.gofitai.widget</string>

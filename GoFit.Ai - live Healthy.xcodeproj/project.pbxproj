@@ -102,6 +102,20 @@
 			);
 			target = B2484A8C2EEC79A2009D604B /* GoFit.Ai - live Healthy */;
 		};
+		B251BC972F6AE6310071BE5C /* Exceptions for "GoFitWidget" folder in "GoFitWidget" target */ = {
+			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+			membershipExceptions = (
+				Info.plist,
+			);
+			target = C10000032F79A003009D604B /* GoFitWidget */;
+		};
+		B251BC982F6AE6390071BE5C /* Exceptions for "GoFitWatch" folder in "GoFitWatch" target */ = {
+			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+			membershipExceptions = (
+				Info.plist,
+			);
+			target = C10001032F79B003009D604B /* GoFitWatch */;
+		};
 /* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
@@ -130,11 +144,17 @@
 		};
 		C10000022F79A002009D604B /* GoFitWidget */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
+			exceptions = (
+				B251BC972F6AE6310071BE5C /* Exceptions for "GoFitWidget" folder in "GoFitWidget" target */,
+			);
 			path = GoFitWidget;
 			sourceTree = "<group>";
 		};
 		C10001022F79B002009D604B /* GoFitWatch */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
+			exceptions = (
+				B251BC982F6AE6390071BE5C /* Exceptions for "GoFitWatch" folder in "GoFitWatch" target */,
+			);
 			path = GoFitWatch;
 			sourceTree = "<group>";
 		};
