@@ -14,12 +14,6 @@
 	<array>
 		<string>AppIcon</string>
 	</array>
-	<key>CFBundleIconName</key>
-	<string>AppIcon</string>
-	<key>CFBundleIconFiles</key>
-	<array>
-		<string>AppIcon</string>
-	</array>
 	<key>WKCompanionAppBundleIdentifier</key>
 	<string>com.rakshit.gofitai</string>
 	<key>WKRunsIndependentlyOfCompanionApp</key>
