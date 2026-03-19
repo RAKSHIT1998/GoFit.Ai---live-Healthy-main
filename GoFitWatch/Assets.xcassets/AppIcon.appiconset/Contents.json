@@ -2,147 +2,45 @@
   "images" : [
     {
       "idiom" : "watch",
-      "role" : "app",
-      "subtype" : "38mm",
-      "size" : "40x44",
-      "scale" : "2x",
-      "filename" : "AppIcon-40x44@2x.png"
-    },
-    {
-      "idiom" : "watch",
-      "role" : "app",
-      "subtype" : "40mm",
-      "size" : "44x50",
-      "scale" : "2x",
-      "filename" : "AppIcon-44x50@2x.png"
-    },
-    {
-      "idiom" : "watch",
-      "role" : "app",
-      "subtype" : "44mm",
-      "size" : "50x55",
-      "scale" : "2x",
-      "filename" : "AppIcon-50x55@2x.png"
-    },
-    {
-      "idiom" : "watch",
-      "role" : "app",
       "subtype" : "38mm",
       "size" : "40x44",
       "scale" : "1x",
-      "filename" : "AppIcon-40x44.png"
+      "filename" : "watch_40x44.png"
     },
     {
       "idiom" : "watch",
-      "role" : "app",
       "subtype" : "40mm",
       "size" : "44x50",
       "scale" : "1x",
-      "filename" : "AppIcon-44x50.png"
+      "filename" : "watch_44x50.png"
     },
     {
       "idiom" : "watch",
-      "role" : "app",
       "subtype" : "44mm",
       "size" : "50x55",
       "scale" : "1x",
-      "filename" : "AppIcon-50x55.png"
+      "filename" : "watch_50x55.png"
     },
     {
       "idiom" : "watch",
-      "role" : "notificationCenter",
       "subtype" : "38mm",
       "size" : "40x44",
       "scale" : "2x",
-      "filename" : "AppIcon-40x44@2x-notificationCenter.png"
+      "filename" : "watch_40x44@2x.png"
     },
     {
       "idiom" : "watch",
-      "role" : "notificationCenter",
       "subtype" : "40mm",
       "size" : "44x50",
       "scale" : "2x",
-      "filename" : "AppIcon-44x50@2x-notificationCenter.png"
+      "filename" : "watch_44x50@2x.png"
     },
     {
       "idiom" : "watch",
-      "role" : "notificationCenter",
       "subtype" : "44mm",
       "size" : "50x55",
       "scale" : "2x",
-      "filename" : "AppIcon-50x55@2x-notificationCenter.png"
-    },
-    {
-      "idiom" : "watch",
-      "role" : "notificationCenter",
-      "subtype" : "38mm",
-      "size" : "40x44",
-      "scale" : "1x",
-      "filename" : "AppIcon-40x44-notificationCenter.png"
-    },
-    {
-      "idiom" : "watch",
-      "role" : "notificationCenter",
-      "subtype" : "40mm",
-      "size" : "44x50",
-      "scale" : "1x",
-      "filename" : "AppIcon-44x50-notificationCenter.png"
-    },
-    {
-      "idiom" : "watch",
-      "role" : "notificationCenter",
-      "subtype" : "44mm",
-      "size" : "50x55",
-      "scale" : "1x",
-      "filename" : "AppIcon-50x55-notificationCenter.png"
-    },
-    {
-      "idiom" : "watch",
-      "role" : "marketing",
-      "subtype" : "38mm",
-      "size" : "40x44",
-      "scale" : "2x",
-      "filename" : "AppIcon-40x44@2x-marketing.png"
-    },
-    {
-      "idiom" : "watch",
-      "role" : "marketing",
-      "subtype" : "40mm",
-      "size" : "44x50",
-      "scale" : "2x",
-      "filename" : "AppIcon-44x50@2x-marketing.png"
-    },
-    {
-      "idiom" : "watch",
-      "role" : "marketing",
-      "subtype" : "44mm",
-      "size" : "50x55",
-      "scale" : "2x",
-      "filename" : "AppIcon-50x55@2x-marketing.png"
-    },
-    {
-      "idiom" : "watch",
-      "role" : "marketing",
-      "subtype" : "38mm",
-      "size" : "40x44",
-      "scale" : "1x",
-      "filename" : "AppIcon-40x44-marketing.png"
-    },
-    {
-      "idiom" : "watch",
-      "role" : "marketing",
-      "subtype" : "40mm",
-      "size" : "44x50",
-      "scale" : "1x",
-      "filename" : "AppIcon-44x50-marketing.png"
-    },
-    {
-      "idiom" : "watch",
-      "role" : "marketing",
-      "subtype" : "44mm",
-      "size" : "50x55",
-      "scale" : "1x",
-      "filename" : "AppIcon-50x55-marketing.png"
+      "filename" : "watch_50x55@2x.png"
     }
   ],
   "info" : {
