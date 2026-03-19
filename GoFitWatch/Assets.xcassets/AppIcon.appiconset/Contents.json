@@ -95,6 +95,54 @@
       "size" : "50x55",
       "scale" : "2x",
       "filename" : "watch_50x55@2x.png"
+    },
+    {
+      "idiom" : "watch",
+      "role" : "marketing",
+      "subtype" : "38mm",
+      "size" : "40x44",
+      "scale" : "1x",
+      "filename" : "watch_40x44.png"
+    },
+    {
+      "idiom" : "watch",
+      "role" : "marketing",
+      "subtype" : "40mm",
+      "size" : "44x50",
+      "scale" : "1x",
+      "filename" : "watch_44x50.png"
+    },
+    {
+      "idiom" : "watch",
+      "role" : "marketing",
+      "subtype" : "44mm",
+      "size" : "50x55",
+      "scale" : "1x",
+      "filename" : "watch_50x55.png"
+    },
+    {
+      "idiom" : "watch",
+      "role" : "marketing",
+      "subtype" : "38mm",
+      "size" : "40x44",
+      "scale" : "2x",
+      "filename" : "watch_40x44@2x.png"
+    },
+    {
+      "idiom" : "watch",
+      "role" : "marketing",
+      "subtype" : "40mm",
+      "size" : "44x50",
+      "scale" : "2x",
+      "filename" : "watch_44x50@2x.png"
+    },
+    {
+      "idiom" : "watch",
+      "role" : "marketing",
+      "subtype" : "44mm",
+      "size" : "50x55",
+      "scale" : "2x",
+      "filename" : "watch_50x55@2x.png"
     }
 
   ],
