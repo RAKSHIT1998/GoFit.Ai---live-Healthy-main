@@ -29,21 +29,24 @@
       "role" : "app",
       "subtype" : "38mm",
       "size" : "40x44",
-      "scale" : "1x"
+      "scale" : "1x",
+      "filename" : "watch_40x44.png"
     },
     {
       "idiom" : "watch",
       "role" : "app",
       "subtype" : "40mm",
       "size" : "44x50",
-      "scale" : "1x"
+      "scale" : "1x",
+      "filename" : "watch_44x50.png"
     },
     {
       "idiom" : "watch",
       "role" : "app",
       "subtype" : "44mm",
       "size" : "50x55",
-      "scale" : "1x"
+      "scale" : "1x",
+      "filename" : "watch_50x55.png"
     }
   ],
   "info" : {
