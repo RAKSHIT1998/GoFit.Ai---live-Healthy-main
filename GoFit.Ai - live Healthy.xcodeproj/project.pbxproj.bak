@@ -13,6 +13,7 @@
 		B22104E72F20F582002672E4 /* HealthKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = B27DDA162EEF07D70047CE53 /* HealthKit.framework */; };
 		B22104E92F20F583002672E4 /* WatchConnectivity.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = B2F86E432EED7C1E009F03C0 /* WatchConnectivity.framework */; };
 		C10000092F79A009009D604B /* GoFitWidget.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = C10000012F79A001009D604B /* GoFitWidget.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
+		C10001092F79B009009D604B /* GoFitWatch.app in Embed Watch Content */ = {isa = PBXBuildFile; fileRef = C10001012F79B001009D604B /* GoFitWatch.app */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
 		D755276AC30B9C70459BBD87 /* libPods-GoFit.Ai - live HealthyUITests.a in Frameworks */ = {isa = PBXBuildFile; fileRef = C2CD24A1598AEB538B8C7B38 /* libPods-GoFit.Ai - live HealthyUITests.a */; };
 /* End PBXBuildFile section */
 
@@ -38,6 +39,13 @@
 			remoteGlobalIDString = C10000032F79A003009D604B;
 			remoteInfo = GoFitWidget;
 		};
+		C10001072F79B007009D604B /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = B2484A852EEC79A2009D604B /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = C10001032F79B003009D604B;
+			remoteInfo = GoFitWatch;
+		};
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXCopyFilesBuildPhase section */
@@ -50,6 +58,17 @@
 				C10000092F79A009009D604B /* GoFitWidget.appex in Embed Foundation Extensions */,
 			);
 			name = "Embed Foundation Extensions";
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		C10001102F79B010009D604B /* Embed Watch Content */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = "$(CONTENTS_FOLDER_PATH)/Watch";
+			dstSubfolderSpec = 16;
+			files = (
+				C10001092F79B009009D604B /* GoFitWatch.app in Embed Watch Content */,
+			);
+			name = "Embed Watch Content";
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXCopyFilesBuildPhase section */
@@ -69,6 +88,7 @@
 		B2F1DFB62F068104002E1B7B /* AuthenticationServices.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AuthenticationServices.framework; path = System/Library/Frameworks/AuthenticationServices.framework; sourceTree = SDKROOT; };
 		B2F86E432EED7C1E009F03C0 /* WatchConnectivity.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = WatchConnectivity.framework; path = System/Library/Frameworks/WatchConnectivity.framework; sourceTree = SDKROOT; };
 		C10000012F79A001009D604B /* GoFitWidget.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = GoFitWidget.appex; sourceTree = BUILT_PRODUCTS_DIR; };
+		C10001012F79B001009D604B /* GoFitWatch.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = GoFitWatch.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		C2CD24A1598AEB538B8C7B38 /* libPods-GoFit.Ai - live HealthyUITests.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libPods-GoFit.Ai - live HealthyUITests.a"; sourceTree = BUILT_PRODUCTS_DIR; };
 		D7F8F99F068950C35357765F /* Pods-GoFit.Ai - live HealthyUITests.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-GoFit.Ai - live HealthyUITests.debug.xcconfig"; path = "Target Support Files/Pods-GoFit.Ai - live HealthyUITests/Pods-GoFit.Ai - live HealthyUITests.debug.xcconfig"; sourceTree = "<group>"; };
 		E547A901353C1C2C7CD5E955 /* libPods-GoFit.Ai - live Healthy.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libPods-GoFit.Ai - live Healthy.a"; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -88,6 +108,13 @@
 				Info.plist,
 			);
 			target = C10000032F79A003009D604B /* GoFitWidget */;
+		};
+		B251BC982F6AE6390071BE5C /* Exceptions for "GoFitWatch" folder in "GoFitWatch" target */ = {
+			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+			membershipExceptions = (
+				Info.plist,
+			);
+			target = C10001032F79B003009D604B /* GoFitWatch */;
 		};
 /* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
 
@@ -121,6 +148,14 @@
 				B251BC972F6AE6310071BE5C /* Exceptions for "GoFitWidget" folder in "GoFitWidget" target */,
 			);
 			path = GoFitWidget;
+			sourceTree = "<group>";
+		};
+		C10001022F79B002009D604B /* GoFitWatch */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			exceptions = (
+				B251BC982F6AE6390071BE5C /* Exceptions for "GoFitWatch" folder in "GoFitWatch" target */,
+			);
+			path = GoFitWatch;
 			sourceTree = "<group>";
 		};
 /* End PBXFileSystemSynchronizedRootGroup section */
@@ -205,6 +240,7 @@
 				B2484AAE2EEC79A7009D604B /* GoFit.Ai - live HealthyUITests */,
 				B2F1DFB82F068104002E1B7B /* gofit */,
 				C10000022F79A002009D604B /* GoFitWidget */,
+				C10001022F79B002009D604B /* GoFitWatch */,
 				B24022202EED789700CDE033 /* Frameworks */,
 				B2484A8E2EEC79A2009D604B /* Products */,
 				46C2F688A1F2C2C7732700FE /* Pods */,
@@ -218,6 +254,7 @@
 				B2484AA12EEC79A7009D604B /* GoFit.Ai - live HealthyTests.xctest */,
 				B2484AAB2EEC79A7009D604B /* GoFit.Ai - live HealthyUITests.xctest */,
 				C10000012F79A001009D604B /* GoFitWidget.appex */,
+				C10001012F79B001009D604B /* GoFitWatch.app */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -234,6 +271,7 @@
 				B2484A8A2EEC79A2009D604B /* Frameworks */,
 				B2484A8B2EEC79A2009D604B /* Resources */,
 				B2F1DFC62F068105002E1B7B /* Embed Foundation Extensions */,
+				C10001102F79B010009D604B /* Embed Watch Content */,
 				B29FB6572F4DB7F700F503E8 /* ShellScript */,
 				2DA30ADB419F5329048F3814 /* [CP] Copy Pods Resources */,
 			);
@@ -315,6 +353,26 @@
 			productReference = C10000012F79A001009D604B /* GoFitWidget.appex */;
 			productType = "com.apple.product-type.app-extension";
 		};
+		C10001032F79B003009D604B /* GoFitWatch */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = C100010C2F79B00C009D604B /* Build configuration list for PBXNativeTarget "GoFitWatch" */;
+			buildPhases = (
+				C10001042F79B004009D604B /* Sources */,
+				C10001052F79B005009D604B /* Frameworks */,
+				C10001062F79B006009D604B /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			fileSystemSynchronizedGroups = (
+				C10001022F79B002009D604B /* GoFitWatch */,
+			);
+			name = GoFitWatch;
+			productName = GoFitWatch;
+			productReference = C10001012F79B001009D604B /* GoFitWatch.app */;
+			productType = "com.apple.product-type.application";
+		};
 /* End PBXNativeTarget section */
 
 /* Begin PBXProject section */
@@ -339,6 +397,7 @@
 					C10000032F79A003009D604B = {
 						CreatedOnToolsVersion = 16.2;
 					};
+					C10001032F79B003009D604B = {
 						CreatedOnToolsVersion = 16.2;
 					};
 				};
@@ -361,6 +420,7 @@
 				B2484AA02EEC79A7009D604B /* GoFit.Ai - live HealthyTests */,
 				B2484AAA2EEC79A7009D604B /* GoFit.Ai - live HealthyUITests */,
 				C10000032F79A003009D604B /* GoFitWidget */,
+				C10001032F79B003009D604B /* GoFitWatch */,
 			);
 		};
 /* End PBXProject section */
@@ -563,6 +623,8 @@
 		};
 		C10001082F79B008009D604B /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
+			target = C10001032F79B003009D604B /* GoFitWatch */;
+			targetProxy = C10001072F79B007009D604B /* PBXContainerItemProxy */;
 		};
 /* End PBXTargetDependency section */
 
@@ -1033,6 +1095,15 @@
 			buildConfigurations = (
 				C100000A2F79A00A009D604B /* Debug */,
 				C100000B2F79A00B009D604B /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		C100010C2F79B00C009D604B /* Build configuration list for PBXNativeTarget "GoFitWatch" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				C100010A2F79B00A009D604B /* Debug */,
+				C100010B2F79B00B009D604B /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
