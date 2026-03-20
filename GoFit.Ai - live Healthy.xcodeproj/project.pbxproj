@@ -342,7 +342,6 @@
 						CreatedOnToolsVersion = 16.2;
 					};
 				};
-			};
 			buildConfigurationList = B2484A882EEC79A2009D604B /* Build configuration list for PBXProject "GoFit.Ai - live Healthy" */;
 			developmentRegion = en;
 			hasScannedForEncodings = 0;
