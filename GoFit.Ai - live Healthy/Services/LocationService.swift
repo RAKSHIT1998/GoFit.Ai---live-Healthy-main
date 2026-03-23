@@ -35,7 +35,9 @@ final class LocationService: NSObject, ObservableObject, CLLocationManagerDelega
         let authorized: Bool
 
         #if os(iOS)
-        authorized = authorizationStatus == .authorizedWhenInUse || authorizationStatus == .authorizedAlways
+        let whenInUse = CLAuthorizationStatus.authorizedWhenInUse.rawValue
+        let always = CLAuthorizationStatus.authorizedAlways.rawValue
+        authorized = [whenInUse, always].contains(authorizationStatus.rawValue)
         #else
         authorized = authorizationStatus == .authorizedAlways
         #endif

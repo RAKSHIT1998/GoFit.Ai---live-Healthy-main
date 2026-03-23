@@ -2,7 +2,6 @@ import SwiftUI
 import MapKit
 
 struct RunTrackerView: View {
-    @EnvironmentObject var auth: AuthViewModel
     @StateObject private var locationService = LocationService.shared
 
     @State private var isTracking = false
@@ -47,7 +46,7 @@ struct RunTrackerView: View {
 
                 VStack(spacing: 12) {
                     Text(actionMessage)
-                        .font(Design.Typography.caption2)
+                        .font(.caption2)
                         .foregroundColor(.secondary)
 
                     Button(action: {
@@ -61,7 +60,7 @@ struct RunTrackerView: View {
                             .fontWeight(.semibold)
                             .frame(maxWidth: .infinity)
                             .padding(.vertical, 12)
-                            .background(isTracking ? Color.red : Design.Colors.primary)
+                            .background(isTracking ? Color.red : Color.blue)
                             .foregroundColor(.white)
                             .cornerRadius(12)
                     }
