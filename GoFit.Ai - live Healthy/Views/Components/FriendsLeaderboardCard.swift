@@ -8,8 +8,17 @@ struct FriendsLeaderboardCard: View {
             VStack(spacing: 4) {
                 Circle()
                     .fill(
-                        entry.isCurrentUser ? Design.Colors.primary.opacity(0.3)
-                            : LinearGradient(colors: [Color.blue.opacity(0.4), Color.purple.opacity(0.4)], startPoint: .topLeading, endPoint: .bottomTrailing)
+                        entry.isCurrentUser ?
+                            LinearGradient(
+                                colors: [Design.Colors.primary.opacity(0.3), Design.Colors.primary.opacity(0.3)],
+                                startPoint: .topLeading,
+                                endPoint: .bottomTrailing
+                            ) :
+                            LinearGradient(
+                                colors: [Color.blue.opacity(0.4), Color.purple.opacity(0.4)],
+                                startPoint: .topLeading,
+                                endPoint: .bottomTrailing
+                            )
                     )
                     .frame(width: 46, height: 46)
                     .overlay(
