@@ -4,6 +4,25 @@ import SwiftUI
 /// Compact weekly leaderboard card for the home dashboard.
 /// Uses existing GamificationService.getLeaderboard() → [LeaderboardEntry] model.
 struct FriendsLeaderboardCard: View {
+        private func friendBubble(entry: LeaderboardEntry) -> some View {
+            VStack(spacing: 4) {
+                Circle()
+                    .fill(
+                        entry.isCurrentUser ? Design.Colors.primary.opacity(0.3)
+                            : LinearGradient(colors: [Color.blue.opacity(0.4), Color.purple.opacity(0.4)], startPoint: .topLeading, endPoint: .bottomTrailing)
+                    )
+                    .frame(width: 46, height: 46)
+                    .overlay(
+                        Text(String(entry.username.prefix(1)).uppercased())
+                            .font(.system(size: 18, weight: .bold))
+                            .foregroundColor(.white)
+                    )
+                Text(entry.isCurrentUser ? "You" : entry.username)
+                    .font(Design.Typography.caption2)
+                    .lineLimit(1)
+            }
+            .frame(width: 64)
+        }
     @StateObject private var gamService = GamificationService()
     @State private var entries: [LeaderboardEntry] = []
     @State private var currentUserRank: Int = 0
@@ -63,23 +82,7 @@ struct FriendsLeaderboardCard: View {
                 ScrollView(.horizontal, showsIndicators: false) {
                     HStack(spacing: 10) {
                         ForEach(entries.prefix(10)) { entry in
-                            VStack(spacing: 4) {
-                                Circle()
-                                    .fill(
-                                        entry.isCurrentUser ? Design.Colors.primary.opacity(0.3)
-                                            : LinearGradient(colors: [Color.blue.opacity(0.4), Color.purple.opacity(0.4)], startPoint: .topLeading, endPoint: .bottomTrailing)
-                                    )
-                                    .frame(width: 46, height: 46)
-                                    .overlay(
-                                        Text(String(entry.username.prefix(1)).uppercased())
-                                            .font(.system(size: 18, weight: .bold))
-                                            .foregroundColor(.white)
-                                    )
-                                Text(entry.isCurrentUser ? "You" : entry.username)
-                                    .font(Design.Typography.caption2)
-                                    .lineLimit(1)
-                            }
-                            .frame(width: 64)
+                            friendBubble(entry: entry)
                         }
                     }
                     .padding(.horizontal, 4)
