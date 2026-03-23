@@ -19,8 +19,8 @@ struct ActivityFeedView: View {
     @State private var selectedPostType: String = "Achievement"
     @State private var isPosting: Bool = false
     @State private var postError: String? = nil
-    @State private var socialEngagementPoints: Int = 0
-    @State private var showSocialMVPBadge: Bool = false
+    @State private var socialEngagementPoints: Int = UserDefaults.standard.integer(forKey: "social_engagement_points")
+    @State private var showSocialMVPBadge: Bool = UserDefaults.standard.bool(forKey: "show_social_mvp_badge")
 
     private let reactionEmojis = ["🔥", "❤️", "💪", "👏", "🎉"]
 
@@ -279,6 +279,7 @@ struct ActivityFeedView: View {
         isPosting = false
 
         socialEngagementPoints += 1
+        UserDefaults.standard.set(socialEngagementPoints, forKey: "social_engagement_points")
         checkSocialMVPStatus()
 
         Task {
@@ -347,6 +348,7 @@ struct ActivityFeedView: View {
                                 feedItems[index].isLikedByCurrentUser = true
                             }
                             socialEngagementPoints += 1
+                            UserDefaults.standard.set(socialEngagementPoints, forKey: "social_engagement_points")
                             checkSocialMVPStatus()
                         }
                     }

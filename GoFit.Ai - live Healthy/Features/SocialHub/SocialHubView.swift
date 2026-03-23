@@ -382,6 +382,7 @@ struct SocialHubView: View {
                     achievementChip(emoji: "\u{1F957}", title: "Clean Eater", desc: "100 meals logged", color: .green)
                     achievementChip(emoji: "\u{1F4A7}", title: "Hydrated", desc: "Water goals x30", color: .blue)
                     achievementChip(emoji: "\u{1F3C3}", title: "Step King", desc: "10k steps x7", color: .purple)
+                    achievementChip(emoji: "\u{1F3C6}", title: "Social MVP", desc: "10+ interactions", color: .pink)
                 }
             }
         }
