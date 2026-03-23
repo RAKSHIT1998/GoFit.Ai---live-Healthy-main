@@ -105,7 +105,10 @@ struct GoFitAiApp: App {
                     let components = URLComponents(url: url, resolvingAgainstBaseURL: false)
                     if let host = components?.host, host == "runclub", let clubId = components?.path.split(separator: "/").first {
                         let trimmedClubId = String(clubId)
-                        if let userId = AuthService.shared.readToken()?.userId, let username = AuthService.shared.readToken()?.email {
+                        if let profile = LocalUserStore.shared.userProfile,
+                           let userId = profile.userId,
+                           !userId.isEmpty {
+                            let username = profile.name.isEmpty ? "Runner" : profile.name
                             RunClubService.shared.joinClub(trimmedClubId, userId: userId, username: username)
                             NotificationBannerManager.shared.show(
                                 title: "Joined Run Club",
