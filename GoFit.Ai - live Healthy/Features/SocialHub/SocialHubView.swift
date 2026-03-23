@@ -25,27 +25,28 @@ struct SocialHubView: View {
     @State private var clubCityFilter = ""
     @State private var showCreateClubSheet = false
     @State private var showClubDetailSheet = false
-    @State private var selectedRunClub: RunClub? = nil
 
     enum SocialTab: String, CaseIterable {
         case feed = "Feed"
-        case chats = "Chats"
+        case clubs = "Clubs"
         case friends = "Friends"
-        case leaderboard = "Ranks"
-        case challenges = "Challenges"
-        case clubs = "Run Clubs"
 
         var icon: String {
             switch self {
             case .feed: return "rectangle.stack.fill"
-            case .chats: return "bubble.left.and.bubble.right.fill"
-            case .friends: return "person.2.fill"
-            case .leaderboard: return "trophy.fill"
-            case .challenges: return "flag.fill"
             case .clubs: return "person.3.fill"
+            case .friends: return "person.2.fill"
             }
         }
     }
+
+    enum FriendsSubTab: String, CaseIterable {
+        case ranks = "Ranks"
+        case chats = "Chats"
+        case challenges = "Challenges"
+    }
+
+    @State private var selectedFriendsSubTab: FriendsSubTab = .ranks
 
     var body: some View {
         NavigationStack {
@@ -55,19 +56,12 @@ struct SocialHubView: View {
                 inviteTodayBanner
 
                 switch selectedTab {
-                        case .feed:
+                case .feed:
                     ActivityFeedView()
-                case .chats:
-                    ConversationsView()
-                        .environmentObject(auth)
-                case .friends:
-                    friendsSection
-                case .leaderboard:
-                    leaderboardSection
-                case .challenges:
-                    challengesSection
                 case .clubs:
                     runClubsSection
+                case .friends:
+                    friendsSection
                 }
             }
             .background(Design.Colors.background.ignoresSafeArea())
@@ -227,65 +221,41 @@ struct SocialHubView: View {
     // MARK: - Friends Section
     private var friendsSection: some View {
         ScrollView {
-            VStack(spacing: Design.Spacing.lg) {
-                SearchBar(text: $searchText, placeholder: "Search by email, name, or username") { query in
-                    guard !query.trimmingCharacters(in: .whitespaces).isEmpty else {
-                        friendsService.searchResults = []
-                        return
+            VStack(spacing: Design.Spacing.md) {
+                Picker("Friends", selection: $selectedFriendsSubTab) {
+                    ForEach(FriendsSubTab.allCases, id: \.self) { tab in
+                        Text(tab.rawValue).tag(tab)
                     }
-                    friendsService.searchUsers(query: query) { _ in }
                 }
+                .pickerStyle(.segmented)
                 .padding(.horizontal, Design.Spacing.md)
 
-                if !searchText.isEmpty {
-                    searchResultsView
-                }
-
-                if !friendsService.friendRequests.isEmpty {
-                    VStack(alignment: .leading, spacing: Design.Spacing.sm) {
-                        HStack {
-                            Image(systemName: "envelope.fill")
-                                .foregroundColor(.orange)
-                            Text("Requests (\(friendsService.friendRequests.count))")
-                                .font(Design.Typography.headline)
-                            Spacer()
-                        }
-                        .padding(.horizontal, Design.Spacing.md)
-
-                        ForEach(friendsService.friendRequests, id: \.id) { request in
-                            FriendRequestCardView(request: request, onAccept: {
-                                friendsService.acceptFriendRequest(from: request.requesterId) { _ in
-                                    friendsService.fetchFriendRequests { _ in }
-                                    friendsService.fetchFriends { _ in }
-                                }
-                            }, onDecline: {
-                                friendsService.rejectFriendRequest(from: request.requesterId) { _ in
-                                    friendsService.fetchFriendRequests { _ in }
-                                }
-                            })
-                        }
-                        .padding(.horizontal, Design.Spacing.md)
-                    }
-                }
-
-                VStack(alignment: .leading, spacing: Design.Spacing.sm) {
-                    HStack {
-                        Image(systemName: "person.2.fill")
-                            .foregroundColor(Design.Colors.primary)
-                        Text("Your Friends (\(friendsService.friends.count))")
-                            .font(Design.Typography.headline)
-                        Spacer()
-                    }
-                    .padding(.horizontal, Design.Spacing.md)
+                switch selectedFriendsSubTab {
+                case .ranks:
+                    leaderboardSection
 
                     if friendsService.friends.isEmpty {
                         emptyFriendsState
                     } else {
-                        ForEach(friendsService.friends, id: \.id) { friend in
-                            FriendCardView(friend: friend, currentUserId: auth.userId ?? "")
+                        VStack(alignment: .leading, spacing: 12) {
+                            Text("Friends")
+                                .font(Design.Typography.headline)
+                                .padding(.horizontal, Design.Spacing.md)
+
+                            ForEach(friendsService.friends, id: \.id) { friend in
+                                FriendCardView(friend: friend, currentUserId: auth.userId ?? "")
+                                    .padding(.horizontal, Design.Spacing.md)
+                            }
                         }
-                        .padding(.horizontal, Design.Spacing.md)
                     }
+
+                case .chats:
+                    ConversationsView()
+                        .environmentObject(auth)
+                        .padding(.horizontal, Design.Spacing.md)
+
+                case .challenges:
+                    challengesSection
                 }
             }
             .padding(.vertical, Design.Spacing.md)
@@ -360,7 +330,7 @@ struct SocialHubView: View {
                     .cornerRadius(14)
                     .padding(.horizontal, Design.Spacing.md)
                     .onTapGesture {
-                        selectedRunClub = club
+                        runClubService.selectedClub = club
                         showClubDetailSheet = true
                     }
                 }
@@ -369,12 +339,15 @@ struct SocialHubView: View {
             .padding(.vertical, Design.Spacing.md)
         }
         .sheet(isPresented: $showCreateClubSheet) {
-            CreateRunClubSheet(isPresented: $showCreateClubSheet)
-                .environmentObject(auth)
-                .environmentObject(runClubService)
+            CreateRunClubSheet(isPresented: $showCreateClubSheet) { club in
+                runClubService.selectedClub = club
+                showClubDetailSheet = true
+            }
+            .environmentObject(auth)
+            .environmentObject(runClubService)
         }
         .sheet(isPresented: $showClubDetailSheet) {
-            if let club = selectedRunClub {
+            if let club = runClubService.selectedClub {
                 RunClubDetailView(club: club)
                     .environmentObject(auth)
                     .environmentObject(runClubService)
@@ -1015,6 +988,7 @@ struct CreateRunClubSheet: View {
     @EnvironmentObject var auth: AuthViewModel
     @EnvironmentObject var runClubService: RunClubService
     @Binding var isPresented: Bool
+    var onCreated: (RunClub) -> Void = { _ in }
 
     @State private var name: String = ""
     @State private var description: String = ""
@@ -1036,6 +1010,7 @@ struct CreateRunClubSheet: View {
                         guard !name.isEmpty, let userId = auth.userId else { return }
                         let club = runClubService.createClub(name: name, description: description, city: city, ownerId: userId, ownerName: auth.name)
                         runClubService.selectedClub = club
+                        onCreated(club)
                         isPresented = false
                     }
                     .disabled(name.isEmpty)

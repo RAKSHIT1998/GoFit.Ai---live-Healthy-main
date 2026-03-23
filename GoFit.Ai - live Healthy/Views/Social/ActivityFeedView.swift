@@ -21,8 +21,10 @@ struct ActivityFeedView: View {
     @State private var postError: String? = nil
     @State private var socialEngagementPoints: Int = UserDefaults.standard.integer(forKey: "social_engagement_points")
     @State private var showSocialMVPBadge: Bool = UserDefaults.standard.bool(forKey: "show_social_mvp_badge")
+    @State private var pendingActivities: [SharedActivityLog] = []
 
     private let reactionEmojis = ["🔥", "❤️", "💪", "👏", "🎉"]
+    private let pendingActivitiesKey = "pending_shared_activities"
 
     var body: some View {
         ScrollView {
@@ -67,6 +69,8 @@ struct ActivityFeedView: View {
             await loadFeed()
         }
         .task {
+            pendingActivities = loadPendingActivities()
+            await retryPendingActivities()
             await loadFeed()
         }
         .onReceive(WebSocketService.shared.$latestActivityFeed) { feed in
@@ -287,8 +291,10 @@ struct ActivityFeedView: View {
         Task {
             do {
                 try await sharingService.postFeedActivity(sharedActivity)
+                removePendingActivity(withId: sharedActivity.id)
             } catch {
                 postError = "Could not publish to server. Saved locally."
+                savePendingActivity(sharedActivity)
             }
         }
     }
