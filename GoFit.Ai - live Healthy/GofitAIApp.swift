@@ -24,6 +24,7 @@ struct GoFitAiApp: App {
     @AppStorage("darkModePreference") private var darkModePreference: String = "light"
     @StateObject private var webSocketService = WebSocketService.shared
     @StateObject private var adManager = AdManager.shared
+    @StateObject private var runClubService = RunClubService.shared
     @Environment(\.scenePhase) private var scenePhase
     
     var body: some Scene {
@@ -33,6 +34,7 @@ struct GoFitAiApp: App {
                 .notificationBanner() // Add real-time notification banner
                 .environmentObject(webSocketService)
                 .environmentObject(adManager)
+                .environmentObject(runClubService)
                 .onAppear {
                     // Initialize AdMob
                     adManager.initialize()
@@ -95,6 +97,21 @@ struct GoFitAiApp: App {
                         Task {
                             try? await Task.sleep(nanoseconds: 500_000_000) // 0.5 second
                             adManager.showAppOpenAd()
+                        }
+                    }
+                }
+                .onOpenURL { url in
+                    guard url.scheme == "gofit" else { return }
+                    let components = URLComponents(url: url, resolvingAgainstBaseURL: false)
+                    if let host = components?.host, host == "runclub", let clubId = components?.path.split(separator: "/").first {
+                        let trimmedClubId = String(clubId)
+                        if let userId = AuthService.shared.readToken()?.userId, let username = AuthService.shared.readToken()?.email {
+                            RunClubService.shared.joinClub(trimmedClubId, userId: userId, username: username)
+                            NotificationBannerManager.shared.show(
+                                title: "Joined Run Club",
+                                message: "You joined club \(trimmedClubId) from link!",
+                                icon: "person.3.fill"
+                            )
                         }
                     }
                 }

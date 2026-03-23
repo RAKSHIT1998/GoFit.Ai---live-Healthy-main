@@ -33,6 +33,7 @@ struct SocialHubView: View {
         case friends = "Friends"
         case leaderboard = "Ranks"
         case challenges = "Challenges"
+        case clubs = "Run Clubs"
 
         var icon: String {
             switch self {
@@ -41,6 +42,7 @@ struct SocialHubView: View {
             case .friends: return "person.2.fill"
             case .leaderboard: return "trophy.fill"
             case .challenges: return "flag.fill"
+            case .clubs: return "person.3.fill"
             }
         }
     }
@@ -53,7 +55,7 @@ struct SocialHubView: View {
                 inviteTodayBanner
 
                 switch selectedTab {
-                case .feed:
+                        case .feed:
                     ActivityFeedView()
                 case .chats:
                     ConversationsView()
@@ -64,6 +66,8 @@ struct SocialHubView: View {
                     leaderboardSection
                 case .challenges:
                     challengesSection
+                case .clubs:
+                    runClubsSection
                 }
             }
             .background(Design.Colors.background.ignoresSafeArea())
@@ -289,6 +293,92 @@ struct SocialHubView: View {
         .refreshable {
             friendsService.fetchFriends { _ in }
             friendsService.fetchFriendRequests { _ in }
+        }
+    }
+
+    private var runClubsSection: some View {
+        ScrollView {
+            VStack(spacing: Design.Spacing.lg) {
+                HStack {
+                    Text("Run Clubs")
+                        .font(Design.Typography.headline)
+                    Spacer()
+                    Button {
+                        showCreateClubSheet = true
+                    } label: {
+                        Image(systemName: "plus.circle.fill")
+                        Text("Create Club")
+                    }
+                    .buttonStyle(.borderedProminent)
+                }
+                .padding(.horizontal, Design.Spacing.md)
+
+                TextField("Filter by city", text: $clubCityFilter)
+                    .textFieldStyle(RoundedBorderTextFieldStyle())
+                    .padding(.horizontal, Design.Spacing.md)
+
+                ForEach(runClubService.getClubs(city: clubCityFilter)) { club in
+                    VStack(alignment: .leading, spacing: 8) {
+                        HStack {
+                            Text(club.name)
+                                .font(Design.Typography.headline)
+                            Spacer()
+                            Button(club.members.contains(where: { $0.userId == auth.userId }) ? "Joined" : "Join") {
+                                if let userId = auth.userId {
+                                    if club.members.contains(where: { $0.userId == userId }) {
+                                        runClubService.leaveClub(club.id, userId: userId)
+                                    } else {
+                                        runClubService.joinClub(club.id, userId: userId, username: auth.name)
+                                    }
+                                }
+                            }
+                            .buttonStyle(.bordered)
+                        }
+
+                        Text(club.description ?? "No description")
+                            .font(Design.Typography.caption)
+                            .foregroundColor(.secondary)
+                        HStack {
+                            Label(club.city ?? "Global", systemImage: "map.fill")
+                                .font(Design.Typography.caption2)
+                                .foregroundColor(.secondary)
+                            Spacer()
+                            Button("Share Link") {
+                                let link = "gofit://runclub/\(club.id)"
+                                let shareText = "Join our Run Club \(club.name)! \(link)"
+                                let vc = UIActivityViewController(activityItems: [shareText], applicationActivities: nil)
+                                if let scene = UIApplication.shared.connectedScenes.first as? UIWindowScene,
+                                   let root = scene.windows.first?.rootViewController {
+                                    root.present(vc, animated: true)
+                                }
+                            }
+                            .buttonStyle(.bordered)
+                        }
+                    }
+                    .padding(16)
+                    .background(Design.Colors.cardBackground)
+                    .cornerRadius(14)
+                    .padding(.horizontal, Design.Spacing.md)
+                    .onTapGesture {
+                        selectedRunClub = club
+                        showClubDetailSheet = true
+                    }
+                }
+                Spacer()
+            }
+            .padding(.vertical, Design.Spacing.md)
+        }
+        .sheet(isPresented: $showCreateClubSheet) {
+            CreateRunClubSheet(isPresented: $showCreateClubSheet)
+                .environmentObject(auth)
+                .environmentObject(runClubService)
+        }
+        .sheet(isPresented: $showClubDetailSheet) {
+            if let club = selectedRunClub {
+                RunClubDetailView(club: club)
+                    .environmentObject(auth)
+                    .environmentObject(runClubService)
+            }
         }
     }
 
@@ -916,6 +1006,157 @@ struct PremiumFeatureRow: View {
             Image(systemName: icon).font(.body).foregroundColor(color).frame(width: 32)
             Text(text).font(Design.Typography.body).foregroundColor(.primary)
             Spacer()
+        }
+    }
+}
+
+// MARK: - Run Club Sheets
+struct CreateRunClubSheet: View {
+    @EnvironmentObject var auth: AuthViewModel
+    @EnvironmentObject var runClubService: RunClubService
+    @Binding var isPresented: Bool
+
+    @State private var name: String = ""
+    @State private var description: String = ""
+    @State private var city: String = ""
+
+    var body: some View {
+        NavigationView {
+            Form {
+                Section(header: Text("Club Information")) {
+                    TextField("Club name", text: $name)
+                    TextField("Description", text: $description)
+                    TextField("City", text: $city)
+                }
+            }
+            .navigationTitle("Create Run Club")
+            .toolbar {
+                ToolbarItem(placement: .confirmationAction) {
+                    Button("Create") {
+                        guard !name.isEmpty, let userId = auth.userId else { return }
+                        let club = runClubService.createClub(name: name, description: description, city: city, ownerId: userId, ownerName: auth.name)
+                        runClubService.selectedClub = club
+                        isPresented = false
+                    }
+                    .disabled(name.isEmpty)
+                }
+
+                ToolbarItem(placement: .cancellationAction) {
+                    Button("Cancel") { isPresented = false }
+                }
+            }
+        }
+    }
+}
+
+struct RunClubDetailView: View {
+    @EnvironmentObject var auth: AuthViewModel
+    @EnvironmentObject var runClubService: RunClubService
+    let club: RunClub
+
+    @State private var newEventTitle = ""
+    @State private var newEventDetails = ""
+    @State private var newEventLocation = ""
+    @State private var newEventDate = Date()
+
+    var body: some View {
+        NavigationView {
+            ScrollView {
+                VStack(spacing: 16) {
+                    Text(club.description ?? "No description")
+                        .font(Design.Typography.body)
+                        .foregroundColor(.secondary)
+                        .multilineTextAlignment(.leading)
+
+                    HStack {
+                        Label(club.city ?? "Global", systemImage: "map.fill")
+                            .font(Design.Typography.caption2)
+                        Spacer()
+                        Text("Members: \(club.members.count)")
+                            .font(Design.Typography.caption2)
+                    }
+
+                    Divider()
+
+                    VStack(alignment: .leading, spacing: 10) {
+                        Text("Upcoming Runs")
+                            .font(Design.Typography.subheadline)
+                            .fontWeight(.semibold)
+
+                        if club.events.isEmpty {
+                            Text("No planned runs yet. Club owner can add events.")
+                                .font(Design.Typography.caption)
+                                .foregroundColor(.secondary)
+                        }
+                        ForEach(club.events) { event in
+                            VStack(alignment: .leading, spacing: 4) {
+                                Text(event.title)
+                                    .font(Design.Typography.bodyBold)
+                                Text(event.details ?? "")
+                                    .font(Design.Typography.caption)
+                                Text("\(event.location ?? "TBD") • \(event.date, style: .date) \(event.date, style: .time)")
+                                    .font(Design.Typography.caption2)
+                                    .foregroundColor(.secondary)
+                            }
+                            .padding(12)
+                            .background(Design.Colors.cardBackground)
+                            .cornerRadius(12)
+                        }
+                    }
+
+                    if club.ownerId == auth.userId {
+                        VStack(alignment: .leading, spacing: 8) {
+                            Text("Plan a New Run")
+                                .font(Design.Typography.subheadline)
+                                .fontWeight(.semibold)
+
+                            TextField("Title", text: $newEventTitle)
+                                .textFieldStyle(RoundedBorderTextFieldStyle())
+                            TextField("Details", text: $newEventDetails)
+                                .textFieldStyle(RoundedBorderTextFieldStyle())
+                            TextField("Location", text: $newEventLocation)
+                                .textFieldStyle(RoundedBorderTextFieldStyle())
+                            DatePicker("Date", selection: $newEventDate, displayedComponents: [.date, .hourAndMinute])
+
+                            Button("Post Run Event") {
+                                guard !newEventTitle.isEmpty else { return }
+                                runClubService.addEvent(to: club.id, title: newEventTitle, details: newEventDetails, location: newEventLocation, date: newEventDate, createdBy: auth.name)
+                                newEventTitle = ""
+                                newEventDetails = ""
+                                newEventLocation = ""
+                            }
+                            .buttonStyle(.borderedProminent)
+                            .disabled(newEventTitle.isEmpty)
+                        }
+                        .padding(16)
+                        .background(Design.Colors.cardBackground)
+                        .cornerRadius(14)
+                    }
+
+                    Button("Share club link") {
+                        let invite = "Join our run club \(club.name): gofit://runclub/\(club.id)"
+                        let activityVC = UIActivityViewController(activityItems: [invite], applicationActivities: nil)
+                        if let scene = UIApplication.shared.connectedScenes.first as? UIWindowScene,
+                           let root = scene.windows.first?.rootViewController {
+                            root.present(activityVC, animated: true)
+                        }
+                    }
+                    .buttonStyle(.bordered)
+                }
+                .padding(Design.Spacing.md)
+            }
+            .navigationTitle(club.name)
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .confirmationAction) {
+                    Button("Done") {
+                        runClubService.selectedClub = nil
+                    }
+                }
+            }
+            .onDisappear {
+                runClubService.selectedClub = nil
+            }
         }
     }
 }
