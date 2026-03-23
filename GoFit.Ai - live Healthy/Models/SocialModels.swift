@@ -272,6 +272,24 @@ struct RunClubEvent: Codable, Identifiable {
     }
 }
 
+struct RunClubMessage: Codable, Identifiable {
+    let id: String
+    let clubId: String
+    let senderId: String
+    let senderName: String
+    let message: String
+    let sentAt: Date
+
+    init(clubId: String, senderId: String, senderName: String, message: String) {
+        self.id = UUID().uuidString
+        self.clubId = clubId
+        self.senderId = senderId
+        self.senderName = senderName
+        self.message = message
+        self.sentAt = Date()
+    }
+}
+
 struct ChallengeParticipant: Codable, Identifiable {
     let id: String
     let challengeId: String

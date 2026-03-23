@@ -7,6 +7,7 @@ class RunClubService: ObservableObject {
     @Published var clubs: [RunClub] = []
     @Published var selectedClub: RunClub?
     @Published var errorMessage: String? = nil
+    @Published var clubMessages: [String: [RunClubMessage]] = [:]
 
     private let defaults = UserDefaults.standard
     private let clubKey = "run_clubs_v2"
@@ -53,6 +54,34 @@ class RunClubService: ObservableObject {
     func getClubs(city: String? = nil) -> [RunClub] {
         guard let city = city, !city.isEmpty else { return clubs }
         return clubs.filter { $0.city?.lowercased() == city.lowercased() }
+    }
+
+    func postMessage(clubId: String, senderId: String, senderName: String, message: String) {
+        let msg = RunClubMessage(clubId: clubId, senderId: senderId, senderName: senderName, message: message)
+        clubMessages[clubId, default: []].insert(msg, at: 0)
+    }
+
+    func getMessages(clubId: String) -> [RunClubMessage] {
+        clubMessages[clubId] ?? []
+    }
+
+    func getClubLeaderboard(clubId: String) -> [(RunClubMember, Int)] {
+        guard let club = clubs.first(where: { $0.id == clubId }) else { return [] }
+
+        // Score is (events + members joined)
+        var memberScore = [String: Int]()
+	for m in club.members {
+            memberScore[m.userId] = (memberScore[m.userId] ?? 0) + 1
+        }
+
+        for event in club.events {
+            guard let userId = club.members.first(where: { $0.username == event.createdBy })?.userId else { continue }
+            memberScore[userId, default: 0] += 2
+        }
+
+        return club.members
+            .map { ($0, memberScore[$0.userId] ?? 0) }
+            .sorted { $0.1 > $1.1 }
     }
 
     private func saveClubs() {
