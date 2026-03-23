@@ -45,6 +45,8 @@ struct SocialHubView: View {
             VStack(spacing: 0) {
                 scrollableTabBar
 
+                inviteTodayBanner
+
                 switch selectedTab {
                 case .feed:
                     ActivityFeedView()
@@ -116,6 +118,47 @@ struct SocialHubView: View {
                     .environmentObject(auth)
             }
         }
+    }
+
+    private var inviteTodayBanner: some View {
+        HStack(spacing: 12) {
+            Image(systemName: "megaphone.fill")
+                .foregroundColor(Design.Colors.primary)
+                .font(.title3)
+            VStack(alignment: .leading, spacing: 4) {
+                Text("Invite Today")
+                    .font(Design.Typography.caption)
+                    .fontWeight(.semibold)
+                Text("Tag friends in your post + use your code to earn Social MVP points!")
+                    .font(Design.Typography.caption2)
+                    .foregroundColor(.secondary)
+            }
+            Spacer()
+            Button {
+                let code = ReferralManager.shared.referralCode.isEmpty ? ReferralManager.shared.generateCode(for: auth.userId ?? "user", name: auth.name) : ReferralManager.shared.referralCode
+                let shareText = "Join GoFit.Ai with my code: \(code) and crush the #GoFit challenge!"
+                let sheet = UIActivityViewController(activityItems: [shareText], applicationActivities: nil)
+                if let scene = UIApplication.shared.connectedScenes.first as? UIWindowScene,
+                   let root = scene.windows.first?.rootViewController {
+                    root.present(sheet, animated: true)
+                }
+            } label: {
+                Text("Invite")
+                    .font(Design.Typography.caption2)
+                    .fontWeight(.bold)
+                    .padding(.vertical, 6)
+                    .padding(.horizontal, 10)
+                    .background(Design.Colors.primary)
+                    .foregroundColor(.white)
+                    .cornerRadius(10)
+            }
+        }
+        .padding(12)
+        .background(Design.Colors.cardBackground)
+        .cornerRadius(14)
+        .shadow(color: Color.primary.opacity(0.06), radius: 4, x: 0, y: 2)
+        .padding(.horizontal, Design.Spacing.md)
+        .padding(.vertical, 6)
     }
 
     // MARK: - Scrollable Tab Bar

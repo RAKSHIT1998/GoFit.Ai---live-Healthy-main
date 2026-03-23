@@ -68,6 +68,17 @@ struct ActivityFeedView: View {
         .task {
             await loadFeed()
         }
+        .onReceive(WebSocketService.shared.$latestActivityFeed) { feed in
+            guard let feed = feed else { return }
+            withAnimation(.easeIn(duration: 0.2)) {
+                if !feedItems.contains(where: { $0.id == feed.id }) {
+                    feedItems.insert(feed, at: 0)
+                    if feedItems.count > 50 { feedItems.removeLast() }
+                }
+            }
+            socialEngagementPoints += 2
+            checkSocialMVPStatus()
+        }
     }
 
     // MARK: - Post Composer
@@ -122,6 +133,108 @@ struct ActivityFeedView: View {
         .padding(.horizontal, Design.Spacing.md)
     }
 
+    private var weeklyChallengeCard: some View {
+        VStack(alignment: .leading, spacing: 10) {
+            HStack {
+                Image(systemName: "flag.checkered")
+                    .foregroundColor(Design.Colors.primary)
+                Text("Weekly #GoFit Challenge")
+                    .font(Design.Typography.subheadline)
+                    .fontWeight(.semibold)
+                Spacer()
+            }
+
+            Text("Complete 5 workouts + share 3 posts this week to unlock bonus XP and your Social MVP badge!")
+                .font(Design.Typography.caption)
+                .foregroundColor(.secondary)
+
+            HStack(spacing: 10) {
+                Button("Join Challenge") {
+                    postActivityForChallenge() // small helper
+                }
+                .buttonStyle(.borderedProminent)
+
+                Button("View Rules") {
+                    // For MVP, open a lightweight modal in the future
+                }
+                .buttonStyle(.bordered)
+            }
+        }
+        .padding(16)
+        .background(Design.Colors.cardBackground)
+        .cornerRadius(16)
+        .shadow(color: Color.primary.opacity(0.04), radius: 8, x: 0, y: 2)
+        .padding(.horizontal, Design.Spacing.md)
+    }
+
+    private var inviteTodayCard: some View {
+        VStack(alignment: .leading, spacing: 10) {
+            HStack {
+                Image(systemName: "megaphone.fill")
+                    .foregroundColor(Design.Colors.secondary)
+                Text("Invite Today")
+                    .font(Design.Typography.subheadline)
+                    .fontWeight(.semibold)
+                Spacer()
+            }
+
+            Text("Tag a friend in your next post and refer them with your code for a bonus Social points boost!")
+                .font(Design.Typography.caption)
+                .foregroundColor(.secondary)
+
+            HStack(spacing: 10) {
+                Button("Tag Friend") {
+                    shareInviteSnippet()
+                }
+                .buttonStyle(.borderedProminent)
+
+                Button("Show Code") {
+                    if let code = ReferralManager.shared.referralCode, !code.isEmpty {
+                        postError = "Your code: \(code)"
+                    } else {
+                        let generated = ReferralManager.shared.generateCode(for: auth.userId ?? "user", name: auth.name)
+                        postError = "Your code: \(generated)"
+                    }
+                }
+                .buttonStyle(.bordered)
+            }
+        }
+        .padding(16)
+        .background(Design.Colors.cardBackground)
+        .cornerRadius(16)
+        .shadow(color: Color.primary.opacity(0.04), radius: 8, x: 0, y: 2)
+        .padding(.horizontal, Design.Spacing.md)
+    }
+
+    private func postActivityForChallenge() {
+        socialEngagementPoints += 10
+        checkSocialMVPStatus()
+        HapticManager.shared.success()
+    }
+
+    private func shareInviteSnippet() {
+        let referral = ReferralManager.shared.referralCode.isEmpty
+            ? ReferralManager.shared.generateCode(for: auth.userId ?? "user", name: auth.name)
+            : ReferralManager.shared.referralCode
+
+        let text = "Join me on GoFit.Ai! Use code \(referral) and challenge #GoFit this week!"
+        let shareSheet = UIActivityViewController(activityItems: [text], applicationActivities: nil)
+        if let scene = UIApplication.shared.connectedScenes.first as? UIWindowScene,
+           let root = scene.windows.first?.rootViewController {
+            root.present(shareSheet, animated: true)
+        }
+    }
+
+    private func checkSocialMVPStatus() {
+        if socialEngagementPoints >= 10 {
+            showSocialMVPBadge = true
+            NotificationService.shared.sendNowNotification(
+                title: "Social MVP!",
+                body: "You earned the Social MVP badge for outstanding engagement!"
+            )
+        }
+    }
+
     private func postActivity() {
         let text = composerText.trimmingCharacters(in: .whitespacesAndNewlines)
         guard !text.isEmpty else { return }
@@ -161,6 +274,9 @@ struct ActivityFeedView: View {
 
         composerText = ""
         isPosting = false
+
+        socialEngagementPoints += 1
+        checkSocialMVPStatus()
 
         Task {
             do {
@@ -227,6 +343,8 @@ struct ActivityFeedView: View {
                                 feedItems[index].totalLikes += 1
                                 feedItems[index].isLikedByCurrentUser = true
                             }
+                            socialEngagementPoints += 1
+                            checkSocialMVPStatus()
                         }
                     }
                     HapticManager.shared.lightTap()
@@ -383,6 +501,8 @@ struct ActivityFeedView: View {
     private func postComment(on item: ActivityFeed) {
         guard let index = feedItems.firstIndex(where: { $0.id == item.id }) else { return }
         feedItems[index].totalComments += 1
+        socialEngagementPoints += 2
+        checkSocialMVPStatus()
         HapticManager.shared.notification(type: .success)
     }
 
