@@ -72,11 +72,11 @@ struct RunTrackerView: View {
                         .buttonStyle(.bordered)
                     }
                 }
-                .padding(.horizontal, Design.Spacing.md)
+                .padding(.horizontal, 16)
 
                 Spacer()
             }
-            .padding(Design.Spacing.md)
+            .padding(16)
             .navigationTitle("Run Tracker")
             .toolbar {
                 ToolbarItem(placement: .confirmationAction) {
