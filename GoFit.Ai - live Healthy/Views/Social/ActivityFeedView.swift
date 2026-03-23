@@ -8,10 +8,15 @@
 import SwiftUI
 
 struct ActivityFeedView: View {
+    @EnvironmentObject var auth: AuthViewModel
     @StateObject private var sharingService = LogSharingService()
     @State private var feedItems: [ActivityFeed] = []
     @State private var isLoading = true
     @State private var reactedItems: Set<String> = []
+    @State private var composerText: String = ""
+    @State private var selectedPostType: String = "Achievement"
+    @State private var isPosting: Bool = false
+    @State private var postError: String? = nil
 
     private let reactionEmojis = ["🔥", "❤️", "💪", "👏", "🎉"]
 
