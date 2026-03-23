@@ -2,6 +2,8 @@ import CoreLocation
 import Foundation
 
 final class LocationService: NSObject, ObservableObject, CLLocationManagerDelegate {
+    static let shared = LocationService()
+
     @Published var authorizationStatus: CLAuthorizationStatus = .notDetermined
     @Published var currentLocation: CLLocation?
     @Published var lastError: String?
@@ -30,7 +32,15 @@ final class LocationService: NSObject, ObservableObject, CLLocationManagerDelega
     // MARK: - CLLocationManagerDelegate
     func locationManagerDidChangeAuthorization(_ manager: CLLocationManager) {
         authorizationStatus = manager.authorizationStatus
-        if authorizationStatus == .authorizedWhenInUse || authorizationStatus == .authorizedAlways {
+        let authorized: Bool
+
+        #if os(iOS)
+        authorized = authorizationStatus == .authorizedWhenInUse || authorizationStatus == .authorizedAlways
+        #else
+        authorized = authorizationStatus == .authorizedAlways
+        #endif
+
+        if authorized {
             startUpdating()
         }
     }

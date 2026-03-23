@@ -299,6 +299,49 @@ struct ActivityFeedView: View {
         }
     }
 
+    private func savePendingActivity(_ activity: SharedActivityLog) {
+        pendingActivities.append(activity)
+        savePendingActivities()
+    }
+
+    private func removePendingActivity(withId id: String) {
+        pendingActivities.removeAll { $0.id == id }
+        savePendingActivities()
+    }
+
+    private func loadPendingActivities() -> [SharedActivityLog] {
+        guard let data = UserDefaults.standard.data(forKey: pendingActivitiesKey),
+              let saved = try? JSONDecoder().decode([SharedActivityLog].self, from: data) else {
+            return []
+        }
+        return saved
+    }
+
+    private func savePendingActivities() {
+        if let data = try? JSONEncoder().encode(pendingActivities) {
+            UserDefaults.standard.set(data, forKey: pendingActivitiesKey)
+        }
+    }
+
+    @MainActor
+    private func retryPendingActivities() async {
+        guard !pendingActivities.isEmpty else { return }
+        var stillPending: [SharedActivityLog] = []
+        for activity in pendingActivities {
+            do {
+                try await sharingService.postFeedActivity(activity)
+            } catch {
+                stillPending.append(activity)
+            }
+        }
+        pendingActivities = stillPending
+        savePendingActivities()
+
+        if stillPending.isEmpty {
+            postError = "Posted all pending activities!"
+        }
+    }
+
     // MARK: - Feed Card
     private func feedCard(_ item: ActivityFeed) -> some View {
         VStack(alignment: .leading, spacing: 10) {

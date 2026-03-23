@@ -16,6 +16,7 @@ struct SocialHubView: View {
 
     @State private var selectedTab: SocialTab = .feed
     @State private var showQuickAdd = false
+    @State private var showRunTracker = false
     @State private var showCreateChallenge = false
     @State private var showError = false
     @State private var errorMessage = ""
@@ -70,15 +71,13 @@ struct SocialHubView: View {
             .toolbar {
                 ToolbarItem(placement: .navigationBarTrailing) {
                     HStack(spacing: 12) {
-                        if selectedTab == .challenges {
-                            Button {
-                                showCreateChallenge = true
-                                HapticManager.shared.lightTap()
-                            } label: {
-                                Image(systemName: "plus.circle.fill")
-                                    .font(.body)
-                                    .foregroundColor(Design.Colors.primary)
-                            }
+                        Button {
+                            showRunTracker = true
+                            HapticManager.shared.lightTap()
+                        } label: {
+                            Image(systemName: "figure.run")
+                                .font(.body)
+                                .foregroundColor(Design.Colors.primary)
                         }
 
                         Button {
@@ -118,6 +117,10 @@ struct SocialHubView: View {
             }
             .sheet(isPresented: $showCreateChallenge) {
                 CreateChallengeView()
+                    .environmentObject(auth)
+            }
+            .sheet(isPresented: $showRunTracker) {
+                RunTrackerView()
                     .environmentObject(auth)
             }
         }
