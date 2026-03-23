@@ -95,3 +95,4 @@ class RunClubService: ObservableObject {
             clubs = saved
         }
     }
+}
