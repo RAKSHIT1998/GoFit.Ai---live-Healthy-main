@@ -10,6 +10,7 @@ import SwiftUI
 struct ActivityFeedView: View {
     @EnvironmentObject var auth: AuthViewModel
     @StateObject private var sharingService = LogSharingService()
+    @StateObject private var gamification = GamificationService()
     @State private var feedItems: [ActivityFeed] = []
     @State private var isLoading = true
     @State private var reactedItems: Set<String> = []
@@ -228,6 +229,8 @@ struct ActivityFeedView: View {
     private func checkSocialMVPStatus() {
         if socialEngagementPoints >= 10 {
             showSocialMVPBadge = true
+            gamification.awardSocialMVPBadge()
+
             NotificationService.shared.sendNowNotification(
                 title: "Social MVP!",
                 body: "You earned the Social MVP badge for outstanding engagement!"

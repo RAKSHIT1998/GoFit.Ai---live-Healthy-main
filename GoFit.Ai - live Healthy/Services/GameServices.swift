@@ -300,6 +300,14 @@ class GamificationService: NSObject, ObservableObject {
         self.badges = response_data["badges"] ?? []
     }
 
+    // MARK: - Social MVP Badge
+
+    func awardSocialMVPBadge() {
+        guard !badges.contains(where: { $0.name == "Social MVP" }) else { return }
+        let mvpBadge = Badge(id: 999, name: "Social MVP", description: "Awarded for top social engagement (likes/comments/feed posts)", iconUrl: nil, earned: true, earnedAt: ISO8601DateFormatter().string(from: Date()))
+        badges.append(mvpBadge)
+    }
+
     // MARK: - Get Achievements
 
     func getAchievements() async throws {
