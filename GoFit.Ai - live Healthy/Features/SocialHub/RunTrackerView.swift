@@ -109,15 +109,15 @@ struct RunTrackerView: View {
     private func runStatCard(label: String, value: String) -> some View {
         VStack(alignment: .leading, spacing: 8) {
             Text(label)
-                .font(Design.Typography.caption)
+                .font(.caption)
                 .foregroundColor(.secondary)
             Text(value)
-                .font(Design.Typography.headline)
+                .font(.headline)
                 .fontWeight(.bold)
         }
         .frame(maxWidth: .infinity)
         .padding()
-        .background(Design.Colors.cardBackground)
+        .background(Color(.secondarySystemBackground))
         .cornerRadius(14)
     }
 
