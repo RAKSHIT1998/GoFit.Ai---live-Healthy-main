@@ -31,7 +31,7 @@ struct RunTrackerView: View {
     var body: some View {
         NavigationView {
             VStack(spacing: 16) {
-                Map(coordinateRegion: $region, showsUserLocation: true, userTrackingMode: .follow)
+                Map(coordinateRegion: $region, showsUserLocation: true, userTrackingMode: .constant(.follow))
                     .frame(height: 240)
                     .cornerRadius(16)
                     .overlay(
