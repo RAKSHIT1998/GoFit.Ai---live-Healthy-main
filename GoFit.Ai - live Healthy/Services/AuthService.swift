@@ -117,13 +117,13 @@ final class AuthService {
     }
 
     // Signup with retry logic for rate limiting
-    func signup(name: String, email: String, password: String, onboardingData: OnboardingData? = nil) async throws -> AuthToken {
+    func signup(name: String, email: String, password: String, onboardingData: OnboardingData? = nil, referralCode: String? = nil) async throws -> AuthToken {
         let maxRetries = 3
         var lastError: Error?
         
         for attempt in 0..<maxRetries {
             do {
-                return try await performSignup(name: name, email: email, password: password, onboardingData: onboardingData)
+                return try await performSignup(name: name, email: email, password: password, onboardingData: onboardingData, referralCode: referralCode)
             } catch {
                 lastError = error
                 
@@ -157,7 +157,7 @@ final class AuthService {
     }
     
     // Internal signup method (actual implementation)
-    private func performSignup(name: String, email: String, password: String, onboardingData: OnboardingData? = nil) async throws -> AuthToken {
+    private func performSignup(name: String, email: String, password: String, onboardingData: OnboardingData? = nil, referralCode: String? = nil) async throws -> AuthToken {
         let url = baseURL.appendingPathComponent("auth/register")
         
         // Debug logging (only in debug mode to avoid exposing sensitive information)
@@ -201,6 +201,13 @@ final class AuthService {
             body["smokingStatus"] = data.smokingStatus
             #if DEBUG
             print("🔵 Including comprehensive onboarding data in signup")
+            #endif
+        }
+
+        if let referralCode = referralCode?.trimmingCharacters(in: .whitespacesAndNewlines), !referralCode.isEmpty {
+            body["referralCode"] = referralCode
+            #if DEBUG
+            print("🔵 Including referral code in signup: \(referralCode)")
             #endif
         }
         

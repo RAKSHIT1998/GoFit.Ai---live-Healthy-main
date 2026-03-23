@@ -9,6 +9,7 @@ struct FriendsLeaderboardCard: View {
     @State private var currentUserRank: Int = 0
     @State private var isLoading = true
     @State private var showFullBoard = false
+    private let refreshTimer = Timer.publish(every: 45, on: .main, in: .common).autoconnect()
     
     var body: some View {
         VStack(alignment: .leading, spacing: 12) {
@@ -55,6 +56,35 @@ struct FriendsLeaderboardCard: View {
                 }
             }
             
+            if !entries.isEmpty {
+                // Friend bubbles with current leaderboard users
+                ScrollView(.horizontal, showsIndicators: false) {
+                    HStack(spacing: 10) {
+                        ForEach(entries.prefix(10)) { entry in
+                            VStack(spacing: 4) {
+                                Circle()
+                                    .fill(
+                                        entry.isCurrentUser ? Design.Colors.primary.opacity(0.3)
+                                            : LinearGradient(colors: [Color.blue.opacity(0.4), Color.purple.opacity(0.4)], startPoint: .topLeading, endPoint: .bottomTrailing)
+                                    )
+                                    .frame(width: 46, height: 46)
+                                    .overlay(
+                                        Text(String(entry.username.prefix(1)).uppercased())
+                                            .font(.system(size: 18, weight: .bold))
+                                            .foregroundColor(.white)
+                                    )
+                                Text(entry.isCurrentUser ? "You" : entry.username)
+                                    .font(Design.Typography.caption2)
+                                    .lineLimit(1)
+                            }
+                            .frame(width: 64)
+                        }
+                    }
+                    .padding(.horizontal, 4)
+                }
+                .padding(.bottom, 8)
+            }
+
             if isLoading {
                 // Skeleton loading
                 VStack(spacing: 8) {
@@ -130,6 +160,18 @@ struct FriendsLeaderboardCard: View {
         .shadow(color: Color.primary.opacity(0.06), radius: 10, x: 0, y: 2)
         .sheet(isPresented: $showFullBoard) {
             FullLeaderboardView(entries: entries, currentUserRank: currentUserRank)
+        }
+        .onReceive(refreshTimer) { _ in
+            Task {
+                await loadLeaderboard()
+            }
+        }
+        .onReceive(WebSocketService.shared.$leaderboardRefreshRequired) { shouldRefresh in
+            guard shouldRefresh else { return }
+            Task {
+                await loadLeaderboard()
+                WebSocketService.shared.leaderboardRefreshRequired = false
+            }
         }
         .task {
             await loadLeaderboard()

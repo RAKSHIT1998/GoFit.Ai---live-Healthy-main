@@ -252,7 +252,28 @@ class NotificationService: ObservableObject {
     }
     
     // MARK: - Create Notification
-    
+
+    func sendNowNotification(title: String, body: String) {
+        guard notificationsEnabled else { return }
+
+        let content = UNMutableNotificationContent()
+        content.title = title
+        content.body = body
+        content.sound = .default
+
+        let request = UNNotificationRequest(
+            identifier: "sleep-auto-status-\(UUID().uuidString)",
+            content: content,
+            trigger: nil
+        )
+
+        UNUserNotificationCenter.current().add(request) { error in
+            if let error = error {
+                print("❌ Failed to post immediate notification: \(error.localizedDescription)")
+            }
+        }
+    }
+
     private func createNotification(identifier: String, title: String, body: String, hour: Int, minute: Int, repeats: Bool) {
         let content = UNMutableNotificationContent()
         content.title = title

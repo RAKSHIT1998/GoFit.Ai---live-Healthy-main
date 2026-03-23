@@ -190,6 +190,8 @@ struct ReferralHubView: View {
     @State private var codeCopied = false
     @State private var showShareSheet = false
     @State private var selectedShareType: ShareType = .general
+    @State private var incomingReferralCode = ""
+    @State private var referralClaimMessage: String? = nil
     @State private var animateProgress = false
     @State private var showConfetti = false
     
@@ -207,6 +209,9 @@ struct ReferralHubView: View {
                         // Hero section
                         heroSection
                         
+                        // Claim referral code (for existing users who got a code)
+                        claimReferralSection
+
                         // Referral code card
                         referralCodeCard
                         
@@ -438,13 +443,13 @@ struct ReferralHubView: View {
                 if let url = URL(string: "whatsapp://send?text=\(message)"),
                    UIApplication.shared.canOpenURL(url) {
                     UIApplication.shared.open(url)
-                    referralManager.recordShare()
+                    referralManager.recordShareActivity()
                     return
                 }
             }
             
             showShareSheet = true
-            referralManager.recordShare()
+            referralManager.recordShareActivity()
             HapticManager.impact(style: .light)
         } label: {
             VStack(spacing: 8) {
@@ -697,6 +702,53 @@ struct ReferralHubView: View {
         .padding(16)
         .background(Design.Colors.cardBackground)
         .clipShape(RoundedRectangle(cornerRadius: Design.Radius.large, style: .continuous))
+    }
+}
+
+private extension ReferralHubView {
+    var claimReferralSection: some View {
+    VStack(spacing: 10) {
+        Text("Redeem friend referral code")
+            .font(Design.Typography.subheadline)
+            .fontWeight(.semibold)
+            .frame(maxWidth: .infinity, alignment: .leading)
+
+        HStack(spacing: 8) {
+            TextField("Enter referral code", text: $incomingReferralCode)
+                .textFieldStyle(RoundedBorderTextFieldStyle())
+                .autocapitalization(.allCharacters)
+                .disableAutocorrection(true)
+
+            Button("Claim") {
+                let clean = incomingReferralCode.trimmingCharacters(in: .whitespacesAndNewlines)
+                guard !clean.isEmpty else { return }
+
+                if referralManager.claimReferralCode(clean) {
+                    referralClaimMessage = "Success! 100 XP claimed from referral code."
+                    incomingReferralCode = ""
+                    showConfetti = true
+                    DispatchQueue.main.asyncAfter(deadline: .now() + 1.5) {
+                        showConfetti = false
+                    }
+                } else {
+                    referralClaimMessage = "Could not claim code. It may be invalid, already claimed, or match your own."
+                }
+            }
+            .buttonStyle(.borderedProminent)
+            .disabled(incomingReferralCode.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty)
+        }
+
+        if let referralClaimMessage {
+            Text(referralClaimMessage)
+                .font(Design.Typography.caption)
+                .foregroundColor(.secondary)
+                .frame(maxWidth: .infinity, alignment: .leading)
+        }
+    }
+    .padding(12)
+    .background(Design.Colors.cardBackground)
+    .clipShape(RoundedRectangle(cornerRadius: Design.Radius.medium, style: .continuous))
+    .shadow(color: Color.black.opacity(0.08), radius: 2, x: 0, y: 2)
     }
 }
 

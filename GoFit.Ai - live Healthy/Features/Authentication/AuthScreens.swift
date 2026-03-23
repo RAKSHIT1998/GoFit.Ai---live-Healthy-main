@@ -77,6 +77,7 @@ struct SignupView: View {
     @State private var name = ""
     @State private var email = ""
     @State private var password = ""
+    @State private var referralCode = ""
     @State private var loading = false
     @State private var error: String?
 
@@ -97,6 +98,11 @@ struct SignupView: View {
 
             SecureField("Password", text: $password)
                 .textFieldStyle(.roundedBorder)
+
+            TextField("Referral code (optional)", text: $referralCode)
+                .textFieldStyle(.roundedBorder)
+                .autocapitalization(.allCharacters)
+                .autocorrectionDisabled()
 
             if let error {
                 Text(error)
@@ -130,7 +136,8 @@ struct SignupView: View {
                 try await auth.signup(
                     name: name,
                     email: email,
-                    password: password
+                    password: password,
+                    referralCode: referralCode
                 )
             } catch let err {
                 self.error = err.localizedDescription

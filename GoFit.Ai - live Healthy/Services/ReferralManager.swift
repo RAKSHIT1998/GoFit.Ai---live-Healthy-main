@@ -134,6 +134,9 @@ class ReferralManager: ObservableObject {
     @Published var newTierReached: ReferralTier? = nil
     @Published var dailyShareCount: Int = 0
     @Published var weeklyShareCount: Int = 0
+
+    @Published var referredByCode: String? = nil
+    @Published var isReferralClaimed: Bool = false
     
     // Streak for sharing
     @Published var shareStreak: Int = 0
@@ -192,16 +195,32 @@ class ReferralManager: ObservableObject {
         saveData()
     }
     
-    // MARK: - Record Share
-    
-    func recordShare() {
-        dailyShareCount += 1
-        weeklyShareCount += 1
-        
-        // Share streak logic
+    // MARK: - Claim Referral (for new users)
+    func claimReferralCode(_ code: String) -> Bool {
+        let cleanCode = code.trimmingCharacters(in: .whitespacesAndNewlines).uppercased()
+        guard !cleanCode.isEmpty else { return false }
+        guard !isReferralClaimed else { return false }
+        guard cleanCode != referralCode.uppercased() else { return false }
+
+        referredByCode = cleanCode
+        isReferralClaimed = true
+
+        let refereeXP = 100
+        totalXPEarned += refereeXP
+
+        let record = ReferralRecord(friendName: "Referred by \(cleanCode)", xpEarned: refereeXP, tierAtTime: currentTier)
+        referralHistory.insert(record, at: 0)
+
+        saveData()
+
+        return true
+    }
+
+    // MARK: - Sharing Streak
+    func recordShareActivity() {
         let today = Calendar.current.startOfDay(for: Date())
         let lastShare = defaults.object(forKey: "last_share_date_v2") as? Date
-        
+
         if let last = lastShare {
             let days = Calendar.current.dateComponents([.day], from: Calendar.current.startOfDay(for: last), to: today).day ?? 0
             if days == 1 {
@@ -212,17 +231,42 @@ class ReferralManager: ObservableObject {
         } else {
             shareStreak = 1
         }
-        
+
         defaults.set(today, forKey: "last_share_date_v2")
         defaults.set(shareStreak, forKey: "share_streak_v2")
-        
-        // Bonus XP for sharing
+
+        // Reset daily/weekly counts as needed
+        if let lastCountDate = defaults.object(forKey: "daily_share_date_v2") as? Date,
+           !Calendar.current.isDateInToday(lastCountDate) {
+            dailyShareCount = 0
+        }
+
+        if let lastWeekDate = defaults.object(forKey: "weekly_share_date_v2") as? Date,
+           !Calendar.current.isDate(lastWeekDate, equalTo: today, toGranularity: .weekOfYear) {
+            weeklyShareCount = 0
+        }
+
+        dailyShareCount += 1
+        weeklyShareCount += 1
+
+        defaults.set(today, forKey: "daily_share_date_v2")
+        defaults.set(today, forKey: "weekly_share_date_v2")
+        defaults.set(dailyShareCount, forKey: "daily_share_count_v2")
+        defaults.set(weeklyShareCount, forKey: "weekly_share_count_v2")
+
         let shareXP = min(dailyShareCount, 3) * 10 // Max 30 XP/day from shares
+        totalXPEarned += shareXP
         StreakManager.shared.awardPoints(shareXP)
-        
+
         saveData()
     }
     
+    // MARK: - Share Streak Proxy
+    
+    func recordShare() {
+        recordShareActivity()
+    }
+
     // MARK: - Shareable Content
     
     func getInviteMessage(userName: String) -> String {
@@ -292,6 +336,8 @@ class ReferralManager: ObservableObject {
         defaults.set(totalXPEarned, forKey: "referral_xp_v2")
         defaults.set(dailyShareCount, forKey: "daily_share_count_v2")
         defaults.set(weeklyShareCount, forKey: "weekly_share_count_v2")
+        defaults.set(referredByCode, forKey: "referral_referred_by_v2")
+        defaults.set(isReferralClaimed, forKey: "referral_claimed_v2")
         
         if let data = try? JSONEncoder().encode(referralHistory) {
             defaults.set(data, forKey: "referral_history_v2")
@@ -306,6 +352,8 @@ class ReferralManager: ObservableObject {
         shareStreak = defaults.integer(forKey: "share_streak_v2")
         dailyShareCount = defaults.integer(forKey: "daily_share_count_v2")
         weeklyShareCount = defaults.integer(forKey: "weekly_share_count_v2")
+        referredByCode = defaults.string(forKey: "referral_referred_by_v2")
+        isReferralClaimed = defaults.bool(forKey: "referral_claimed_v2")
         
         if let data = defaults.data(forKey: "referral_history_v2"),
            let history = try? JSONDecoder().decode([ReferralRecord].self, from: data) {

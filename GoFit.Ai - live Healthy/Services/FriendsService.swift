@@ -237,6 +237,10 @@ class FriendsService: NSObject, ObservableObject {
         isLoading = true
     }
     
+private let autoShareKey = "auto_share_body_logs_enabled"
+    private let autoShareIntervalHoursKey = "auto_share_body_logs_interval_hours"
+    private let lastAutoShareDateKey = "last_body_log_share_date"
+
     /// Remove a friend
     func removeFriend(friendId: String, completion: @escaping (Result<String, Error>) -> Void) {
         let endpoint = "\(baseURL)/api/friends/\(friendId)"
@@ -390,5 +394,78 @@ class FriendsService: NSObject, ObservableObject {
                 }
             }
         }.resume()
+    }
+
+    // MARK: - Auto Share Body Log
+    func setAutoShareBodyLogEnabled(_ enabled: Bool) {
+        UserDefaults.standard.set(enabled, forKey: autoShareKey)
+    }
+
+    func isAutoShareBodyLogEnabled() -> Bool {
+        UserDefaults.standard.bool(forKey: autoShareKey)
+    }
+
+    func setAutoShareInterval(hours: Int) {
+        UserDefaults.standard.set(hours, forKey: autoShareIntervalHoursKey)
+    }
+
+    func autoShareIntervalHours() -> Int {
+        let value = UserDefaults.standard.integer(forKey: autoShareIntervalHoursKey)
+        return value > 0 ? value : 24
+    }
+
+    private func canAutoShareNow() -> Bool {
+        let interval = TimeInterval(autoShareIntervalHours() * 3600)
+        guard let last = UserDefaults.standard.object(forKey: lastAutoShareDateKey) as? Date else {
+            return true
+        }
+        return Date().timeIntervalSince(last) >= interval
+    }
+
+    func shareBodyLogEntryToAllFriends(_ entry: BodyLogEntry, completion: ((Result<Int, Error>) -> Void)? = nil) {
+        guard isAutoShareBodyLogEnabled() else {
+            completion?(.failure(NSError(domain: "Auto share disabled", code: -1)))
+            return
+        }
+
+        guard canAutoShareNow() else {
+            completion?(.failure(NSError(domain: "Too soon to share again", code: -1)))
+            return
+        }
+
+        let friendsToShare = friends.isEmpty ? [] : friends
+        guard !friendsToShare.isEmpty else {
+            completion?(.failure(NSError(domain: "No friends to share with", code: -1)))
+            return
+        }
+
+        let summary = "📷 Body log update: \(entry.formattedWeight) at \(entry.formattedDate)\n" +
+            "📌 Note: \(entry.note ?? "No note")"
+
+        var successCount = 0
+        var lastError: Error?
+        let group = DispatchGroup()
+
+        for friend in friendsToShare {
+            group.enter()
+            MessagesService.shared.sendMessage(friendId: friend.id, message: summary) { result in
+                switch result {
+                case .success:
+                    successCount += 1
+                case .failure(let error):
+                    lastError = error
+                }
+                group.leave()
+            }
+        }
+
+        group.notify(queue: .main) {
+            UserDefaults.standard.set(Date(), forKey: self.lastAutoShareDateKey)
+            if let error = lastError, successCount == 0 {
+                completion?(.failure(error))
+            } else {
+                completion?(.success(successCount))
+            }
+        }
     }
 }

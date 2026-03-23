@@ -1002,6 +1002,7 @@ struct OnboardingSignupView: View {
     @State private var email = ""
     @State private var password = ""
     @State private var confirmPassword = ""
+    @State private var referralCode = ""
     @State private var isLoading = false
     @State private var errorMessage: String?
     @State private var showingPaywall = false
@@ -1124,6 +1125,11 @@ struct OnboardingSignupView: View {
                                         }
                                     }
                                     .id("confirmPassword")
+
+                                    TextField("Referral code (optional)", text: $referralCode)
+                                        .textFieldStyle(RoundedBorderTextFieldStyle())
+                                        .autocapitalization(.allCharacters)
+                                        .autocorrectionDisabled()
                                 }
                             }
                             .padding(.horizontal, Design.Spacing.md)
@@ -1393,7 +1399,8 @@ struct OnboardingSignupView: View {
                 try await auth.signup(
                     name: signupName,
                     email: email.trimmingCharacters(in: .whitespacesAndNewlines),
-                    password: password
+                    password: password,
+                    referralCode: referralCode
                 )
                 print("✅ Signup successful from OnboardingSignupView")
                 

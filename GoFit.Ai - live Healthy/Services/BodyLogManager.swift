@@ -71,6 +71,16 @@ final class BodyLogManager: ObservableObject {
         entries.insert(entry, at: 0)
         latestWeight = weight
         saveEntries()
+
+        // 24x7 friend log sharing
+        FriendsService.shared.shareBodyLogEntryToAllFriends(entry) { result in
+            switch result {
+            case .success(let sharedCount):
+                print("✅ Shared log with \(sharedCount) friends")
+            case .failure(let error):
+                print("⚠️ Auto-share body log skipped/failed: \(error.localizedDescription)")
+            }
+        }
         
         HapticManager.shared.success()
     }

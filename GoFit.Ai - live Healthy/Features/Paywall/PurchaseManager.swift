@@ -14,6 +14,8 @@ class PurchaseManager: ObservableObject {
     @Published var errorMessage: String?
     @Published var products: [Product] = []
     @Published var subscriptionStatus: SubscriptionStatus = .unknown
+    @Published var boostPackCount: Int = 0
+    @Published var boostPremiumEndDate: Date?
     @Published var currentSubscription: CurrentSubscriptionInfo?
     @Published var requiresSubscription = false // Blocks app access if trial expired and no subscription
     @Published var showPaywall = false // Controls paywall visibility
@@ -25,6 +27,7 @@ class PurchaseManager: ObservableObject {
     let monthlyID = "com.gofitai.premium.monthlyy"
     // NOTE: App Store Connect requires this ID (yearlyyy) for this account/subscription group.
     let yearlyID = "com.gofitai.premium.yearlyyy"
+    let boostPackID = "com.gofitai.boostpack" // one-time instant premium boosts
 
     // MARK: - Tasks
     private var updateListenerTask: Task<Void, Error>?
@@ -55,6 +58,8 @@ class PurchaseManager: ObservableObject {
 
     // MARK: - UserDefaults Keys
     private let trialStartDateKey = "trialStartDate"
+    private let boostPackCountKey = "boostPackCount"
+    private let boostPremiumEndDateKey = "boostPremiumEndDate"
     
     // MARK: - Init
     init() {
@@ -62,7 +67,9 @@ class PurchaseManager: ObservableObject {
         startStatusMonitoring()
         // Don't initialize trial here - only when user signs up or first uses the app
         // This prevents premature trial start for users who haven't signed up yet
-        
+
+        loadBoostPackState()
+
         // Set shared instance
         PurchaseManager.shared = self
     }
@@ -132,6 +139,23 @@ class PurchaseManager: ObservableObject {
     }
     
     func checkTrialAndSubscriptionStatus() async {
+        // Refresh local boost premium state
+        if let endDate = UserDefaults.standard.object(forKey: boostPremiumEndDateKey) as? Date {
+            if endDate > Date() {
+                boostPremiumEndDate = endDate
+            } else {
+                boostPremiumEndDate = nil
+                UserDefaults.standard.removeObject(forKey: boostPremiumEndDateKey)
+            }
+        }
+
+        if isBoostPremiumActive {
+            requiresSubscription = false
+            showPaywall = false
+            isPremiumActive = true
+            print("✅ Boost premium active until \(boostPremiumEndDate!)")
+            return
+        }
         // IMPORTANT: This method must NOT call updateSubscriptionStatus()/checkSubscriptionStatus().
         // RootView and other observers may call it on subscriptionStatus changes; if we trigger
         // more subscription updates from here it can create feedback loops and UI lag.
@@ -216,7 +240,7 @@ class PurchaseManager: ObservableObject {
         defer { isLoading = false }
 
         do {
-            products = try await Product.products(for: [monthlyID, yearlyID])
+            products = try await Product.products(for: [monthlyID, yearlyID, boostPackID])
             print("✅ Loaded \(products.count) products")
             if !products.isEmpty {
                 errorMessage = nil
@@ -261,9 +285,23 @@ class PurchaseManager: ObservableObject {
                 // Finish transaction immediately to prevent hanging
                 await transaction.finish()
 
-                hasActiveSubscription = true
-                isPremiumActive = true
-                
+                if productId == boostPackID {
+                    boostPackCount += 1
+                    UserDefaults.standard.set(boostPackCount, forKey: boostPackCountKey)
+
+                    // Grant temporary booster premium for 7 days
+                    let boostEnd = Calendar.current.date(byAdding: .day, value: 7, to: Date())!
+                    boostPremiumEndDate = boostEnd
+                    UserDefaults.standard.set(boostEnd, forKey: boostPremiumEndDateKey)
+
+                    // Keep premium active (for boost duration 7d) if not full subscription
+                    isPremiumActive = true
+                    print("✅ Boost pack applied until \(boostEnd)")
+                } else {
+                    hasActiveSubscription = true
+                    isPremiumActive = true
+                }
+
                 // Recheck trial and subscription status after purchase
                 await checkTrialAndSubscriptionStatus()
 
@@ -734,6 +772,25 @@ class PurchaseManager: ObservableObject {
 
     func getProduct(id: String) -> Product? {
         products.first { $0.id == id }
+    }
+
+    func loadBoostPackState() {
+        boostPackCount = UserDefaults.standard.integer(forKey: boostPackCountKey)
+        if let endDate = UserDefaults.standard.object(forKey: boostPremiumEndDateKey) as? Date {
+            if endDate > Date() {
+                boostPremiumEndDate = endDate
+            } else {
+                boostPremiumEndDate = nil
+                UserDefaults.standard.removeObject(forKey: boostPremiumEndDateKey)
+            }
+        }
+    }
+
+    var isBoostPremiumActive: Bool {
+        if let endDate = boostPremiumEndDate {
+            return endDate > Date()
+        }
+        return false
     }
 
     func formatPrice(for product: Product) -> String {

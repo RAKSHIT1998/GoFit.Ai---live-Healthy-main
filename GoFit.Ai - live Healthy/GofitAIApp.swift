@@ -83,6 +83,9 @@ struct GoFitAiApp: App {
                     }
                 }
                 .onChange(of: scenePhase) { oldPhase, newPhase in
+                    // Sleep tracker auto-detection
+                    SleepManager.shared.handleScenePhaseChange(oldPhase: oldPhase, newPhase: newPhase)
+
                     // Show ad every time app becomes active
                     if newPhase == .active && oldPhase != .active {
                         // Refresh widget with latest data

@@ -146,11 +146,13 @@ class SleepManager: ObservableObject {
     @Published var sleepGoal: Double = 8.0 // Default 8 hours
     @Published var bedtimeReminder: Date?
     @Published var isLoading = false
+    @Published var autoSleepStart: Date? = nil
     
     private let userDefaults = UserDefaults.standard
     private let entriesKey = "sleepEntries"
     private let goalKey = "sleepGoal"
     private let reminderKey = "bedtimeReminder"
+    private let autoSleepKey = "autoSleepStart"
     private let healthStore = HKHealthStore()
     
     private init() {
@@ -172,6 +174,11 @@ class SleepManager: ObservableObject {
             bedtimeReminder = reminderData
         }
         
+        // Load auto sleep tracking state
+        if let autoStart = userDefaults.object(forKey: autoSleepKey) as? Date {
+            autoSleepStart = autoStart
+        }
+
         // Find today's entry
         todayEntry = sleepEntries.first { Calendar.current.isDateInToday($0.createdAt) }
     }
@@ -280,7 +287,82 @@ class SleepManager: ObservableObject {
             weeklyTrend: trend
         )
     }
-    
+
+    // MARK: - Auto Sleep Detection
+    func handleScenePhaseChange(oldPhase: ScenePhase?, newPhase: ScenePhase) {
+        switch newPhase {
+        case .active:
+            onAppBecameActive()
+        case .background, .inactive:
+            onAppMovedToBackgroundOrInactive()
+        @unknown default:
+            break
+        }
+    }
+
+    private func onAppMovedToBackgroundOrInactive() {
+        // Start candidate when screen is off/sleep time range and no candidate active
+        guard autoSleepStart == nil else { return }
+
+        let now = Date()
+        if isLateNight(now) {
+            autoSleepStart = now
+            userDefaults.set(now, forKey: autoSleepKey)
+            print("🛌 Auto sleep candidate started at \(now)")
+        }
+    }
+
+    private func onAppBecameActive() {
+        guard let sleepStart = autoSleepStart else { return }
+        let wakeTime = Date()
+        let duration = wakeTime.timeIntervalSince(sleepStart)
+
+        let minSleepSeconds: TimeInterval = 45 * 60 // require 45 min minimum
+
+        if duration >= minSleepSeconds {
+            let quality: SleepQuality
+            let hours = duration / 3600
+            if hours >= 8 {
+                quality = .excellent
+            } else if hours >= 6 {
+                quality = .good
+            } else {
+                quality = .fair
+            }
+
+            let entry = SleepEntry(bedtime: sleepStart, wakeTime: wakeTime, quality: quality, notes: "Auto tracked sleep")
+            sleepEntries.removeAll { Calendar.current.isDateInToday($0.createdAt) }
+            sleepEntries.insert(entry, at: 0)
+            todayEntry = entry
+            saveData()
+            calculateWeeklyStats()
+
+            // Notify user
+            Task { @MainActor in
+                NotificationService.shared.sendNowNotification(
+                    title: "You slept for \(entry.durationFormatted)",
+                    body: "Great rest! Sleep quality: \(entry.quality.label). Keep it up!"
+                )
+            }
+
+            print("✅ Auto sleep recorded: \(entry.durationFormatted)")
+        } else {
+            print("⏱️ Auto sleep candidate ended but too short: \(duration/60) min")
+        }
+
+        clearAutoSleepCandidate()
+    }
+
+    private func clearAutoSleepCandidate() {
+        autoSleepStart = nil
+        userDefaults.removeObject(forKey: autoSleepKey)
+    }
+
+    private func isLateNight(_ date: Date) -> Bool {
+        let hour = Calendar.current.component(.hour, from: date)
+        return hour >= 21 || hour <= 11
+    }
+
     // MARK: - Sleep Goal
     func setSleepGoal(_ hours: Double) {
         sleepGoal = hours

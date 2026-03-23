@@ -168,7 +168,7 @@ final class AuthViewModel: ObservableObject {
         }
     }
 
-    func signup(name: String, email: String, password: String) async throws {
+    func signup(name: String, email: String, password: String, referralCode: String? = nil) async throws {
         // Validate input
         guard !name.isEmpty, !email.isEmpty, !password.isEmpty else {
             throw NSError(domain: "AuthError", code: 400, userInfo: [NSLocalizedDescriptionKey: "Name, email, and password are required"])
@@ -187,12 +187,13 @@ final class AuthViewModel: ObservableObject {
         // Include comprehensive onboarding data if available
         let onboardingData = self.onboardingData
         
-        // Perform signup with all onboarding data
+        // Perform signup with all onboarding data + referral code
         let token = try await AuthService.shared.signup(
             name: name.trimmingCharacters(in: .whitespacesAndNewlines),
             email: email.trimmingCharacters(in: .whitespacesAndNewlines),
             password: password,
-            onboardingData: onboardingData
+            onboardingData: onboardingData,
+            referralCode: referralCode
         )
         
         print("✅ Signup successful, token received")
@@ -201,7 +202,15 @@ final class AuthViewModel: ObservableObject {
         self.isLoggedIn = true
         // Save token immediately to ensure persistence
         AuthService.shared.saveToken(token)
-        
+
+        if let referralCode = referralCode, !referralCode.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
+            if ReferralManager.shared.claimReferralCode(referralCode) {
+                print("✅ Referral code claimed: \(referralCode)")
+            } else {
+                print("⚠️ Referral code not claimable or already claimed")
+            }
+        }
+
         // Clear any existing profile data to prevent mixing data from different users
         // This ensures we start fresh for the new signup session
         LocalUserStore.shared.clearProfile()

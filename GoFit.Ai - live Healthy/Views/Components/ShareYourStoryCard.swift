@@ -165,7 +165,7 @@ struct ShareYourStoryCard: View {
         }
         
         rootVC.present(ac, animated: true)
-        referralManager.recordShare()
+        referralManager.recordShareActivity()
     }
 }
 

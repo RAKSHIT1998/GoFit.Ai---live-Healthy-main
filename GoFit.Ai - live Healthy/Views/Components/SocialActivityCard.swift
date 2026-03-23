@@ -9,6 +9,7 @@ struct SocialActivityCard: View {
     @State private var isLoading = true
     @State private var cheerSentTo: String? = nil
     @State private var showSocialHub = false
+    private let refreshTimer = Timer.publish(every: 30, on: .main, in: .common).autoconnect()
     
     // Lightweight model for display
     struct FriendActivity: Identifiable {
@@ -57,6 +58,32 @@ struct SocialActivityCard: View {
                 }
             }
             
+            if !recentActivity.isEmpty {
+                ScrollView(.horizontal, showsIndicators: false) {
+                    HStack(spacing: 10) {
+                        ForEach(recentActivity.prefix(8)) { activity in
+                            VStack(spacing: 4) {
+                                Circle()
+                                    .fill(activity.color.opacity(0.2))
+                                    .frame(width: 44, height: 44)
+                                    .overlay(
+                                        Text(activity.emoji)
+                                            .font(.system(size: 20))
+                                    )
+
+                                Text(activity.name)
+                                    .font(Design.Typography.caption2)
+                                    .foregroundColor(.primary)
+                                    .lineLimit(1)
+                            }
+                            .frame(width: 68)
+                        }
+                    }
+                    .padding(.horizontal, 4)
+                }
+                .padding(.bottom, 8)
+            }
+
             if isLoading {
                 // Skeleton loading
                 VStack(spacing: 10) {
@@ -129,6 +156,30 @@ struct SocialActivityCard: View {
         .shadow(color: Color.primary.opacity(0.06), radius: 10, x: 0, y: 2)
         .sheet(isPresented: $showSocialHub) {
             SocialHubView()
+        }
+        .onReceive(refreshTimer) { _ in
+            Task {
+                await loadActivity()
+            }
+        }
+        .onReceive(WebSocketService.shared.$latestActivityFeed) { newActivity in
+            guard let feed = newActivity else { return }
+            let (action, emoji, color) = activityDescription(for: feed.activity.type)
+            let item = FriendActivity(
+                id: feed.id,
+                name: feed.friendUsername,
+                action: action,
+                emoji: emoji,
+                timeAgo: relativeTime(from: feed.timestamp),
+                color: color
+            )
+            if let existing = recentActivity.firstIndex(where: { $0.id == item.id }) {
+                recentActivity.remove(at: existing)
+            }
+            recentActivity.insert(item, at: 0)
+            if recentActivity.count > 20 {
+                recentActivity.removeLast()
+            }
         }
         .task {
             await loadActivity()

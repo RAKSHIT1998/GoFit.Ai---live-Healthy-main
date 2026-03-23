@@ -8,6 +8,8 @@ struct FriendsView: View {
     @State private var showError = false
     @State private var errorMessage = ""
     @State private var showInviteCopied = false
+    @State private var autoShareBodyLogs = UserDefaults.standard.bool(forKey: "auto_share_body_logs_enabled")
+    @State private var autoShareIntervalHours = FriendsService.shared.autoShareIntervalHours()
     
     enum FriendsTab {
         case friends
@@ -71,7 +73,65 @@ struct FriendsView: View {
                     }
                     .padding(.horizontal, Design.Spacing.md)
                     .padding(.vertical, Design.Spacing.md)
-                    
+
+                    VStack(spacing: 10) {
+                        Toggle(isOn: $autoShareBodyLogs) {
+                            VStack(alignment: .leading, spacing: 2) {
+                                Text("Auto-share body progress")
+                                    .font(Design.Typography.subheadline)
+                                    .fontWeight(.semibold)
+                                Text("Send weight updates to all friends when logged (24/7 mode)")
+                                    .font(Design.Typography.caption)
+                                    .foregroundColor(.secondary)
+                            }
+                        }
+                        .onChange(of: autoShareBodyLogs) { value in
+                            FriendsService.shared.setAutoShareBodyLogEnabled(value)
+                        }
+
+                        HStack(spacing: 8) {
+                            Text("Share interval:")
+                                .font(Design.Typography.caption)
+                                .foregroundColor(.secondary)
+                            Picker("Hours", selection: $autoShareIntervalHours) {
+                                ForEach([6, 12, 24], id: \ .self) { hour in
+                                    Text("\(hour)h")
+                                }
+                            }
+                            .pickerStyle(.segmented)
+                            .onChange(of: autoShareIntervalHours) { value in
+                                FriendsService.shared.setAutoShareInterval(hours: value)
+                            }
+                        }
+
+                        Button(action: {
+                            guard let latest = BodyLogManager.shared.entries.first else { return }
+                            FriendsService.shared.shareBodyLogEntryToAllFriends(latest) { result in
+                                switch result {
+                                case .success(let count):
+                                    errorMessage = "Shared log with \(count) friends"
+                                case .failure(let error):
+                                    errorMessage = error.localizedDescription
+                                }
+                                showError = true
+                            }
+                        }) {
+                            Text("Share latest log now")
+                                .font(Design.Typography.caption)
+                                .fontWeight(.semibold)
+                                .frame(maxWidth: .infinity)
+                                .padding(10)
+                                .background(Design.Colors.primary.opacity(0.8))
+                                .foregroundColor(.white)
+                                .cornerRadius(10)
+                        }
+                    }
+                    .padding(12)
+                    .background(Design.Colors.cardBackground)
+                    .cornerRadius(14)
+                    .padding(.horizontal, Design.Spacing.md)
+                    .padding(.bottom, 8)
+
                     ScrollView(.horizontal, showsIndicators: false) {
                         HStack(spacing: 8) {
                             ForEach([FriendsTab.friends, .requests, .search, .conversations], id: \.self) { tab in
@@ -173,6 +233,8 @@ struct FriendsView: View {
         }
         .onAppear {
             friendsService.fetchFriends { _ in }
+            autoShareBodyLogs = FriendsService.shared.isAutoShareBodyLogEnabled()
+            autoShareIntervalHours = FriendsService.shared.autoShareIntervalHours()
         }
     }
     

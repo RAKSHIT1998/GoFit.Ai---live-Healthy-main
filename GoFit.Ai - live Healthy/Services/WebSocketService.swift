@@ -22,6 +22,8 @@ class WebSocketService: ObservableObject {
     @Published var latestAchievement: AchievementNotification?
     @Published var latestMessage: MessageNotification?
     @Published var onlineUsers: Set<String> = []
+    @Published var latestActivityFeed: ActivityFeed?
+    @Published var leaderboardRefreshRequired: Bool = false
     
     // MARK: - Private Properties
     private var webSocketTask: URLSessionWebSocketTask?
@@ -260,6 +262,9 @@ class WebSocketService: ObservableObject {
             case "achievement:unlocked":
                 self.handleAchievementUnlocked(data)
                 
+case "activity:shared", "activity:update":
+                self.handleActivityUpdate(data)
+
             case "leaderboard:update":
                 self.handleLeaderboardUpdate(data)
                 
@@ -371,6 +376,23 @@ class WebSocketService: ObservableObject {
         // Refresh challenges list
         print("📊 Challenge Update received")
     }
+
+    private func handleActivityUpdate(_ data: [String: Any]) {
+        guard let activityData = data["activity"] as? [String: Any] else {
+            print("⚠️ WebSocket: Activity update missing activity key")
+            return
+        }
+
+        do {
+            let jsonData = try JSONSerialization.data(withJSONObject: activityData)
+            let activity = try JSONDecoder().decode(ActivityFeed.self, from: jsonData)
+            self.latestActivityFeed = activity
+
+            print("✅ WebSocket: New activity event from \(activity.friendUsername)")
+        } catch {
+            print("⚠️ WebSocket: Failed to decode activity update: \(error.localizedDescription)")
+        }
+    }
     
     private func handleAchievementUnlocked(_ data: [String: Any]) {
         guard let name = data["name"] as? String,
@@ -399,6 +421,7 @@ class WebSocketService: ObservableObject {
     
     private func handleLeaderboardUpdate(_ data: [String: Any]) {
         print("🏆 Leaderboard updated")
+        self.leaderboardRefreshRequired = true
     }
     
     private func handleOnlineList(_ data: [String: Any]) {

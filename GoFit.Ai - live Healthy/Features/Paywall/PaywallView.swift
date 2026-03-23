@@ -42,6 +42,7 @@ struct PaywallView: View {
                         header
                         features
                         plans
+                        boostPackSection
                         ctaButton
                         skipWithAdsButton
                         terms
@@ -86,6 +87,52 @@ struct PaywallView: View {
                 }
             }
         }
+    }
+
+    private var boostPackSection: some View {
+        VStack(spacing: 12) {
+            HStack(spacing: 10) {
+                Image(systemName: "bolt.fill")
+                    .font(.title2)
+                    .foregroundColor(.yellow)
+                VStack(alignment: .leading) {
+                    Text("Boost Pack (7 days)")
+                        .font(Design.Typography.headline)
+                    Text("One-time purchase for 7 days of premium coaching + double points")
+                        .font(Design.Typography.caption2)
+                        .foregroundColor(.secondary)
+                }
+                Spacer()
+            }
+            Button {
+                Task {
+                    await purchaseBoostPack()
+                }
+            } label: {
+                HStack {
+                    Text("Buy Boost Pack")
+                        .font(.headline)
+                        .frame(maxWidth: .infinity)
+                    if purchases.boostPackCount > 0 {
+                        Text("x\(purchases.boostPackCount)")
+                            .font(.caption2)
+                            .foregroundColor(.white)
+                            .padding(6)
+                            .background(Color.orange)
+                            .clipShape(Circle())
+                    }
+                }
+                .padding(.vertical, 12)
+                .foregroundColor(.white)
+                .background(Design.Colors.primaryGradient)
+                .cornerRadius(14)
+            }
+            .disabled(purchases.isLoading || loading)
+            .opacity(purchases.isLoading || loading ? 0.6 : 1)
+        }
+        .padding(Design.Spacing.md)
+        .background(Design.Colors.cardBackground)
+        .cornerRadius( 16 )
     }
 
     // MARK: - Header
@@ -202,6 +249,26 @@ struct PaywallView: View {
     }
 
     // MARK: - CTA
+    private func purchaseBoostPack() async {
+        guard let product = purchases.getProduct(id: PurchaseManager.shared?.boostPackID ?? "") else {
+            error = "Boost product unavailable right now"
+            return
+        }
+
+        loading = true
+        do {
+            try await purchases.purchase(productId: product.id)
+            error = nil
+            NotificationService.shared.sendNowNotification(
+                title: "Boost Activated!",
+                body: "Enjoy 7 days of premium features and bonus rewards"
+            )
+        } catch let purchaseError {
+            error = purchaseError.localizedDescription
+        }
+        loading = false
+    }
+
     private var ctaButton: some View {
         VStack(spacing: 12) {
             Button {
