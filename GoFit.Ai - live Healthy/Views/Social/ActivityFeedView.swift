@@ -229,6 +229,7 @@ struct ActivityFeedView: View {
     private func checkSocialMVPStatus() {
         if socialEngagementPoints >= 10 {
             showSocialMVPBadge = true
+            UserDefaults.standard.set(true, forKey: "show_social_mvp_badge")
             gamification.awardSocialMVPBadge()
 
             NotificationService.shared.sendNowNotification(
@@ -507,6 +508,7 @@ struct ActivityFeedView: View {
         guard let index = feedItems.firstIndex(where: { $0.id == item.id }) else { return }
         feedItems[index].totalComments += 1
         socialEngagementPoints += 2
+        UserDefaults.standard.set(socialEngagementPoints, forKey: "social_engagement_points")
         checkSocialMVPStatus()
         HapticManager.shared.notification(type: .success)
     }
