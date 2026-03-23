@@ -4,6 +4,7 @@ struct ConversationsView: View {
     @EnvironmentObject private var auth: AuthViewModel
     @StateObject private var messagesService = MessagesService.shared
     @ObservedObject private var webSocketService = WebSocketService.shared
+    @ObservedObject private var friendsService = FriendsService.shared
 
     @State private var conversations: [ConversationSummary] = []
     @State private var isLoading = true
@@ -136,15 +137,52 @@ struct ConversationsView: View {
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
                 .padding(.top, 40)
             } else if conversations.isEmpty {
-                VStack(spacing: 12) {
-                    Image(systemName: "bubble.left.and.bubble.right")
-                        .font(.system(size: 48))
-                        .foregroundColor(Design.Colors.primary.opacity(0.3))
-                    Text("No conversations yet")
-                        .font(Design.Typography.headline)
-                    Text("Start a chat with a friend to see it here.")
-                        .font(Design.Typography.caption)
-                        .foregroundColor(.secondary)
+                if !friendsService.friends.isEmpty {
+                    VStack(alignment: .leading, spacing: 12) {
+                        Text("No conversations yet.")
+                            .font(.headline)
+                            .padding(.horizontal, Design.Spacing.md)
+                        Text("Start a conversation with your friends below.")
+                            .font(.subheadline)
+                            .foregroundColor(.secondary)
+                            .padding(.horizontal, Design.Spacing.md)
+
+                        ForEach(friendsService.friends, id: \.id) { friend in
+                            NavigationLink {
+                                ChatView(friend: friend, currentUserId: auth.userId ?? "")
+                            } label: {
+                                HStack(spacing: 12) {
+                                    avatarPlaceholder(name: friend.username)
+                                        .frame(width: 42, height: 42)
+
+                                    VStack(alignment: .leading) {
+                                        Text(friend.username).font(.body).fontWeight(.semibold)
+                                        Text(friend.email).font(.caption).foregroundColor(.secondary)
+                                    }
+                                    Spacer()
+                                    Text("Start")
+                                        .font(.caption2).foregroundColor(Design.Colors.primary)
+                                }
+                                .padding(12)
+                                .background(Color(.systemGray6))
+                                .cornerRadius(12)
+                                .padding(.horizontal, Design.Spacing.md)
+                            }
+                        }
+
+                    }
+                    .padding(.top, 24)
+                } else {
+                    VStack(spacing: 12) {
+                        Image(systemName: "bubble.left.and.bubble.right")
+                            .font(.system(size: 48))
+                            .foregroundColor(Design.Colors.primary.opacity(0.3))
+                        Text("No conversations yet")
+                            .font(Design.Typography.headline)
+                        Text("Start a chat with a friend to see it here.")
+                            .font(Design.Typography.caption)
+                            .foregroundColor(.secondary)
+                    }
                 }
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
                 .padding(.top, 40)
@@ -207,7 +245,7 @@ struct ConversationsView: View {
         .onAppear {
             loadConversations()
         }
-        .onChange(of: webSocketService.latestMessage) { _, _ in
+        .onChange(of: webSocketService.latestMessage) { _ in
             loadConversations()
         }
         .onReceive(NotificationCenter.default.publisher(for: NSNotification.Name("NewMessageReceived"))) { _ in

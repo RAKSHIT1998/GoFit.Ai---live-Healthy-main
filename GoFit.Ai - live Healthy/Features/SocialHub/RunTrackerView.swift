@@ -31,10 +31,15 @@ struct RunTrackerView: View {
     var body: some View {
         NavigationView {
             VStack(spacing: 16) {
-                Map(coordinateRegion: $region, showsUserLocation: true, userTrackingMode: .constant(.follow))
-                    .frame(height: 240)
-                    .cornerRadius(16)
-                    .overlay(
+                Map(coordinateRegion: $region, interactionModes: .all, showsUserLocation: true, userTrackingMode: .constant(.follow)) {
+                    if !routeCoordinates.isEmpty {
+                        MapPolyline(coordinates: routeCoordinates)
+                            .stroke(Color.blue, lineWidth: 4)
+                    }
+                }
+                .frame(height: 240)
+                .cornerRadius(16)
+                .overlay(
                         RoundedRectangle(cornerRadius: 16)
                             .stroke(Color.primary.opacity(0.15), lineWidth: 1)
                     )

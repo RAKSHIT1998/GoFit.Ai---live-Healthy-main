@@ -166,10 +166,10 @@ struct RootView: View {
                 healthKit.stopPeriodicSync()
             }
         }
-        .onChange(of: showSplash) { _, _ in
+        .onChange(of: showSplash) { _ in
             evaluateTutorialPresentation()
         }
-        .onChange(of: purchases.requiresSubscription) { _, _ in
+        .onChange(of: purchases.requiresSubscription) { _ in
             evaluateTutorialPresentation()
         }
         .fullScreenCover(isPresented: $showFirstTimeTutorial) {
