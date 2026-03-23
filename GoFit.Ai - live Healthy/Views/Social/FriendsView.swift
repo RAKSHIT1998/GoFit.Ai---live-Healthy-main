@@ -85,8 +85,8 @@ struct FriendsView: View {
                                     .foregroundColor(.secondary)
                             }
                         }
-                        .onChange(of: autoShareBodyLogs) { value in
-                            FriendsService.shared.setAutoShareBodyLogEnabled(value)
+                        .onChange(of: autoShareBodyLogs) { oldValue, newValue in
+                            FriendsService.shared.setAutoShareBodyLogEnabled(newValue)
                         }
 
                         HStack(spacing: 8) {
@@ -99,8 +99,8 @@ struct FriendsView: View {
                                 }
                             }
                             .pickerStyle(.segmented)
-                            .onChange(of: autoShareIntervalHours) { value in
-                                FriendsService.shared.setAutoShareInterval(hours: value)
+                            .onChange(of: autoShareIntervalHours) { oldValue, newValue in
+                                FriendsService.shared.setAutoShareInterval(hours: newValue)
                             }
                         }
 
