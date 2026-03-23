@@ -13,10 +13,13 @@ struct ActivityFeedView: View {
     @State private var feedItems: [ActivityFeed] = []
     @State private var isLoading = true
     @State private var reactedItems: Set<String> = []
+    @State private var likedPosts: Set<String> = []
     @State private var composerText: String = ""
     @State private var selectedPostType: String = "Achievement"
     @State private var isPosting: Bool = false
     @State private var postError: String? = nil
+    @State private var socialEngagementPoints: Int = 0
+    @State private var showSocialMVPBadge: Bool = false
 
     private let reactionEmojis = ["🔥", "❤️", "💪", "👏", "🎉"]
 
@@ -24,6 +27,20 @@ struct ActivityFeedView: View {
         ScrollView {
             VStack(spacing: 12) {
                 postComposerSection
+                weeklyChallengeCard
+                inviteTodayCard
+
+                if showSocialMVPBadge {
+                    HStack {
+                        Image(systemName: "rosette")
+                        Text("Social MVP unlocked! Keep the engagement going 🎉")
+                            .font(Design.Typography.caption)
+                    }
+                    .padding(12)
+                    .background(Color.yellow.opacity(0.2))
+                    .cornerRadius(14)
+                    .padding(.horizontal, Design.Spacing.md)
+                }
 
                 if isLoading {
                     loadingState
@@ -195,28 +212,58 @@ struct ActivityFeedView: View {
             Divider()
 
             // Reaction bar
-            HStack(spacing: 0) {
-                ForEach(reactionEmojis, id: \.self) { emoji in
-                    Button {
-                        _ = withAnimation(.spring(response: 0.3, dampingFraction: 0.6)) {
-                            reactedItems.insert("\(item.id)-\(emoji)")
+            HStack(spacing: 8) {
+                Button {
+                    withAnimation(.spring(response: 0.3, dampingFraction: 0.6)) {
+                        if likedPosts.contains(item.id) {
+                            likedPosts.remove(item.id)
+                            if let index = feedItems.firstIndex(where: { $0.id == item.id }) {
+                                feedItems[index].totalLikes = max(0, feedItems[index].totalLikes - 1)
+                                feedItems[index].isLikedByCurrentUser = false
+                            }
+                        } else {
+                            likedPosts.insert(item.id)
+                            if let index = feedItems.firstIndex(where: { $0.id == item.id }) {
+                                feedItems[index].totalLikes += 1
+                                feedItems[index].isLikedByCurrentUser = true
+                            }
                         }
-                        HapticManager.shared.lightTap()
-                    } label: {
-                        Text(emoji)
-                            .font(.system(size: reactedItems.contains("\(item.id)-\(emoji)") ? 22 : 18))
-                            .scaleEffect(reactedItems.contains("\(item.id)-\(emoji)") ? 1.2 : 1.0)
-                            .frame(maxWidth: .infinity)
-                            .padding(.vertical, 6)
-                            .background(
-                                reactedItems.contains("\(item.id)-\(emoji)")
-                                    ? Design.Colors.primary.opacity(0.1)
-                                    : Color.clear
-                            )
-                            .cornerRadius(8)
                     }
-                    .buttonStyle(.plain)
+                    HapticManager.shared.lightTap()
+                } label: {
+                    HStack(spacing: 4) {
+                        Image(systemName: likedPosts.contains(item.id) ? "heart.fill" : "heart")
+                            .foregroundColor(likedPosts.contains(item.id) ? .red : .secondary)
+                        Text("\(item.totalLikes)")
+                            .font(.caption2)
+                            .foregroundColor(.secondary)
+                    }
                 }
+                .buttonStyle(.plain)
+
+                Button {
+                    postComment(on: item)
+                } label: {
+                    HStack(spacing: 4) {
+                        Image(systemName: "message")
+                            .foregroundColor(.secondary)
+                        Text("\(item.totalComments)")
+                            .font(.caption2)
+                            .foregroundColor(.secondary)
+                    }
+                }
+                .buttonStyle(.plain)
+
+                Spacer()
+
+                Button {
+                    shareFeedItem(item)
+                } label: {
+                    Image(systemName: "square.and.arrow.up")
+                        .font(.system(size: 16))
+                        .foregroundColor(.secondary)
+                }
+                .buttonStyle(.plain)
             }
         }
         .padding(14)
@@ -332,4 +379,20 @@ struct ActivityFeedView: View {
             isLoading = false
         }
     }
+
+    private func postComment(on item: ActivityFeed) {
+        guard let index = feedItems.firstIndex(where: { $0.id == item.id }) else { return }
+        feedItems[index].totalComments += 1
+        HapticManager.shared.notification(type: .success)
+    }
+
+    private func shareFeedItem(_ item: ActivityFeed) {
+        let message = "\(item.friendUsername)'s post: \(item.activity.title ?? "Update") - \(item.activity.description ?? "")"
+        let activityVC = UIActivityViewController(activityItems: [message], applicationActivities: nil)
+
+        guard let scene = UIApplication.shared.connectedScenes.first as? UIWindowScene,
+              let rootVC = scene.windows.first?.rootViewController else { return }
+        rootVC.present(activityVC, animated: true)
+    }
 }
+

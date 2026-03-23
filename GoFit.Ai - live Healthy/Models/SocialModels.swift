@@ -397,7 +397,29 @@ struct ActivityFeed: Identifiable, Codable {
     let friendUsername: String
     let timestamp: String
     let isOwnActivity: Bool
+    var totalLikes: Int
+    var totalComments: Int
+    var isLikedByCurrentUser: Bool
+
+    enum CodingKeys: String, CodingKey {
+        case id, activity, friendUsername, timestamp, isOwnActivity
+        case totalLikes = "total_likes"
+        case totalComments = "total_comments"
+        case isLikedByCurrentUser = "is_liked"
+    }
+
+    init(id: String, activity: SharedActivityLog, friendUsername: String, timestamp: String, isOwnActivity: Bool, totalLikes: Int = 0, totalComments: Int = 0, isLikedByCurrentUser: Bool = false) {
+        self.id = id
+        self.activity = activity
+        self.friendUsername = friendUsername
+        self.timestamp = timestamp
+        self.isOwnActivity = isOwnActivity
+        self.totalLikes = totalLikes
+        self.totalComments = totalComments
+        self.isLikedByCurrentUser = isLikedByCurrentUser
+    }
 }
+
 
 // MARK: - Phase 5: Gamification Models
 
