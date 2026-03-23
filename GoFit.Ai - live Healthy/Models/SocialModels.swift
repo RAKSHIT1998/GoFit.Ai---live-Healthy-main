@@ -202,6 +202,76 @@ enum ChallengeStatus: String, Codable {
     case cancelled = "cancelled"
 }
 
+// MARK: - Run Club Models
+
+struct RunClub: Codable, Identifiable {
+    let id: String
+    let name: String
+    let description: String?
+    let city: String?
+    let ownerId: String
+    var ownerName: String
+    var members: [RunClubMember]
+    var events: [RunClubEvent]
+    var createdAt: Date
+
+    init(
+        id: String = UUID().uuidString,
+        name: String,
+        description: String? = nil,
+        city: String? = nil,
+        ownerId: String,
+        ownerName: String,
+        members: [RunClubMember] = [],
+        events: [RunClubEvent] = [],
+        createdAt: Date = Date()
+    ) {
+        self.id = id
+        self.name = name
+        self.description = description
+        self.city = city
+        self.ownerId = ownerId
+        self.ownerName = ownerName
+        self.members = members
+        self.events = events
+        self.createdAt = createdAt
+    }
+}
+
+struct RunClubMember: Codable, Identifiable {
+    let id: String
+    let userId: String
+    let username: String
+    let joinedAt: Date
+
+    init(userId: String, username: String) {
+        self.id = UUID().uuidString
+        self.userId = userId
+        self.username = username
+        self.joinedAt = Date()
+    }
+}
+
+struct RunClubEvent: Codable, Identifiable {
+    let id: String
+    let clubId: String
+    let title: String
+    let details: String?
+    let location: String?
+    let date: Date
+    let createdBy: String
+
+    init(clubId: String, title: String, details: String? = nil, location: String? = nil, date: Date, createdBy: String) {
+        self.id = UUID().uuidString
+        self.clubId = clubId
+        self.title = title
+        self.details = details
+        self.location = location
+        self.date = date
+        self.createdBy = createdBy
+    }
+}
+
 struct ChallengeParticipant: Codable, Identifiable {
     let id: String
     let challengeId: String

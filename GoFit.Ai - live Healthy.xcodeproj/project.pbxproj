@@ -160,13 +160,6 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
-		C10001052F79B005009D604B /* Frameworks */ = {
-			isa = PBXFrameworksBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-		};
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
@@ -339,9 +332,8 @@
 					C10000032F79A003009D604B = {
 						CreatedOnToolsVersion = 16.2;
 					};
-						CreatedOnToolsVersion = 16.2;
-					};
 				};
+			};
 			buildConfigurationList = B2484A882EEC79A2009D604B /* Build configuration list for PBXProject "GoFit.Ai - live Healthy" */;
 			developmentRegion = en;
 			hasScannedForEncodings = 0;
@@ -387,13 +379,6 @@
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 		C10000062F79A006009D604B /* Resources */ = {
-			isa = PBXResourcesBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-		};
-		C10001062F79B006009D604B /* Resources */ = {
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -529,13 +514,6 @@
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 		C10000042F79A004009D604B /* Sources */ = {
-			isa = PBXSourcesBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-		};
-		C10001042F79B004009D604B /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -875,7 +853,7 @@
 				DEVELOPMENT_TEAM = 48TGY734WW;
 				ENABLE_ON_DEMAND_RESOURCES = NO;
 				GENERATE_INFOPLIST_FILE = NO;
-				INFOPLIST_FILE = "GoFitWidget/Info.plist";
+				INFOPLIST_FILE = GoFitWidget/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 18.0;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
@@ -905,7 +883,7 @@
 				DEVELOPMENT_TEAM = 48TGY734WW;
 				ENABLE_ON_DEMAND_RESOURCES = NO;
 				GENERATE_INFOPLIST_FILE = NO;
-				INFOPLIST_FILE = "GoFitWidget/Info.plist";
+				INFOPLIST_FILE = GoFitWidget/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 18.0;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
@@ -922,69 +900,6 @@
 				SWIFT_EMIT_LOC_STRINGS = YES;
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = 1;
-			};
-			name = Release;
-		};
-		C100010A2F79B00A009D604B /* Debug */ = {
-			isa = XCBuildConfiguration;
-			buildSettings = {
-				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
-				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
-				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 1;
-				DEVELOPMENT_TEAM = 48TGY734WW;
-				EMBED_ASSET_PACKS_IN_PRODUCT_BUNDLE = YES;
-				GENERATE_INFOPLIST_FILE = YES;
-				INFOPLIST_KEY_CFBundleDisplayName = GoFit;
-				INFOPLIST_KEY_UISupportedInterfaceOrientations = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown";
-				INFOPLIST_KEY_WKCompanionAppBundleIdentifier = com.rakshit.gofitai;
-				LD_RUNPATH_SEARCH_PATHS = (
-					"$(inherited)",
-					"@executable_path/Frameworks",
-				);
-				MARKETING_VERSION = 1.4.1;
-				PRODUCT_BUNDLE_IDENTIFIER = com.rakshit.gofitai.watchapp;
-				PRODUCT_NAME = "$(TARGET_NAME)";
-				SDKROOT = watchos;
-				SKIP_INSTALL = YES;
-				SUPPORTED_PLATFORMS = "watchos watchsimulator";
-				SUPPORTS_MACCATALYST = NO;
-				SWIFT_EMIT_LOC_STRINGS = YES;
-				SWIFT_VERSION = 5.0;
-				TARGETED_DEVICE_FAMILY = 4;
-				WATCHOS_DEPLOYMENT_TARGET = 11.0;
-			};
-			name = Debug;
-		};
-		C100010B2F79B00B009D604B /* Release */ = {
-			isa = XCBuildConfiguration;
-			buildSettings = {
-				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
-				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
-				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 1;
-				DEVELOPMENT_TEAM = 48TGY734WW;
-				EMBED_ASSET_PACKS_IN_PRODUCT_BUNDLE = YES;
-				GENERATE_INFOPLIST_FILE = YES;
-				INFOPLIST_KEY_CFBundleDisplayName = GoFit;
-				INFOPLIST_KEY_UISupportedInterfaceOrientations = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown";
-				INFOPLIST_KEY_WKCompanionAppBundleIdentifier = com.rakshit.gofitai;
-				LD_RUNPATH_SEARCH_PATHS = (
-					"$(inherited)",
-					"@executable_path/Frameworks",
-				);
-				MARKETING_VERSION = 1.4.1;
-				ONLY_ACTIVE_ARCH = YES;
-				PRODUCT_BUNDLE_IDENTIFIER = com.rakshit.gofitai.watchapp;
-				PRODUCT_NAME = "$(TARGET_NAME)";
-				SDKROOT = watchos;
-				SKIP_INSTALL = YES;
-				SUPPORTED_PLATFORMS = "watchos watchsimulator";
-				SUPPORTS_MACCATALYST = NO;
-				SWIFT_EMIT_LOC_STRINGS = YES;
-				SWIFT_VERSION = 5.0;
-				TARGETED_DEVICE_FAMILY = 4;
-				WATCHOS_DEPLOYMENT_TARGET = 11.0;
 			};
 			name = Release;
 		};

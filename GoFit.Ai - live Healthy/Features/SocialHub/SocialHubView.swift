@@ -21,6 +21,11 @@ struct SocialHubView: View {
     @State private var errorMessage = ""
     @State private var showPaywall = false
     @State private var searchText = ""
+    @StateObject private var runClubService = RunClubService.shared
+    @State private var clubCityFilter = ""
+    @State private var showCreateClubSheet = false
+    @State private var showClubDetailSheet = false
+    @State private var selectedRunClub: RunClub? = nil
 
     enum SocialTab: String, CaseIterable {
         case feed = "Feed"
