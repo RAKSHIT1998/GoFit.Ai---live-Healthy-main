@@ -17,7 +17,7 @@ class RunClubService: ObservableObject {
     }
 
     func createClub(name: String, description: String?, city: String?, ownerId: String, ownerName: String) -> RunClub {
-        var club = RunClub(
+        let club = RunClub(
             name: name,
             description: description,
             city: city,
