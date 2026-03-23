@@ -11,27 +11,29 @@ struct FriendsLeaderboardCard: View {
     @State private var showFullBoard = false
     private let refreshTimer = Timer.publish(every: 45, on: .main, in: .common).autoconnect()
     
+    var trophyIcon: some View {
+        ZStack {
+            Circle()
+                .fill(
+                    LinearGradient(
+                        colors: [Color.yellow, Color.orange],
+                        startPoint: .topLeading,
+                        endPoint: .bottomTrailing
+                    )
+                )
+                .frame(width: 32, height: 32)
+            Image(systemName: "trophy.fill")
+                .font(.system(size: 14))
+                .foregroundColor(.white)
+        }
+    }
+
     var body: some View {
         VStack(alignment: .leading, spacing: 12) {
             // Header
             HStack {
                 HStack(spacing: 8) {
-                    ZStack {
-                        Circle()
-                            .fill(
-                                LinearGradient(
-                                    colors: [Color.yellow, Color.orange],
-                                    startPoint: .topLeading,
-                                    endPoint: .bottomTrailing
-                                )
-                            )
-                            .frame(width: 32, height: 32)
-                        
-                        Image(systemName: "trophy.fill")
-                            .font(.system(size: 14))
-                            .foregroundColor(.white)
-                    }
-                    
+                    trophyIcon
                     VStack(alignment: .leading, spacing: 1) {
                         Text("Leaderboard")
                             .font(Design.Typography.headline)
