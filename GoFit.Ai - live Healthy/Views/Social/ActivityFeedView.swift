@@ -190,7 +190,8 @@ struct ActivityFeedView: View {
                 .buttonStyle(.borderedProminent)
 
                 Button("Show Code") {
-                    if let code = ReferralManager.shared.referralCode, !code.isEmpty {
+                    let code = ReferralManager.shared.referralCode
+                    if !code.isEmpty {
                         postError = "Your code: \(code)"
                     } else {
                         let generated = ReferralManager.shared.generateCode(for: auth.userId ?? "user", name: auth.name)
@@ -510,7 +511,7 @@ struct ActivityFeedView: View {
         socialEngagementPoints += 2
         UserDefaults.standard.set(socialEngagementPoints, forKey: "social_engagement_points")
         checkSocialMVPStatus()
-        HapticManager.shared.notification(type: .success)
+        HapticManager.shared.success()
     }
 
     private func shareFeedItem(_ item: ActivityFeed) {
