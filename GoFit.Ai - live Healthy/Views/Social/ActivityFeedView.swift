@@ -22,29 +22,135 @@ struct ActivityFeedView: View {
 
     var body: some View {
         ScrollView {
-            if isLoading {
-                loadingState
-            } else if feedItems.isEmpty {
-                emptyState
-            } else {
-                LazyVStack(spacing: 12) {
-                    ForEach(feedItems, id: \.id) { item in
-                        feedCard(item)
-                            .transition(.asymmetric(
-                                insertion: .move(edge: .bottom).combined(with: .opacity),
-                                removal: .opacity
-                            ))
+            VStack(spacing: 12) {
+                postComposerSection
+
+                if isLoading {
+                    loadingState
+                } else if feedItems.isEmpty {
+                    emptyState
+                } else {
+                    LazyVStack(spacing: 12) {
+                        ForEach(feedItems, id: \.id) { item in
+                            feedCard(item)
+                                .transition(.asymmetric(
+                                    insertion: .move(edge: .bottom).combined(with: .opacity),
+                                    removal: .opacity
+                                ))
+                        }
                     }
+                    .padding(.horizontal, Design.Spacing.md)
+                    .padding(.vertical, Design.Spacing.sm)
                 }
-                .padding(.horizontal, Design.Spacing.md)
-                .padding(.vertical, Design.Spacing.sm)
             }
+            .padding(.vertical, Design.Spacing.sm)
         }
         .refreshable {
             await loadFeed()
         }
         .task {
             await loadFeed()
+        }
+    }
+
+    // MARK: - Post Composer
+    private var postComposerSection: some View {
+        VStack(alignment: .leading, spacing: 10) {
+            Text("Share your progress")
+                .font(Design.Typography.subheadline)
+                .fontWeight(.semibold)
+
+            TextEditor(text: $composerText)
+                .frame(minHeight: 80, maxHeight: 130)
+                .padding(8)
+                .background(Design.Colors.cardBackground)
+                .cornerRadius(12)
+                .overlay(
+                    RoundedRectangle(cornerRadius: 12)
+                        .stroke(Color.secondary.opacity(0.15), lineWidth: 1)
+                )
+
+            HStack(spacing: 10) {
+                Picker("Type", selection: $selectedPostType) {
+                    ForEach(["Achievement", "Workout", "Meal", "Challenge", "Social"], id: \.self) { option in
+                        Text(option).tag(option)
+                    }
+                }
+                .pickerStyle(.menu)
+
+                Spacer()
+
+                Button(action: postActivity) {
+                    if isPosting {
+                        ProgressView().scaleEffect(0.8)
+                    } else {
+                        Text("Post")
+                            .fontWeight(.bold)
+                    }
+                }
+                .disabled(composerText.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty || isPosting)
+                .buttonStyle(.borderedProminent)
+            }
+
+            if let postError {
+                Text(postError)
+                    .font(Design.Typography.caption)
+                    .foregroundColor(.red)
+            }
+        }
+        .padding(16)
+        .background(Design.Colors.cardBackground)
+        .cornerRadius(16)
+        .shadow(color: Color.primary.opacity(0.04), radius: 8, x: 0, y: 2)
+        .padding(.horizontal, Design.Spacing.md)
+    }
+
+    private func postActivity() {
+        let text = composerText.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !text.isEmpty else { return }
+
+        isPosting = true
+        postError = nil
+
+        let now = Date()
+        let isoFmt = ISO8601DateFormatter()
+        let timestamp = isoFmt.string(from: now)
+
+        let sharedActivity = SharedActivityLog(
+            id: UUID().uuidString,
+            userId: auth.userId ?? "anonymous",
+            username: auth.name.isEmpty ? "You" : auth.name,
+            type: selectedPostType.lowercased(),
+            title: "\(selectedPostType) Update",
+            description: text,
+            visibility: "public",
+            sharedWith: nil,
+            createdAt: timestamp,
+            updatedAt: nil
+        )
+
+        let newFeed = ActivityFeed(
+            id: UUID().uuidString,
+            activity: sharedActivity,
+            friendUsername: sharedActivity.username ?? "You",
+            timestamp: timestamp,
+            isOwnActivity: true
+        )
+
+        withAnimation(.spring()) {
+            feedItems.insert(newFeed, at: 0)
+            if feedItems.count > 50 { feedItems.removeLast() }
+        }
+
+        composerText = ""
+        isPosting = false
+
+        Task {
+            do {
+                try await sharingService.postFeedActivity(sharedActivity)
+            } catch {
+                postError = "Could not publish to server. Saved locally."
+            }
         }
     }
 

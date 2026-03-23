@@ -149,6 +149,43 @@ class LogSharingService: NSObject, ObservableObject {
         }
     }
 
+    // MARK: - Post To Feed
+
+    func postFeedActivity(_ activity: SharedActivityLog) async throws {
+        // Optional backend support (may be missing on backend). This is a best-effort.
+        let endpoint = "\(baseURL)/feed/post"
+        guard let url = URL(string: endpoint) else {
+            throw NetworkError.invalidURL
+        }
+
+        var request = URLRequest(url: url)
+        request.httpMethod = "POST"
+        request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+        if let token = AuthService.shared.readToken()?.accessToken {
+            request.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
+        }
+
+        let payload: [String: Any] = [
+            "id": activity.id,
+            "user_id": activity.userId,
+            "username": activity.username ?? "",
+            "type": activity.type,
+            "title": activity.title ?? "",
+            "description": activity.description ?? "",
+            "visibility": activity.visibility,
+            "shared_with": activity.sharedWith ?? [],
+            "created_at": activity.createdAt,
+            "updated_at": activity.updatedAt ?? ""
+        ]
+
+        request.httpBody = try JSONSerialization.data(withJSONObject: payload)
+
+        let (_, response) = try await session.data(for: request)
+        guard let httpResponse = response as? HTTPURLResponse, (200...299).contains(httpResponse.statusCode) else {
+            throw NetworkError.invalidResponse
+        }
+    }
+
     // MARK: - Delete Log
 
     func deleteSharedLog(logId: String) async throws {
