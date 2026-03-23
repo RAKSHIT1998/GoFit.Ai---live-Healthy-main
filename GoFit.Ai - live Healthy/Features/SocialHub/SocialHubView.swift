@@ -29,14 +29,20 @@ struct SocialHubView: View {
 
     enum SocialTab: String, CaseIterable {
         case feed = "Feed"
-        case club = "Club"
+        case chats = "Chats"
         case friends = "Friends"
+        case leaderboard = "Ranks"
+        case challenges = "Challenges"
+        case clubs = "Run Clubs"
 
         var icon: String {
             switch self {
             case .feed: return "rectangle.stack.fill"
-            case .club: return "person.3.fill"
+            case .chats: return "bubble.left.and.bubble.right.fill"
             case .friends: return "person.2.fill"
+            case .leaderboard: return "trophy.fill"
+            case .challenges: return "flag.fill"
+            case .clubs: return "person.3.fill"
             }
         }
     }
@@ -49,12 +55,19 @@ struct SocialHubView: View {
                 inviteTodayBanner
 
                 switch selectedTab {
-                case .feed:
+                        case .feed:
                     ActivityFeedView()
-                case .club:
-                    runClubsSection
+                case .chats:
+                    ConversationsView()
+                        .environmentObject(auth)
                 case .friends:
                     friendsSection
+                case .leaderboard:
+                    leaderboardSection
+                case .challenges:
+                    challengesSection
+                case .clubs:
+                    runClubsSection
                 }
             }
             .background(Design.Colors.background.ignoresSafeArea())
@@ -63,6 +76,17 @@ struct SocialHubView: View {
             .toolbar {
                 ToolbarItem(placement: .navigationBarTrailing) {
                     HStack(spacing: 12) {
+                        if selectedTab == .challenges {
+                            Button {
+                                showCreateChallenge = true
+                                HapticManager.shared.lightTap()
+                            } label: {
+                                Image(systemName: "plus.circle.fill")
+                                    .font(.body)
+                                    .foregroundColor(Design.Colors.primary)
+                            }
+                        }
+
                         Button {
                             showQuickAdd = true
                             HapticManager.shared.lightTap()
@@ -96,6 +120,10 @@ struct SocialHubView: View {
             }
             .sheet(isPresented: $showQuickAdd) {
                 QuickAddFriendSheet()
+                    .environmentObject(auth)
+            }
+            .sheet(isPresented: $showCreateChallenge) {
+                CreateChallengeView()
                     .environmentObject(auth)
             }
         }
