@@ -1,10 +1,6 @@
 import SwiftUI
 import MapKit
 import CoreLocation
-import GoFit_Ai___live_Healthy_Services // If module is set up, otherwise use relative import
-import GoFit_Ai___live_Healthy_Core.DesignSystem // Import Design typealias
-import CoreLocation
-import GoFit_Ai___live_Healthy_Services // If module is set up, otherwise use relative import
 
 struct RunTrackerView: View {
     @ObservedObject private var localUserStore = LocalUserStore.shared
