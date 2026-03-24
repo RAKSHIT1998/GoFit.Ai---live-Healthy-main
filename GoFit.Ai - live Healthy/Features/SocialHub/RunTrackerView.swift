@@ -106,7 +106,7 @@ struct RunTrackerView: View {
             .navigationTitle("Run Tracker")
             .toolbar { doneButton }
             .sheet(isPresented: $showSummarySheet) { runSummarySheet }
-            .onChange(of: locationService.currentLocation) { newLocation in
+            .onChange(of: locationService.currentLocation) { _, newLocation in
                 guard isTracking, let location = newLocation else {
                     if isTracking {
                         errorDescription = "Waiting for GPS fix... switch to manual run if your device has no signal."
@@ -116,7 +116,7 @@ struct RunTrackerView: View {
                 errorDescription = nil
                 appendLocation(location)
             }
-            .onChange(of: locationService.authorizationStatus) { status in
+            .onChange(of: locationService.authorizationStatus) { _, status in
                 if status == .denied || status == .restricted {
                     errorDescription = "Location permission denied. Allow location in Settings or use manual run."
                 }
@@ -127,7 +127,7 @@ struct RunTrackerView: View {
     }
 
     private var runMap: some View {
-        Map(coordinateRegion: $region, interactionModes: .all, showsUserLocation: true, userTrackingMode: .constant(.follow)) {
+        Map(position: $region, interactionModes: .all, showsUserLocation: true, userTrackingMode: .constant(.follow)) {
             if !routeCoordinates.isEmpty {
                 MapPolyline(coordinates: routeCoordinates)
                     .stroke(Color.blue, lineWidth: 4)
@@ -471,10 +471,16 @@ struct RunTrackerView: View {
     }
 
     private func gpxString(for session: RunSession) -> String {
-        let header = "<?xml version=\"1.0\" encoding=\"UTF-8\"?><gpx version=\"1.1\" creator=\"GoFit\">"
+        let header = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<gpx version=\"1.1\" creator=\"GoFit\" xmlns=\"http://www.topografix.com/GPX/1/1\">\n"
         let footer = "</gpx>"
-        let tracks = session.route.map { "<trkpt lat=\" \($0.latitude)\" lon=\" \($0.longitude)\"/>" }.joined()
-        return header + "<trk><name>Run \(session.date)</name><trkseg>" + tracks + "</trkseg></trk>" + footer
+
+        let pathPoints = session.route.map { point -> String in
+            let latStr = String(format: "%.6f", point.latitude)
+            let lonStr = String(format: "%.6f", point.longitude)
+            return "<trkpt lat=\"\(latStr)\" lon=\"\(lonStr)\"/>"
+        }.joined()
+
+        return header + "<trk><name>Run \(session.date)</name><trkseg>" + pathPoints + "</trkseg></trk>" + footer
     }
 
     private func saveGPXToTempFile(data: Data, name: String) -> URL? {

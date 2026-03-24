@@ -33,7 +33,7 @@ final class RunHistoryStore {
         let model = NSManagedObjectModel()
         let runEntity = NSEntityDescription()
         runEntity.name = "RunHistory"
-        runEntity.managedObjectClassName = NSManagedObject.className()
+        runEntity.managedObjectClassName = NSStringFromClass(NSManagedObject.self)
 
         let idAttr = NSAttributeDescription()
         idAttr.name = "id"
