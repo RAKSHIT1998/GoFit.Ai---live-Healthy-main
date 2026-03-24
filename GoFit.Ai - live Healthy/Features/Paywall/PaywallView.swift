@@ -42,7 +42,6 @@ struct PaywallView: View {
                         header
                         features
                         plans
-                        boostPackSection
                         ctaButton
                         skipWithAdsButton
                         terms
@@ -89,51 +88,6 @@ struct PaywallView: View {
         }
     }
 
-    private var boostPackSection: some View {
-        VStack(spacing: 12) {
-            HStack(spacing: 10) {
-                Image(systemName: "bolt.fill")
-                    .font(.title2)
-                    .foregroundColor(.yellow)
-                VStack(alignment: .leading) {
-                    Text("Boost Pack (7 days)")
-                        .font(Design.Typography.headline)
-                    Text("One-time purchase for 7 days of premium coaching + double points")
-                        .font(Design.Typography.caption2)
-                        .foregroundColor(.secondary)
-                }
-                Spacer()
-            }
-            Button {
-                Task {
-                    await purchaseBoostPack()
-                }
-            } label: {
-                HStack {
-                    Text("Buy Boost Pack")
-                        .font(.headline)
-                        .frame(maxWidth: .infinity)
-                    if purchases.boostPackCount > 0 {
-                        Text("x\(purchases.boostPackCount)")
-                            .font(.caption2)
-                            .foregroundColor(.white)
-                            .padding(6)
-                            .background(Color.orange)
-                            .clipShape(Circle())
-                    }
-                }
-                .padding(.vertical, 12)
-                .foregroundColor(.white)
-                .background(Design.Colors.primaryGradient)
-                .cornerRadius(14)
-            }
-            .disabled(purchases.isLoading || loading)
-            .opacity(purchases.isLoading || loading ? 0.6 : 1)
-        }
-        .padding(Design.Spacing.md)
-        .background(Design.Colors.cardBackground)
-        .cornerRadius( 16 )
-    }
 
     // MARK: - Header
     private var header: some View {

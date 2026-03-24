@@ -183,9 +183,9 @@ struct ConversationsView: View {
                             .font(Design.Typography.caption)
                             .foregroundColor(.secondary)
                     }
+                    .frame(maxWidth: .infinity, maxHeight: .infinity)
+                    .padding(.top, 40)
                 }
-                .frame(maxWidth: .infinity, maxHeight: .infinity)
-                .padding(.top, 40)
             } else if filteredConversations.isEmpty && !conversations.isEmpty {
                 VStack(spacing: 12) {
                     Image(systemName: "magnifyingglass")
@@ -245,8 +245,10 @@ struct ConversationsView: View {
         .onAppear {
             loadConversations()
         }
-        .onChange(of: webSocketService.latestMessage) { _ in
+        .onChange(of: webSocketService.latestMessage) { oldMessage, newMessage in
             loadConversations()
+            _ = oldMessage
+            _ = newMessage
         }
         .onReceive(NotificationCenter.default.publisher(for: NSNotification.Name("NewMessageReceived"))) { _ in
             loadConversations()

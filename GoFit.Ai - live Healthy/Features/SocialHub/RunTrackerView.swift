@@ -3,6 +3,7 @@ import MapKit
 import CoreLocation
 
 struct RunTrackerView: View {
+    @Environment(\.dismiss) private var dismiss
     @ObservedObject private var localUserStore = LocalUserStore.shared
     @StateObject private var locationService = LocationService.shared
 
@@ -30,6 +31,7 @@ struct RunTrackerView: View {
     @State private var showSummarySheet = false
     @State private var lastSavedSession: RunSession?
     @State private var errorDescription: String?
+    @State private var showStopConfirmation = false
 
     @State private var manualDistanceText = ""
     @State private var manualDurationText = ""
@@ -107,7 +109,7 @@ struct RunTrackerView: View {
             .navigationTitle("Run Tracker")
             .toolbar {
                 ToolbarItem(placement: .confirmationAction) {
-                    Button("Done") { stopRun() }
+                    Button("Done") { finishRun() }
                 }
             }
             .sheet(isPresented: $showSummarySheet) { runSummarySheet }
@@ -128,6 +130,14 @@ struct RunTrackerView: View {
             }
             .onAppear { loadRunSessions() }
             .onDisappear { stopRun() }
+            .alert("Stop Run", isPresented: $showStopConfirmation) {
+                Button("Stop", role: .destructive) {
+                    stopRun()
+                }
+                Button("Cancel", role: .cancel) { }
+            } message: {
+                Text("Are you sure you want to stop your run?")
+            }
         }
     }
 
@@ -177,7 +187,11 @@ struct RunTrackerView: View {
                 .foregroundColor(.secondary)
 
             Button(action: {
-                if isTracking { stopRun() } else { startRun() }
+                if isTracking {
+                    showStopConfirmation = true
+                } else {
+                    startRun()
+                }
             }) {
                 Text(isTracking ? "Stop Run" : "Start Run")
                     .fontWeight(.semibold)
@@ -337,6 +351,7 @@ struct RunTrackerView: View {
         locationService.requestPermission()
         if locationService.authorizationStatus == .denied || locationService.authorizationStatus == .restricted {
             errorDescription = "Location permission not granted. Please enable it in Settings or use manual mode."
+            return
         }
 
         locationService.startUpdating()
@@ -384,6 +399,13 @@ struct RunTrackerView: View {
         actionMessage = "Run stopped. Total: \(String(format: "%.2f %@", run.distance(for: preferredUnit), preferredUnit.label)) in \(formattedTime)."
         lastSavedSession = run
         showSummarySheet = true
+    }
+
+    private func finishRun() {
+        if isTracking {
+            stopRun()
+        }
+        dismiss()
     }
 
     private func resetRun() {

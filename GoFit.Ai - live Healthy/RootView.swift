@@ -6,11 +6,14 @@ struct RootView: View {
     @StateObject private var healthKit = HealthKitService.shared
     @StateObject private var streakManager = StreakManager.shared
     @EnvironmentObject var adManager: AdManager
+    @Environment(\.scenePhase) private var scenePhase
 
     @AppStorage("pendingFriendInviteId") private var pendingFriendInviteId: String = ""
     @AppStorage("hasSeenFirstTimeAppTutorial") private var hasSeenFirstTimeAppTutorial: Bool = false
+    @AppStorage("lastDailyPaywallPresentation") private var lastDailyPaywallPresentation: Double = 0
     
     @State private var hasCheckedSubscriptionAfterLogin = false
+    @State private var showDailyPaywall = false
     @State private var hasShownInitialAd = false
     @State private var showSplash = true
     @State private var isAppReady = false
@@ -65,6 +68,7 @@ struct RootView: View {
             adManager.setPurchaseManager(purchases)
             
             purchases.loadProducts()
+            showDailyPaywallIfNeeded()
             
             // Start loading data in background
             Task {
@@ -166,11 +170,15 @@ struct RootView: View {
                 healthKit.stopPeriodicSync()
             }
         }
-        .onChange(of: showSplash) { _ in
+        .onChange(of: showSplash) { oldValue, newValue in
             evaluateTutorialPresentation()
+            _ = oldValue
+            _ = newValue
         }
-        .onChange(of: purchases.requiresSubscription) { _ in
+        .onChange(of: purchases.requiresSubscription) { oldValue, newValue in
             evaluateTutorialPresentation()
+            _ = oldValue
+            _ = newValue
         }
         .fullScreenCover(isPresented: $showFirstTimeTutorial) {
             FirstTimeTutorialView {
@@ -178,7 +186,16 @@ struct RootView: View {
                 showFirstTimeTutorial = false
             }
         }
-        .onChange(of: purchases.subscriptionStatus) { oldValue, newValue in
+        .sheet(isPresented: $showDailyPaywall) {
+            PaywallView()
+                .environmentObject(purchases)
+        }
+        .onChange(of: scenePhase) { oldPhase, newPhase in
+    if newPhase == .active {
+        showDailyPaywallIfNeeded()
+    }
+}
+.onChange(of: purchases.subscriptionStatus) { oldValue, newValue in
             // Bugfix: When subscription status changes (e.g., after purchase), immediately
             // update requiresSubscription/showPaywall to dismiss blocking paywall.
             // This is safe because checkTrialAndSubscriptionStatus() no longer calls
@@ -191,6 +208,17 @@ struct RootView: View {
         }
         .onOpenURL { url in
             handleInviteURL(url)
+        }
+    }
+
+    private func showDailyPaywallIfNeeded() {
+        guard auth.isLoggedIn && !purchases.hasActiveSubscription && !purchases.requiresSubscription else { return }
+
+        let now = Date().timeIntervalSince1970
+        let oneDay = 24.0 * 60.0 * 60.0
+        if now - lastDailyPaywallPresentation >= oneDay {
+            showDailyPaywall = true
+            lastDailyPaywallPresentation = now
         }
     }
 

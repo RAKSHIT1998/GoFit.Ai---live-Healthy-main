@@ -1,4 +1,4 @@
-module Pods_GoFit_Ai___live_Healthy {
+framework module Pods_GoFit_Ai___live_Healthy {
   umbrella header "Pods-GoFit.Ai - live Healthy-umbrella.h"
 
   export *

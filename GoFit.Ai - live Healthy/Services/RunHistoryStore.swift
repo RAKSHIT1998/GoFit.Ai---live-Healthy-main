@@ -11,7 +11,7 @@ final class RunHistoryStore {
         persistentContainer = NSPersistentCloudKitContainer(name: "RunHistoryContainer", managedObjectModel: model)
 
         let description = persistentContainer.persistentStoreDescriptions.first ?? NSPersistentStoreDescription()
-        description.configuration = "Default"
+        description.configuration = nil
         description.cloudKitContainerOptions = NSPersistentCloudKitContainerOptions(containerIdentifier: "iCloud.com.yourcompany.GoFit")
         description.setOption(true as NSNumber, forKey: NSPersistentHistoryTrackingKey)
         description.setOption(true as NSNumber, forKey: NSPersistentStoreRemoteChangeNotificationPostOptionKey)

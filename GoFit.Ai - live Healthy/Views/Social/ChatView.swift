@@ -122,12 +122,14 @@ struct ChatView: View {
                         .padding(.vertical, 12)
                     }
                 }
-                .onChange(of: messages.count) { _ in
+                .onChange(of: messages.count) { oldCount, newCount in
                     withAnimation(.easeOut(duration: 0.3)) {
                         if let last = messages.last {
                             proxy.scrollTo(last.id, anchor: .bottom)
                         }
                     }
+                    _ = oldCount
+                    _ = newCount
                 }
                 .onAppear {
                     DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {

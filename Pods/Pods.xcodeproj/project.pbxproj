@@ -3,178 +3,177 @@
 	archiveVersion = 1;
 	classes = {
 	};
-	objectVersion = 77;
+	objectVersion = 71;
 	objects = {
 
 /* Begin PBXAggregateTarget section */
 		458B188365A307B3C128ABF524D1A3E3 /* GoogleUserMessagingPlatform */ = {
 			isa = PBXAggregateTarget;
-			buildConfigurationList = 522982D0ADC93152A5C94920D86E086C /* Build configuration list for PBXAggregateTarget "GoogleUserMessagingPlatform" */;
+			buildConfigurationList = 7B63478E076458F20068DE7CC1FC2995 /* Build configuration list for PBXAggregateTarget "GoogleUserMessagingPlatform" */;
 			buildPhases = (
-				3ACD4293ADFC0815D026068DFC82854D /* [CP] Copy XCFrameworks */,
+				ED98B882C481E53EC8C2CA170437AF7F /* [CP] Copy XCFrameworks */,
 			);
 			dependencies = (
 			);
 			name = GoogleUserMessagingPlatform;
+			productName = GoogleUserMessagingPlatform;
 		};
 /* End PBXAggregateTarget section */
 
 /* Begin PBXBuildFile section */
-		1DA16312DCDB7F7A4CFF93B65F5F2770 /* Pods-GoFit.Ai - live HealthyUITests-dummy.m in Sources */ = {isa = PBXBuildFile; fileRef = 1ECBCE2FC355C6321D0D158D675928AE /* Pods-GoFit.Ai - live HealthyUITests-dummy.m */; };
-		531A4A84C12BC8EE42F3CCF4C5BFB35A /* PrivacyInfo.xcprivacy in Resources */ = {isa = PBXBuildFile; fileRef = 18BE9ABEECB058F6331F153FB1B0463A /* PrivacyInfo.xcprivacy */; };
-		6485BB59BE591655167636B016BFEAE1 /* Pods-GoFit.Ai - live Healthy-dummy.m in Sources */ = {isa = PBXBuildFile; fileRef = 737A919924C2A9CB9FE19D29FB33F5EB /* Pods-GoFit.Ai - live Healthy-dummy.m */; };
-		7B6DF0B07891BC86FE4BF2DD81EB84F8 /* Google-Mobile-Ads-SDK-dummy.m in Sources */ = {isa = PBXBuildFile; fileRef = A8C171F6FCDC4DFBAC3EC7A32F8BF4D9 /* Google-Mobile-Ads-SDK-dummy.m */; };
-		B31FF5CED91EB57E4446B626AB042A9F /* Pods-GoFit.Ai - live HealthyTests-dummy.m in Sources */ = {isa = PBXBuildFile; fileRef = 5A08C905E0EE83B8AC26E9188692FE12 /* Pods-GoFit.Ai - live HealthyTests-dummy.m */; };
-		B3C29FE3EC6064D637F2E4054E5C1E92 /* Google-Mobile-Ads-SDK-umbrella.h in Headers */ = {isa = PBXBuildFile; fileRef = FD40F69E8D745773FA585A466D03003B /* Google-Mobile-Ads-SDK-umbrella.h */; settings = {ATTRIBUTES = (Project, ); }; };
-		DECDE6A41FEAB9DA6C5D3C990F31E76A /* Pods-GoFit.Ai - live Healthy-umbrella.h in Headers */ = {isa = PBXBuildFile; fileRef = 35A5B47EE5EE282DC611655938673811 /* Pods-GoFit.Ai - live Healthy-umbrella.h */; settings = {ATTRIBUTES = (Project, ); }; };
-		F40FD11049519721266A6E2CB03C4561 /* GoogleMobileAdsPlaceholder.swift in Sources */ = {isa = PBXBuildFile; fileRef = 72DFA522F387592A770291CBE84B517E /* GoogleMobileAdsPlaceholder.swift */; };
+		1493DD91336DE7675C83360B987057DD /* GoogleMobileAdsPlaceholder.swift in Sources */ = {isa = PBXBuildFile; fileRef = 072215C76707321C28363AF1E2431F3C /* GoogleMobileAdsPlaceholder.swift */; };
+		268DAE4764A9AC4DB10CF95AD22B57EF /* Pods-GoFit.Ai - live HealthyUITests-umbrella.h in Headers */ = {isa = PBXBuildFile; fileRef = 37FD3839623112CDE549D0D1308A8EE8 /* Pods-GoFit.Ai - live HealthyUITests-umbrella.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		3317DC9751692475C7BF6CA18EE999CE /* Google-Mobile-Ads-SDK-dummy.m in Sources */ = {isa = PBXBuildFile; fileRef = BEB847FE9810641EDDC65DEE0770BCF5 /* Google-Mobile-Ads-SDK-dummy.m */; };
+		510E3750BD2A8E80DD85CF7549003D38 /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 384DDA2CB25005BD6479B5987C619DD4 /* Foundation.framework */; };
+		57EEB751F7074DB143923311F68E937D /* Pods-GoFit.Ai - live Healthy-umbrella.h in Headers */ = {isa = PBXBuildFile; fileRef = 43A3EDF7EC8FC3B5017A102D7913456B /* Pods-GoFit.Ai - live Healthy-umbrella.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		6EAFEABA737FF5C3054B9253767DA5D5 /* PrivacyInfo.xcprivacy in Resources */ = {isa = PBXBuildFile; fileRef = 10E297873555B231835B2A417EE363B2 /* PrivacyInfo.xcprivacy */; };
+		9EE30F6F6C4F57AF01E757C4F6F87F4A /* Pods-GoFit.Ai - live HealthyTests-dummy.m in Sources */ = {isa = PBXBuildFile; fileRef = 19906493A11FD289DB15F186509DABDF /* Pods-GoFit.Ai - live HealthyTests-dummy.m */; };
+		A12B419CB15EE135F6F1F1CABAF6C437 /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 384DDA2CB25005BD6479B5987C619DD4 /* Foundation.framework */; };
+		ABFB84068EE18BE0EBA72678E86502BA /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 384DDA2CB25005BD6479B5987C619DD4 /* Foundation.framework */; };
+		BB4C4E81FB93DE014401312F05D28193 /* Pods-GoFit.Ai - live Healthy-dummy.m in Sources */ = {isa = PBXBuildFile; fileRef = AB03EFC55B7A40E22148C6E0EF625D20 /* Pods-GoFit.Ai - live Healthy-dummy.m */; };
+		BD90468037AC7AC384A68A4EABE27F84 /* Google-Mobile-Ads-SDK-umbrella.h in Headers */ = {isa = PBXBuildFile; fileRef = DFF11146D7FEF8927186D4E759D11615 /* Google-Mobile-Ads-SDK-umbrella.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		C42B05FAA146A28C3309B9C692D0B57F /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 384DDA2CB25005BD6479B5987C619DD4 /* Foundation.framework */; };
+		D83EFC24C08D34872CE2E4974B804938 /* Pods-GoFit.Ai - live HealthyUITests-dummy.m in Sources */ = {isa = PBXBuildFile; fileRef = FB72F822009101A19F8C84C1AAB2FC39 /* Pods-GoFit.Ai - live HealthyUITests-dummy.m */; };
+		DFBBF9C3FCE9518A8D677BDF9319AEEB /* Pods-GoFit.Ai - live HealthyTests-umbrella.h in Headers */ = {isa = PBXBuildFile; fileRef = 010B022701C1C35E6BAAFF0296AB4C0B /* Pods-GoFit.Ai - live HealthyTests-umbrella.h */; settings = {ATTRIBUTES = (Public, ); }; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
-		1BD734D905139DC3E9252CE1A65451EC /* PBXContainerItemProxy */ = {
-			isa = PBXContainerItemProxy;
-			containerPortal = BFDFE7DC352907FC980B868725387E98 /* Project object */;
-			proxyType = 1;
-			remoteGlobalIDString = 458B188365A307B3C128ABF524D1A3E3;
-			remoteInfo = GoogleUserMessagingPlatform;
-		};
-		332228296FD1E32D2A8463E388661A1A /* PBXContainerItemProxy */ = {
-			isa = PBXContainerItemProxy;
-			containerPortal = BFDFE7DC352907FC980B868725387E98 /* Project object */;
-			proxyType = 1;
-			remoteGlobalIDString = 458B188365A307B3C128ABF524D1A3E3;
-			remoteInfo = GoogleUserMessagingPlatform;
-		};
-		77729F91FB0C91CF8261F5BCED6237A4 /* PBXContainerItemProxy */ = {
-			isa = PBXContainerItemProxy;
-			containerPortal = BFDFE7DC352907FC980B868725387E98 /* Project object */;
-			proxyType = 1;
-			remoteGlobalIDString = 36FD0958A0EC4A0FCF599E9B22719B03;
-			remoteInfo = "Google-Mobile-Ads-SDK-GoogleMobileAdsResources";
-		};
-		D67F20E30FD219FF32062163BEAB5163 /* PBXContainerItemProxy */ = {
+		016B8DD830BB2903A409BEB487909E37 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
 			containerPortal = BFDFE7DC352907FC980B868725387E98 /* Project object */;
 			proxyType = 1;
 			remoteGlobalIDString = FEA3B3A570634836C0457F3D7CEF1699;
 			remoteInfo = "Google-Mobile-Ads-SDK";
 		};
+		1F8F4C776085E6EC013B7514E902F277 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = BFDFE7DC352907FC980B868725387E98 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 36FD0958A0EC4A0FCF599E9B22719B03;
+			remoteInfo = "Google-Mobile-Ads-SDK-GoogleMobileAdsResources";
+		};
+		6C410AD7B1396D76305E8D52D30D3BCE /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = BFDFE7DC352907FC980B868725387E98 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 458B188365A307B3C128ABF524D1A3E3;
+			remoteInfo = GoogleUserMessagingPlatform;
+		};
+		EB4042EFA57A7C03E77144427367EBB8 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = BFDFE7DC352907FC980B868725387E98 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 458B188365A307B3C128ABF524D1A3E3;
+			remoteInfo = GoogleUserMessagingPlatform;
+		};
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
-		050B74D888016C08CBF800BE284F1B05 /* Google-Mobile-Ads-SDK.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; path = "Google-Mobile-Ads-SDK.debug.xcconfig"; sourceTree = "<group>"; };
-		052BDE3E9BE9E87369C6440EA4AA82D1 /* Pods-GoFit.Ai - live HealthyTests.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; path = "Pods-GoFit.Ai - live HealthyTests.debug.xcconfig"; sourceTree = "<group>"; };
-		0FDD8462047E73A7ED2AD940EAAAB646 /* Pods-GoFit.Ai - live HealthyUITests.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; path = "Pods-GoFit.Ai - live HealthyUITests.debug.xcconfig"; sourceTree = "<group>"; };
+		010B022701C1C35E6BAAFF0296AB4C0B /* Pods-GoFit.Ai - live HealthyTests-umbrella.h */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.h; path = "Pods-GoFit.Ai - live HealthyTests-umbrella.h"; sourceTree = "<group>"; };
+		02F7ABABEE62CD712F92B30FFD47F8C7 /* Google-Mobile-Ads-SDK.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; path = "Google-Mobile-Ads-SDK.debug.xcconfig"; sourceTree = "<group>"; };
+		072215C76707321C28363AF1E2431F3C /* GoogleMobileAdsPlaceholder.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = GoogleMobileAdsPlaceholder.swift; path = Sources/GoogleMobileAdsPlaceholder.swift; sourceTree = "<group>"; };
+		0B63BD72B13E3777F7F44331BAEBC661 /* Pods-GoFit.Ai - live HealthyUITests-acknowledgements.plist */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.plist.xml; path = "Pods-GoFit.Ai - live HealthyUITests-acknowledgements.plist"; sourceTree = "<group>"; };
+		10E297873555B231835B2A417EE363B2 /* PrivacyInfo.xcprivacy */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xml; name = PrivacyInfo.xcprivacy; path = "Frameworks/GoogleMobileAdsFramework/GoogleMobileAds.xcframework/ios-arm64/GoogleMobileAds.framework/PrivacyInfo.xcprivacy"; sourceTree = "<group>"; };
 		1238E6489AB63A5BD949C15F914BBC0E /* GoogleUserMessagingPlatform-xcframeworks.sh */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.script.sh; path = "GoogleUserMessagingPlatform-xcframeworks.sh"; sourceTree = "<group>"; };
-		18BE9ABEECB058F6331F153FB1B0463A /* PrivacyInfo.xcprivacy */ = {isa = PBXFileReference; includeInIndex = 1; name = PrivacyInfo.xcprivacy; path = "Frameworks/GoogleMobileAdsFramework/GoogleMobileAds.xcframework/ios-arm64/GoogleMobileAds.framework/PrivacyInfo.xcprivacy"; sourceTree = "<group>"; };
-		1ECBCE2FC355C6321D0D158D675928AE /* Pods-GoFit.Ai - live HealthyUITests-dummy.m */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.objc; path = "Pods-GoFit.Ai - live HealthyUITests-dummy.m"; sourceTree = "<group>"; };
-		275A7162F82C4C3212C89D4866E7D45D /* Pods-GoFit.Ai - live Healthy-acknowledgements.plist */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.plist.xml; path = "Pods-GoFit.Ai - live Healthy-acknowledgements.plist"; sourceTree = "<group>"; };
-		35A5B47EE5EE282DC611655938673811 /* Pods-GoFit.Ai - live Healthy-umbrella.h */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.h; path = "Pods-GoFit.Ai - live Healthy-umbrella.h"; sourceTree = "<group>"; };
-		35B407178DDD4EE01DFDC607EE87AD64 /* Google-Mobile-Ads-SDK-prefix.pch */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.h; path = "Google-Mobile-Ads-SDK-prefix.pch"; sourceTree = "<group>"; };
-		3998091512768CD07733CB4F02B4BD9F /* Google-Mobile-Ads-SDK-GoogleMobileAdsResources */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; name = "Google-Mobile-Ads-SDK-GoogleMobileAdsResources"; path = GoogleMobileAdsResources.bundle; sourceTree = BUILT_PRODUCTS_DIR; };
-		3C4E56E5198D7E25D9C1B99645954146 /* Google-Mobile-Ads-SDK-xcframeworks.sh */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.script.sh; path = "Google-Mobile-Ads-SDK-xcframeworks.sh"; sourceTree = "<group>"; };
-		3D1FC20DEE75E96C02BD9E345A6ED67B /* Pods-GoFit.Ai - live HealthyUITests.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; path = "Pods-GoFit.Ai - live HealthyUITests.release.xcconfig"; sourceTree = "<group>"; };
-		3D6D717C2CDEF9E77FB287330BAC0B35 /* Pods-GoFit.Ai - live HealthyUITests-acknowledgements.plist */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.plist.xml; path = "Pods-GoFit.Ai - live HealthyUITests-acknowledgements.plist"; sourceTree = "<group>"; };
-		3F73E5CB3AD9BD877556A39E8A21393C /* Pods-GoFit.Ai - live HealthyTests-acknowledgements.markdown */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text; path = "Pods-GoFit.Ai - live HealthyTests-acknowledgements.markdown"; sourceTree = "<group>"; };
-		422C0618C0148DA2ABC5AC151AC6B7AF /* Pods-GoFit.Ai - live Healthy.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; path = "Pods-GoFit.Ai - live Healthy.debug.xcconfig"; sourceTree = "<group>"; };
-		520EADFC83FFA6A5BFB5A61454DFEE5B /* UserMessagingPlatform.xcframework */ = {isa = PBXFileReference; includeInIndex = 1; name = UserMessagingPlatform.xcframework; path = Frameworks/Release/UserMessagingPlatform.xcframework; sourceTree = "<group>"; };
-		52ED6ABDE309BB4FDCEBB8B3B0EB7B5E /* Pods-GoFit.Ai - live HealthyTests-acknowledgements.plist */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.plist.xml; path = "Pods-GoFit.Ai - live HealthyTests-acknowledgements.plist"; sourceTree = "<group>"; };
-		55D6BCAF3B84CF7DC4034E0583B53A37 /* Pods-GoFit.Ai - live HealthyUITests-acknowledgements.markdown */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text; path = "Pods-GoFit.Ai - live HealthyUITests-acknowledgements.markdown"; sourceTree = "<group>"; };
-		5A08C905E0EE83B8AC26E9188692FE12 /* Pods-GoFit.Ai - live HealthyTests-dummy.m */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.objc; path = "Pods-GoFit.Ai - live HealthyTests-dummy.m"; sourceTree = "<group>"; };
-		673184A371A86132EA2D57717F8679B6 /* Pods-GoFit.Ai - live Healthy-acknowledgements.markdown */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text; path = "Pods-GoFit.Ai - live Healthy-acknowledgements.markdown"; sourceTree = "<group>"; };
-		72DFA522F387592A770291CBE84B517E /* GoogleMobileAdsPlaceholder.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = GoogleMobileAdsPlaceholder.swift; path = Sources/GoogleMobileAdsPlaceholder.swift; sourceTree = "<group>"; };
-		737A919924C2A9CB9FE19D29FB33F5EB /* Pods-GoFit.Ai - live Healthy-dummy.m */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.objc; path = "Pods-GoFit.Ai - live Healthy-dummy.m"; sourceTree = "<group>"; };
-		7E42692C2556D92CE376C8EAD9D5536A /* Pods-GoFit.Ai - live HealthyTests */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; name = "Pods-GoFit.Ai - live HealthyTests"; path = "libPods-GoFit.Ai - live HealthyTests.a"; sourceTree = BUILT_PRODUCTS_DIR; };
-		83BA9D40C07ED3CF82DD467BDEB1F45F /* Pods-GoFit.Ai - live HealthyTests.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; path = "Pods-GoFit.Ai - live HealthyTests.release.xcconfig"; sourceTree = "<group>"; };
-		86BE5C81C5568AF63BF317A3648D2856 /* Google-Mobile-Ads-SDK.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; path = "Google-Mobile-Ads-SDK.release.xcconfig"; sourceTree = "<group>"; };
-		88787532E1AE01924091617A358AB67D /* GoogleMobileAds.xcframework */ = {isa = PBXFileReference; includeInIndex = 1; name = GoogleMobileAds.xcframework; path = Frameworks/GoogleMobileAdsFramework/GoogleMobileAds.xcframework; sourceTree = "<group>"; };
+		1936D4DB5AF1C52B0C1060B83C51954F /* Pods-GoFit.Ai - live HealthyTests.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; path = "Pods-GoFit.Ai - live HealthyTests.debug.xcconfig"; sourceTree = "<group>"; };
+		19906493A11FD289DB15F186509DABDF /* Pods-GoFit.Ai - live HealthyTests-dummy.m */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.objc; path = "Pods-GoFit.Ai - live HealthyTests-dummy.m"; sourceTree = "<group>"; };
+		1F3E948F9593FA4505B585229B66F7E1 /* Google-Mobile-Ads-SDK.modulemap */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.module; path = "Google-Mobile-Ads-SDK.modulemap"; sourceTree = "<group>"; };
+		264C31FBA90BD8B8FDDFAA2EC55066D3 /* Google-Mobile-Ads-SDK.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; path = "Google-Mobile-Ads-SDK.release.xcconfig"; sourceTree = "<group>"; };
+		27F4FCB24DFB8A0FF2780E923CB7630B /* Pods-GoFit.Ai - live HealthyUITests-acknowledgements.markdown */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text; path = "Pods-GoFit.Ai - live HealthyUITests-acknowledgements.markdown"; sourceTree = "<group>"; };
+		332E4AE2B7D4729CF875347A5EB1785D /* Pods-GoFit.Ai - live Healthy.modulemap */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.module; path = "Pods-GoFit.Ai - live Healthy.modulemap"; sourceTree = "<group>"; };
+		3593A59026EFB4F57DC6FBC91EB0575E /* Pods-GoFit.Ai - live HealthyTests.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; path = "Pods-GoFit.Ai - live HealthyTests.release.xcconfig"; sourceTree = "<group>"; };
+		37FD3839623112CDE549D0D1308A8EE8 /* Pods-GoFit.Ai - live HealthyUITests-umbrella.h */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.h; path = "Pods-GoFit.Ai - live HealthyUITests-umbrella.h"; sourceTree = "<group>"; };
+		384DDA2CB25005BD6479B5987C619DD4 /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS18.0.sdk/System/Library/Frameworks/Foundation.framework; sourceTree = DEVELOPER_DIR; };
+		3998091512768CD07733CB4F02B4BD9F /* GoogleMobileAdsResources.bundle */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = GoogleMobileAdsResources.bundle; sourceTree = BUILT_PRODUCTS_DIR; };
+		43288EC1E354C32BF3A34FE302723A09 /* Pods-GoFit.Ai - live HealthyUITests.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; path = "Pods-GoFit.Ai - live HealthyUITests.debug.xcconfig"; sourceTree = "<group>"; };
+		43A3EDF7EC8FC3B5017A102D7913456B /* Pods-GoFit.Ai - live Healthy-umbrella.h */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.h; path = "Pods-GoFit.Ai - live Healthy-umbrella.h"; sourceTree = "<group>"; };
+		4E7F6E7EDE887076F899E441AB4D0EE9 /* GoogleMobileAds.xcframework */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = wrapper.xcframework; name = GoogleMobileAds.xcframework; path = Frameworks/GoogleMobileAdsFramework/GoogleMobileAds.xcframework; sourceTree = "<group>"; };
+		50D8A792AF0A8CD062E4BC8FDD615F32 /* Google-Mobile-Ads-SDK-xcframeworks.sh */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.script.sh; path = "Google-Mobile-Ads-SDK-xcframeworks.sh"; sourceTree = "<group>"; };
+		519019479578D26DF5D8D7C16DE343E5 /* Pods-GoFit.Ai - live Healthy-resources.sh */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.script.sh; path = "Pods-GoFit.Ai - live Healthy-resources.sh"; sourceTree = "<group>"; };
+		520EADFC83FFA6A5BFB5A61454DFEE5B /* UserMessagingPlatform.xcframework */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = wrapper.xcframework; name = UserMessagingPlatform.xcframework; path = Frameworks/Release/UserMessagingPlatform.xcframework; sourceTree = "<group>"; };
+		59311C3AF1DBFC6B543820BEFA4B29ED /* Pods-GoFit.Ai - live Healthy.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; path = "Pods-GoFit.Ai - live Healthy.debug.xcconfig"; sourceTree = "<group>"; };
+		5CBA3CBA414D30BE5FF70EC264FD3F47 /* Google-Mobile-Ads-SDK-prefix.pch */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.h; path = "Google-Mobile-Ads-SDK-prefix.pch"; sourceTree = "<group>"; };
+		633AA19383A9350349ADE89A649C8F9F /* Pods-GoFit.Ai - live HealthyTests-acknowledgements.markdown */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text; path = "Pods-GoFit.Ai - live HealthyTests-acknowledgements.markdown"; sourceTree = "<group>"; };
+		6CEEF6E1B8C8CE4ECCD47DFF560C0E60 /* Pods-GoFit.Ai - live Healthy-Info.plist */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.plist.xml; path = "Pods-GoFit.Ai - live Healthy-Info.plist"; sourceTree = "<group>"; };
+		7E42692C2556D92CE376C8EAD9D5536A /* Pods_GoFit_Ai___live_HealthyTests.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = "Pods_GoFit_Ai___live_HealthyTests.framework"; sourceTree = BUILT_PRODUCTS_DIR; };
+		87E88668FB4D99ED149DAFE9560191F4 /* Pods-GoFit.Ai - live Healthy-acknowledgements.markdown */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text; path = "Pods-GoFit.Ai - live Healthy-acknowledgements.markdown"; sourceTree = "<group>"; };
 		8BD9B44CD25EDC5AD58DC48C3DE0D94A /* GoogleUserMessagingPlatform.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; path = GoogleUserMessagingPlatform.debug.xcconfig; sourceTree = "<group>"; };
-		9D940727FF8FB9C785EB98E56350EF41 /* Podfile */ = {isa = PBXFileReference; explicitFileType = text.script.ruby; includeInIndex = 1; indentWidth = 2; lastKnownFileType = text; name = Podfile; path = ../Podfile; sourceTree = SOURCE_ROOT; tabWidth = 2; xcLanguageSpecificationIdentifier = xcode.lang.ruby; };
-		A8C171F6FCDC4DFBAC3EC7A32F8BF4D9 /* Google-Mobile-Ads-SDK-dummy.m */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.objc; path = "Google-Mobile-Ads-SDK-dummy.m"; sourceTree = "<group>"; };
-		B30FD92EE8B484A2FCDF27AA5DD843FD /* Google-Mobile-Ads-SDK.modulemap */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.module; path = "Google-Mobile-Ads-SDK.modulemap"; sourceTree = "<group>"; };
-		C37FB818448C47FCB84EE9A72059138B /* Pods-GoFit.Ai - live Healthy.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; path = "Pods-GoFit.Ai - live Healthy.release.xcconfig"; sourceTree = "<group>"; };
-		C546A962BFB105827E96204B5DDD6CB9 /* Pods-GoFit.Ai - live Healthy.modulemap */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.module; path = "Pods-GoFit.Ai - live Healthy.modulemap"; sourceTree = "<group>"; };
+		905AEF00C2913887E766FF5CF6DACA9E /* Google-Mobile-Ads-SDK-Info.plist */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.plist.xml; path = "Google-Mobile-Ads-SDK-Info.plist"; sourceTree = "<group>"; };
+		9D940727FF8FB9C785EB98E56350EF41 /* Podfile */ = {isa = PBXFileReference; explicitFileType = text.script.ruby; includeInIndex = 1; indentWidth = 2; name = Podfile; path = ../Podfile; sourceTree = SOURCE_ROOT; tabWidth = 2; xcLanguageSpecificationIdentifier = xcode.lang.ruby; };
+		9ED650138D2713F794A6F5D404076006 /* Pods-GoFit.Ai - live HealthyUITests-Info.plist */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.plist.xml; path = "Pods-GoFit.Ai - live HealthyUITests-Info.plist"; sourceTree = "<group>"; };
+		A04E36DE1314E64013BD28C648520DAA /* ResourceBundle-GoogleMobileAdsResources-Google-Mobile-Ads-SDK-Info.plist */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.plist.xml; path = "ResourceBundle-GoogleMobileAdsResources-Google-Mobile-Ads-SDK-Info.plist"; sourceTree = "<group>"; };
+		AB03EFC55B7A40E22148C6E0EF625D20 /* Pods-GoFit.Ai - live Healthy-dummy.m */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.objc; path = "Pods-GoFit.Ai - live Healthy-dummy.m"; sourceTree = "<group>"; };
+		B0A24D2D464E9498CEA6E1DFCD3430F3 /* Pods-GoFit.Ai - live HealthyTests.modulemap */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.module; path = "Pods-GoFit.Ai - live HealthyTests.modulemap"; sourceTree = "<group>"; };
+		B73DB0F4F4CF57CB700901668FA1CB0F /* Pods-GoFit.Ai - live HealthyTests-acknowledgements.plist */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.plist.xml; path = "Pods-GoFit.Ai - live HealthyTests-acknowledgements.plist"; sourceTree = "<group>"; };
+		BEB847FE9810641EDDC65DEE0770BCF5 /* Google-Mobile-Ads-SDK-dummy.m */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.objc; path = "Google-Mobile-Ads-SDK-dummy.m"; sourceTree = "<group>"; };
 		C8DDFA20AB0B140629838909D35A1F91 /* GoogleUserMessagingPlatform.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; path = GoogleUserMessagingPlatform.release.xcconfig; sourceTree = "<group>"; };
-		C8DF3D521DB7D133C7B1FC3D0D67878B /* Pods-GoFit.Ai - live Healthy-resources.sh */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.script.sh; path = "Pods-GoFit.Ai - live Healthy-resources.sh"; sourceTree = "<group>"; };
-		D4784BF8C3B53412CCE080806C963678 /* Pods-GoFit.Ai - live HealthyUITests */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; name = "Pods-GoFit.Ai - live HealthyUITests"; path = "libPods-GoFit.Ai - live HealthyUITests.a"; sourceTree = BUILT_PRODUCTS_DIR; };
-		EBC460D117C921B85AE974905B4722D2 /* ResourceBundle-GoogleMobileAdsResources-Google-Mobile-Ads-SDK-Info.plist */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.plist.xml; path = "ResourceBundle-GoogleMobileAdsResources-Google-Mobile-Ads-SDK-Info.plist"; sourceTree = "<group>"; };
-		F8ECCB3B4E33C0FDD00B394CC2C7EA2E /* Google-Mobile-Ads-SDK */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; name = "Google-Mobile-Ads-SDK"; path = "libGoogle-Mobile-Ads-SDK.a"; sourceTree = BUILT_PRODUCTS_DIR; };
-		FD35FDAF46E862DD41CB7FD3EDB472CB /* Pods-GoFit.Ai - live Healthy */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; name = "Pods-GoFit.Ai - live Healthy"; path = "libPods-GoFit.Ai - live Healthy.a"; sourceTree = BUILT_PRODUCTS_DIR; };
-		FD40F69E8D745773FA585A466D03003B /* Google-Mobile-Ads-SDK-umbrella.h */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.h; path = "Google-Mobile-Ads-SDK-umbrella.h"; sourceTree = "<group>"; };
+		D4784BF8C3B53412CCE080806C963678 /* Pods_GoFit_Ai___live_HealthyUITests.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = "Pods_GoFit_Ai___live_HealthyUITests.framework"; sourceTree = BUILT_PRODUCTS_DIR; };
+		DD760EE38C4789D3D32CA40E7D6AD25B /* Pods-GoFit.Ai - live HealthyUITests.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; path = "Pods-GoFit.Ai - live HealthyUITests.release.xcconfig"; sourceTree = "<group>"; };
+		DFF11146D7FEF8927186D4E759D11615 /* Google-Mobile-Ads-SDK-umbrella.h */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.h; path = "Google-Mobile-Ads-SDK-umbrella.h"; sourceTree = "<group>"; };
+		E1337E23DE6D4518C1D93370F8260C13 /* Pods-GoFit.Ai - live Healthy-acknowledgements.plist */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.plist.xml; path = "Pods-GoFit.Ai - live Healthy-acknowledgements.plist"; sourceTree = "<group>"; };
+		EB0ABAA65B35AE655E9488F988B26B25 /* Pods-GoFit.Ai - live HealthyUITests.modulemap */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.module; path = "Pods-GoFit.Ai - live HealthyUITests.modulemap"; sourceTree = "<group>"; };
+		F46F48842D2017E7EC8D024540DA77E8 /* Pods-GoFit.Ai - live Healthy.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; path = "Pods-GoFit.Ai - live Healthy.release.xcconfig"; sourceTree = "<group>"; };
+		F621B1848A0DD59AB88231B8E80CFB2A /* Pods-GoFit.Ai - live HealthyTests-Info.plist */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.plist.xml; path = "Pods-GoFit.Ai - live HealthyTests-Info.plist"; sourceTree = "<group>"; };
+		F8ECCB3B4E33C0FDD00B394CC2C7EA2E /* Google_Mobile_Ads_SDK.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Google_Mobile_Ads_SDK.framework; sourceTree = BUILT_PRODUCTS_DIR; };
+		FB72F822009101A19F8C84C1AAB2FC39 /* Pods-GoFit.Ai - live HealthyUITests-dummy.m */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.objc; path = "Pods-GoFit.Ai - live HealthyUITests-dummy.m"; sourceTree = "<group>"; };
+		FD35FDAF46E862DD41CB7FD3EDB472CB /* Pods_GoFit_Ai___live_Healthy.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = "Pods_GoFit_Ai___live_Healthy.framework"; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
-		48B2836542BEE57EE156FB7878DA9239 /* Frameworks */ = {
+		8AC0B4848CCECBD121642B7F8915AA7B /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				A12B419CB15EE135F6F1F1CABAF6C437 /* Foundation.framework in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		AAD84B30E2C97051DCF74675A166BD94 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				510E3750BD2A8E80DD85CF7549003D38 /* Foundation.framework in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		E2A8B128119351F2D79130AC4E4EE778 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				ABFB84068EE18BE0EBA72678E86502BA /* Foundation.framework in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		EC4530C98EE3D4DDB7AB8119D9F90938 /* Frameworks */ = {
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
-		52728679BA710120614567D8A9DDDD09 /* Frameworks */ = {
+		FD85C44D4C9E5ADB03FBEF086090B159 /* Frameworks */ = {
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-		};
-		5F929EC548FC265E21B616DE90FB1196 /* Frameworks */ = {
-			isa = PBXFrameworksBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-		};
-		64B3F1443D841EBB2D97F8767994CC5F /* Frameworks */ = {
-			isa = PBXFrameworksBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-		};
-		844DA4078A70B039FE5985004F6B6903 /* Frameworks */ = {
-			isa = PBXFrameworksBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
+				C42B05FAA146A28C3309B9C692D0B57F /* Foundation.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
-		02297843B48AE5088AC0E98E2D5EB190 /* Targets Support Files */ = {
+		081BFF8B98BFFC7B4090E1CCBFA0BEDC /* Support Files */ = {
 			isa = PBXGroup;
 			children = (
-				E0E6F47EEC018E24949EE829E7EAD87A /* Pods-GoFit.Ai - live Healthy */,
-				5135626C6C71FA6450CAEF5483331B0D /* Pods-GoFit.Ai - live HealthyTests */,
-				56FE3A0FC36F8B401E028663A0B7364A /* Pods-GoFit.Ai - live HealthyUITests */,
-			);
-			name = "Targets Support Files";
-			sourceTree = "<group>";
-		};
-		07CE97FE1556746AD13B6C9B98293E50 /* Products */ = {
-			isa = PBXGroup;
-			children = (
-				F8ECCB3B4E33C0FDD00B394CC2C7EA2E /* Google-Mobile-Ads-SDK */,
-				3998091512768CD07733CB4F02B4BD9F /* Google-Mobile-Ads-SDK-GoogleMobileAdsResources */,
-				FD35FDAF46E862DD41CB7FD3EDB472CB /* Pods-GoFit.Ai - live Healthy */,
-				7E42692C2556D92CE376C8EAD9D5536A /* Pods-GoFit.Ai - live HealthyTests */,
-				D4784BF8C3B53412CCE080806C963678 /* Pods-GoFit.Ai - live HealthyUITests */,
-			);
-			name = Products;
-			sourceTree = "<group>";
-		};
-		08BF2FD5FDE32E8C31BC19F3516A84E5 /* Support Files */ = {
-			isa = PBXGroup;
-			children = (
-				B30FD92EE8B484A2FCDF27AA5DD843FD /* Google-Mobile-Ads-SDK.modulemap */,
-				A8C171F6FCDC4DFBAC3EC7A32F8BF4D9 /* Google-Mobile-Ads-SDK-dummy.m */,
-				35B407178DDD4EE01DFDC607EE87AD64 /* Google-Mobile-Ads-SDK-prefix.pch */,
-				FD40F69E8D745773FA585A466D03003B /* Google-Mobile-Ads-SDK-umbrella.h */,
-				3C4E56E5198D7E25D9C1B99645954146 /* Google-Mobile-Ads-SDK-xcframeworks.sh */,
-				050B74D888016C08CBF800BE284F1B05 /* Google-Mobile-Ads-SDK.debug.xcconfig */,
-				86BE5C81C5568AF63BF317A3648D2856 /* Google-Mobile-Ads-SDK.release.xcconfig */,
-				EBC460D117C921B85AE974905B4722D2 /* ResourceBundle-GoogleMobileAdsResources-Google-Mobile-Ads-SDK-Info.plist */,
+				1F3E948F9593FA4505B585229B66F7E1 /* Google-Mobile-Ads-SDK.modulemap */,
+				BEB847FE9810641EDDC65DEE0770BCF5 /* Google-Mobile-Ads-SDK-dummy.m */,
+				905AEF00C2913887E766FF5CF6DACA9E /* Google-Mobile-Ads-SDK-Info.plist */,
+				5CBA3CBA414D30BE5FF70EC264FD3F47 /* Google-Mobile-Ads-SDK-prefix.pch */,
+				DFF11146D7FEF8927186D4E759D11615 /* Google-Mobile-Ads-SDK-umbrella.h */,
+				50D8A792AF0A8CD062E4BC8FDD615F32 /* Google-Mobile-Ads-SDK-xcframeworks.sh */,
+				02F7ABABEE62CD712F92B30FFD47F8C7 /* Google-Mobile-Ads-SDK.debug.xcconfig */,
+				264C31FBA90BD8B8FDDFAA2EC55066D3 /* Google-Mobile-Ads-SDK.release.xcconfig */,
+				A04E36DE1314E64013BD28C648520DAA /* ResourceBundle-GoogleMobileAdsResources-Google-Mobile-Ads-SDK-Info.plist */,
 			);
 			name = "Support Files";
 			path = "../Target Support Files/Google-Mobile-Ads-SDK";
@@ -186,50 +185,45 @@
 				C7A18EBB5771365C554FAE9F6AF9BF4A /* Frameworks */,
 				9D76A98F819D28A75EE250298974094C /* Support Files */,
 			);
-			name = GoogleUserMessagingPlatform;
 			path = GoogleUserMessagingPlatform;
 			sourceTree = "<group>";
 		};
-		2A0D16BEE849AD1DE87BC882692A761F /* Resources */ = {
+		4C61B7A40ADBF7697CB053B230A5F499 /* Targets Support Files */ = {
 			isa = PBXGroup;
 			children = (
-				18BE9ABEECB058F6331F153FB1B0463A /* PrivacyInfo.xcprivacy */,
+				D9C92F994EC53915BA6716C45C566B52 /* Pods-GoFit.Ai - live Healthy */,
+				8E0712B76477E4274A2028569D1530AD /* Pods-GoFit.Ai - live HealthyTests */,
+				B0F2A9E8CC62ECC837D3108EACA9F9C1 /* Pods-GoFit.Ai - live HealthyUITests */,
 			);
-			name = Resources;
+			name = "Targets Support Files";
 			sourceTree = "<group>";
 		};
-		4ACCCB8A814BF06ECC845C4638CE0702 /* Frameworks */ = {
+		63D41F5971F4F1D21D903F70262AC705 /* Products */ = {
 			isa = PBXGroup;
 			children = (
-				88787532E1AE01924091617A358AB67D /* GoogleMobileAds.xcframework */,
+				F8ECCB3B4E33C0FDD00B394CC2C7EA2E /* Google_Mobile_Ads_SDK.framework */,
+				3998091512768CD07733CB4F02B4BD9F /* GoogleMobileAdsResources.bundle */,
+				FD35FDAF46E862DD41CB7FD3EDB472CB /* Pods_GoFit_Ai___live_Healthy.framework */,
+				7E42692C2556D92CE376C8EAD9D5536A /* Pods_GoFit_Ai___live_HealthyTests.framework */,
+				D4784BF8C3B53412CCE080806C963678 /* Pods_GoFit_Ai___live_HealthyUITests.framework */,
 			);
-			name = Frameworks;
+			name = Products;
 			sourceTree = "<group>";
 		};
-		5135626C6C71FA6450CAEF5483331B0D /* Pods-GoFit.Ai - live HealthyTests */ = {
+		8E0712B76477E4274A2028569D1530AD /* Pods-GoFit.Ai - live HealthyTests */ = {
 			isa = PBXGroup;
 			children = (
-				3F73E5CB3AD9BD877556A39E8A21393C /* Pods-GoFit.Ai - live HealthyTests-acknowledgements.markdown */,
-				52ED6ABDE309BB4FDCEBB8B3B0EB7B5E /* Pods-GoFit.Ai - live HealthyTests-acknowledgements.plist */,
-				5A08C905E0EE83B8AC26E9188692FE12 /* Pods-GoFit.Ai - live HealthyTests-dummy.m */,
-				052BDE3E9BE9E87369C6440EA4AA82D1 /* Pods-GoFit.Ai - live HealthyTests.debug.xcconfig */,
-				83BA9D40C07ED3CF82DD467BDEB1F45F /* Pods-GoFit.Ai - live HealthyTests.release.xcconfig */,
+				B0A24D2D464E9498CEA6E1DFCD3430F3 /* Pods-GoFit.Ai - live HealthyTests.modulemap */,
+				633AA19383A9350349ADE89A649C8F9F /* Pods-GoFit.Ai - live HealthyTests-acknowledgements.markdown */,
+				B73DB0F4F4CF57CB700901668FA1CB0F /* Pods-GoFit.Ai - live HealthyTests-acknowledgements.plist */,
+				19906493A11FD289DB15F186509DABDF /* Pods-GoFit.Ai - live HealthyTests-dummy.m */,
+				F621B1848A0DD59AB88231B8E80CFB2A /* Pods-GoFit.Ai - live HealthyTests-Info.plist */,
+				010B022701C1C35E6BAAFF0296AB4C0B /* Pods-GoFit.Ai - live HealthyTests-umbrella.h */,
+				1936D4DB5AF1C52B0C1060B83C51954F /* Pods-GoFit.Ai - live HealthyTests.debug.xcconfig */,
+				3593A59026EFB4F57DC6FBC91EB0575E /* Pods-GoFit.Ai - live HealthyTests.release.xcconfig */,
 			);
 			name = "Pods-GoFit.Ai - live HealthyTests";
 			path = "Target Support Files/Pods-GoFit.Ai - live HealthyTests";
-			sourceTree = "<group>";
-		};
-		56FE3A0FC36F8B401E028663A0B7364A /* Pods-GoFit.Ai - live HealthyUITests */ = {
-			isa = PBXGroup;
-			children = (
-				55D6BCAF3B84CF7DC4034E0583B53A37 /* Pods-GoFit.Ai - live HealthyUITests-acknowledgements.markdown */,
-				3D6D717C2CDEF9E77FB287330BAC0B35 /* Pods-GoFit.Ai - live HealthyUITests-acknowledgements.plist */,
-				1ECBCE2FC355C6321D0D158D675928AE /* Pods-GoFit.Ai - live HealthyUITests-dummy.m */,
-				0FDD8462047E73A7ED2AD940EAAAB646 /* Pods-GoFit.Ai - live HealthyUITests.debug.xcconfig */,
-				3D1FC20DEE75E96C02BD9E345A6ED67B /* Pods-GoFit.Ai - live HealthyUITests.release.xcconfig */,
-			);
-			name = "Pods-GoFit.Ai - live HealthyUITests";
-			path = "Target Support Files/Pods-GoFit.Ai - live HealthyUITests";
 			sourceTree = "<group>";
 		};
 		9D76A98F819D28A75EE250298974094C /* Support Files */ = {
@@ -243,10 +237,34 @@
 			path = "../Target Support Files/GoogleUserMessagingPlatform";
 			sourceTree = "<group>";
 		};
+		B0F2A9E8CC62ECC837D3108EACA9F9C1 /* Pods-GoFit.Ai - live HealthyUITests */ = {
+			isa = PBXGroup;
+			children = (
+				EB0ABAA65B35AE655E9488F988B26B25 /* Pods-GoFit.Ai - live HealthyUITests.modulemap */,
+				27F4FCB24DFB8A0FF2780E923CB7630B /* Pods-GoFit.Ai - live HealthyUITests-acknowledgements.markdown */,
+				0B63BD72B13E3777F7F44331BAEBC661 /* Pods-GoFit.Ai - live HealthyUITests-acknowledgements.plist */,
+				FB72F822009101A19F8C84C1AAB2FC39 /* Pods-GoFit.Ai - live HealthyUITests-dummy.m */,
+				9ED650138D2713F794A6F5D404076006 /* Pods-GoFit.Ai - live HealthyUITests-Info.plist */,
+				37FD3839623112CDE549D0D1308A8EE8 /* Pods-GoFit.Ai - live HealthyUITests-umbrella.h */,
+				43288EC1E354C32BF3A34FE302723A09 /* Pods-GoFit.Ai - live HealthyUITests.debug.xcconfig */,
+				DD760EE38C4789D3D32CA40E7D6AD25B /* Pods-GoFit.Ai - live HealthyUITests.release.xcconfig */,
+			);
+			name = "Pods-GoFit.Ai - live HealthyUITests";
+			path = "Target Support Files/Pods-GoFit.Ai - live HealthyUITests";
+			sourceTree = "<group>";
+		};
+		BBEA4033E7E53EC2755F9CA58A6FB97B /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+				4E7F6E7EDE887076F899E441AB4D0EE9 /* GoogleMobileAds.xcframework */,
+			);
+			name = Frameworks;
+			sourceTree = "<group>";
+		};
 		BC5F891B7774511CF0D8F3DBD6A295CE /* Pods */ = {
 			isa = PBXGroup;
 			children = (
-				DA091A227B9EFD96C093DA934F701BE6 /* Google-Mobile-Ads-SDK */,
+				DCB70712ECFF25C20D84E31CD9EBF306 /* Google-Mobile-Ads-SDK */,
 				0A781C0089296B7A61478F8EA09C1419 /* GoogleUserMessagingPlatform */,
 			);
 			name = Pods;
@@ -264,78 +282,97 @@
 			isa = PBXGroup;
 			children = (
 				9D940727FF8FB9C785EB98E56350EF41 /* Podfile */,
-				D89477F20FB1DE18A04690586D7808C4 /* Frameworks */,
+				D210D550F4EA176C3123ED886F8F87F5 /* Frameworks */,
 				BC5F891B7774511CF0D8F3DBD6A295CE /* Pods */,
-				07CE97FE1556746AD13B6C9B98293E50 /* Products */,
-				02297843B48AE5088AC0E98E2D5EB190 /* Targets Support Files */,
+				63D41F5971F4F1D21D903F70262AC705 /* Products */,
+				4C61B7A40ADBF7697CB053B230A5F499 /* Targets Support Files */,
 			);
 			sourceTree = "<group>";
 		};
-		D89477F20FB1DE18A04690586D7808C4 /* Frameworks */ = {
+		D210D550F4EA176C3123ED886F8F87F5 /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
+				E4801F62A6B08CD9B5410329F1A18FDE /* iOS */,
 			);
 			name = Frameworks;
 			sourceTree = "<group>";
 		};
-		DA091A227B9EFD96C093DA934F701BE6 /* Google-Mobile-Ads-SDK */ = {
+		D9C92F994EC53915BA6716C45C566B52 /* Pods-GoFit.Ai - live Healthy */ = {
 			isa = PBXGroup;
 			children = (
-				72DFA522F387592A770291CBE84B517E /* GoogleMobileAdsPlaceholder.swift */,
-				4ACCCB8A814BF06ECC845C4638CE0702 /* Frameworks */,
-				2A0D16BEE849AD1DE87BC882692A761F /* Resources */,
-				08BF2FD5FDE32E8C31BC19F3516A84E5 /* Support Files */,
-			);
-			name = "Google-Mobile-Ads-SDK";
-			path = "Google-Mobile-Ads-SDK";
-			sourceTree = "<group>";
-		};
-		E0E6F47EEC018E24949EE829E7EAD87A /* Pods-GoFit.Ai - live Healthy */ = {
-			isa = PBXGroup;
-			children = (
-				C546A962BFB105827E96204B5DDD6CB9 /* Pods-GoFit.Ai - live Healthy.modulemap */,
-				673184A371A86132EA2D57717F8679B6 /* Pods-GoFit.Ai - live Healthy-acknowledgements.markdown */,
-				275A7162F82C4C3212C89D4866E7D45D /* Pods-GoFit.Ai - live Healthy-acknowledgements.plist */,
-				737A919924C2A9CB9FE19D29FB33F5EB /* Pods-GoFit.Ai - live Healthy-dummy.m */,
-				C8DF3D521DB7D133C7B1FC3D0D67878B /* Pods-GoFit.Ai - live Healthy-resources.sh */,
-				35A5B47EE5EE282DC611655938673811 /* Pods-GoFit.Ai - live Healthy-umbrella.h */,
-				422C0618C0148DA2ABC5AC151AC6B7AF /* Pods-GoFit.Ai - live Healthy.debug.xcconfig */,
-				C37FB818448C47FCB84EE9A72059138B /* Pods-GoFit.Ai - live Healthy.release.xcconfig */,
+				332E4AE2B7D4729CF875347A5EB1785D /* Pods-GoFit.Ai - live Healthy.modulemap */,
+				87E88668FB4D99ED149DAFE9560191F4 /* Pods-GoFit.Ai - live Healthy-acknowledgements.markdown */,
+				E1337E23DE6D4518C1D93370F8260C13 /* Pods-GoFit.Ai - live Healthy-acknowledgements.plist */,
+				AB03EFC55B7A40E22148C6E0EF625D20 /* Pods-GoFit.Ai - live Healthy-dummy.m */,
+				6CEEF6E1B8C8CE4ECCD47DFF560C0E60 /* Pods-GoFit.Ai - live Healthy-Info.plist */,
+				519019479578D26DF5D8D7C16DE343E5 /* Pods-GoFit.Ai - live Healthy-resources.sh */,
+				43A3EDF7EC8FC3B5017A102D7913456B /* Pods-GoFit.Ai - live Healthy-umbrella.h */,
+				59311C3AF1DBFC6B543820BEFA4B29ED /* Pods-GoFit.Ai - live Healthy.debug.xcconfig */,
+				F46F48842D2017E7EC8D024540DA77E8 /* Pods-GoFit.Ai - live Healthy.release.xcconfig */,
 			);
 			name = "Pods-GoFit.Ai - live Healthy";
 			path = "Target Support Files/Pods-GoFit.Ai - live Healthy";
 			sourceTree = "<group>";
 		};
+		DCB70712ECFF25C20D84E31CD9EBF306 /* Google-Mobile-Ads-SDK */ = {
+			isa = PBXGroup;
+			children = (
+				072215C76707321C28363AF1E2431F3C /* GoogleMobileAdsPlaceholder.swift */,
+				BBEA4033E7E53EC2755F9CA58A6FB97B /* Frameworks */,
+				F4AC75AD210F3793BC54C3BB4BD6A080 /* Resources */,
+				081BFF8B98BFFC7B4090E1CCBFA0BEDC /* Support Files */,
+			);
+			path = "Google-Mobile-Ads-SDK";
+			sourceTree = "<group>";
+		};
+		E4801F62A6B08CD9B5410329F1A18FDE /* iOS */ = {
+			isa = PBXGroup;
+			children = (
+				384DDA2CB25005BD6479B5987C619DD4 /* Foundation.framework */,
+			);
+			name = iOS;
+			sourceTree = "<group>";
+		};
+		F4AC75AD210F3793BC54C3BB4BD6A080 /* Resources */ = {
+			isa = PBXGroup;
+			children = (
+				10E297873555B231835B2A417EE363B2 /* PrivacyInfo.xcprivacy */,
+			);
+			name = Resources;
+			sourceTree = "<group>";
+		};
 /* End PBXGroup section */
 
 /* Begin PBXHeadersBuildPhase section */
-		1D9167CE5878058E5909FEEB89A8E19E /* Headers */ = {
+		3F9570810D974C0EFDEADA7EC81CD829 /* Headers */ = {
 			isa = PBXHeadersBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				57EEB751F7074DB143923311F68E937D /* Pods-GoFit.Ai - live Healthy-umbrella.h in Headers */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
-		324B8CA9432319E7EF67FBADCA070BAA /* Headers */ = {
+		83524EE637E27F87997AE5BEC29C247F /* Headers */ = {
 			isa = PBXHeadersBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				B3C29FE3EC6064D637F2E4054E5C1E92 /* Google-Mobile-Ads-SDK-umbrella.h in Headers */,
+				DFBBF9C3FCE9518A8D677BDF9319AEEB /* Pods-GoFit.Ai - live HealthyTests-umbrella.h in Headers */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
-		546D66BAE14F788F7ED72FE703EB12BE /* Headers */ = {
+		B23F9353E3148B809D4BA25A333D0F47 /* Headers */ = {
 			isa = PBXHeadersBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				DECDE6A41FEAB9DA6C5D3C990F31E76A /* Pods-GoFit.Ai - live Healthy-umbrella.h in Headers */,
+				BD90468037AC7AC384A68A4EABE27F84 /* Google-Mobile-Ads-SDK-umbrella.h in Headers */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
-		ED44EA83385287F6799290823A2967CC /* Headers */ = {
+		CAF78272F8FC5345BAB89777CDD28166 /* Headers */ = {
 			isa = PBXHeadersBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				268DAE4764A9AC4DB10CF95AD22B57EF /* Pods-GoFit.Ai - live HealthyUITests-umbrella.h in Headers */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -344,11 +381,11 @@
 /* Begin PBXNativeTarget section */
 		36FD0958A0EC4A0FCF599E9B22719B03 /* Google-Mobile-Ads-SDK-GoogleMobileAdsResources */ = {
 			isa = PBXNativeTarget;
-			buildConfigurationList = F3075B81AF13860458C1DB54E20913C0 /* Build configuration list for PBXNativeTarget "Google-Mobile-Ads-SDK-GoogleMobileAdsResources" */;
+			buildConfigurationList = EB39120F72AF0C186C3DD6AAD5961AA3 /* Build configuration list for PBXNativeTarget "Google-Mobile-Ads-SDK-GoogleMobileAdsResources" */;
 			buildPhases = (
-				F8CB1BA68A2F9E720B9355F3E0C8AA18 /* Sources */,
-				844DA4078A70B039FE5985004F6B6903 /* Frameworks */,
-				928DF040E7353C82B7C46DDCA1050BD3 /* Resources */,
+				8D9680F27B81BA9A3C98EAB15E1BE819 /* Sources */,
+				EC4530C98EE3D4DDB7AB8119D9F90938 /* Frameworks */,
+				E35D9214222E6018BDA577EF467D6F22 /* Resources */,
 			);
 			buildRules = (
 			);
@@ -356,82 +393,85 @@
 			);
 			name = "Google-Mobile-Ads-SDK-GoogleMobileAdsResources";
 			productName = GoogleMobileAdsResources;
-			productReference = 3998091512768CD07733CB4F02B4BD9F /* Google-Mobile-Ads-SDK-GoogleMobileAdsResources */;
+			productReference = 3998091512768CD07733CB4F02B4BD9F /* GoogleMobileAdsResources.bundle */;
 			productType = "com.apple.product-type.bundle";
 		};
 		720AA605F295C9F599E9347A629129B4 /* Pods-GoFit.Ai - live Healthy */ = {
 			isa = PBXNativeTarget;
-			buildConfigurationList = ED7F9B08684FEAE6C9A127EA9E79967D /* Build configuration list for PBXNativeTarget "Pods-GoFit.Ai - live Healthy" */;
+			buildConfigurationList = C6A7ED1845F7BED9738832AEE4E256F7 /* Build configuration list for PBXNativeTarget "Pods-GoFit.Ai - live Healthy" */;
 			buildPhases = (
-				546D66BAE14F788F7ED72FE703EB12BE /* Headers */,
-				74426F161614F2951823415A882C8DD4 /* Sources */,
-				52728679BA710120614567D8A9DDDD09 /* Frameworks */,
+				3F9570810D974C0EFDEADA7EC81CD829 /* Headers */,
+				FF8936F914BD0FF08869D60406A28179 /* Sources */,
+				E2A8B128119351F2D79130AC4E4EE778 /* Frameworks */,
+				9C956C26D3D2F61EC0A7D77DC530DF18 /* Resources */,
 			);
 			buildRules = (
 			);
 			dependencies = (
-				43CD44BB39C171ABF80DC9483A64F697 /* PBXTargetDependency */,
-				00DAE7EA62B3AD27A32EF5E11DBFBB19 /* PBXTargetDependency */,
+				5DC4215E92AFD9B6C232986073B4FC6B /* PBXTargetDependency */,
+				FC033A08F486A7F8FFC6EF7BC545DC04 /* PBXTargetDependency */,
 			);
 			name = "Pods-GoFit.Ai - live Healthy";
-			productName = "Pods-GoFit.Ai - live Healthy";
-			productReference = FD35FDAF46E862DD41CB7FD3EDB472CB /* Pods-GoFit.Ai - live Healthy */;
-			productType = "com.apple.product-type.library.static";
+			productName = "Pods_GoFit_Ai___live_Healthy";
+			productReference = FD35FDAF46E862DD41CB7FD3EDB472CB /* Pods_GoFit_Ai___live_Healthy.framework */;
+			productType = "com.apple.product-type.framework";
 		};
 		A2BC9542D2CF8B919037C0AC0B0DA1E9 /* Pods-GoFit.Ai - live HealthyTests */ = {
 			isa = PBXNativeTarget;
-			buildConfigurationList = 473D5636D2C6D9591498D86BC127FFC1 /* Build configuration list for PBXNativeTarget "Pods-GoFit.Ai - live HealthyTests" */;
+			buildConfigurationList = 827CCEEF2FE7824C98F74736F597C265 /* Build configuration list for PBXNativeTarget "Pods-GoFit.Ai - live HealthyTests" */;
 			buildPhases = (
-				1D9167CE5878058E5909FEEB89A8E19E /* Headers */,
-				93295405B431F5788490EE200273A172 /* Sources */,
-				5F929EC548FC265E21B616DE90FB1196 /* Frameworks */,
+				83524EE637E27F87997AE5BEC29C247F /* Headers */,
+				9FE5969DD8F35D351BA16216807587DE /* Sources */,
+				8AC0B4848CCECBD121642B7F8915AA7B /* Frameworks */,
+				8E81DDA50F9FC267E3AD1343F04B3309 /* Resources */,
 			);
 			buildRules = (
 			);
 			dependencies = (
 			);
 			name = "Pods-GoFit.Ai - live HealthyTests";
-			productName = "Pods-GoFit.Ai - live HealthyTests";
-			productReference = 7E42692C2556D92CE376C8EAD9D5536A /* Pods-GoFit.Ai - live HealthyTests */;
-			productType = "com.apple.product-type.library.static";
+			productName = "Pods_GoFit_Ai___live_HealthyTests";
+			productReference = 7E42692C2556D92CE376C8EAD9D5536A /* Pods_GoFit_Ai___live_HealthyTests.framework */;
+			productType = "com.apple.product-type.framework";
 		};
 		BFCFCD3A497170F9F250E479DBC43479 /* Pods-GoFit.Ai - live HealthyUITests */ = {
 			isa = PBXNativeTarget;
-			buildConfigurationList = 94F97439BD79B0BF64A1D211C94FB3F4 /* Build configuration list for PBXNativeTarget "Pods-GoFit.Ai - live HealthyUITests" */;
+			buildConfigurationList = D60D9F8001BABB857D41F3C174CC426A /* Build configuration list for PBXNativeTarget "Pods-GoFit.Ai - live HealthyUITests" */;
 			buildPhases = (
-				ED44EA83385287F6799290823A2967CC /* Headers */,
-				237E90E2721197EA33FD7623EE826E1E /* Sources */,
-				64B3F1443D841EBB2D97F8767994CC5F /* Frameworks */,
+				CAF78272F8FC5345BAB89777CDD28166 /* Headers */,
+				DC0DEC2D48A76B5D2DBBB9B6CB46E1D5 /* Sources */,
+				FD85C44D4C9E5ADB03FBEF086090B159 /* Frameworks */,
+				E9F727DDA24C7388439999FB0185EC71 /* Resources */,
 			);
 			buildRules = (
 			);
 			dependencies = (
 			);
 			name = "Pods-GoFit.Ai - live HealthyUITests";
-			productName = "Pods-GoFit.Ai - live HealthyUITests";
-			productReference = D4784BF8C3B53412CCE080806C963678 /* Pods-GoFit.Ai - live HealthyUITests */;
-			productType = "com.apple.product-type.library.static";
+			productName = "Pods_GoFit_Ai___live_HealthyUITests";
+			productReference = D4784BF8C3B53412CCE080806C963678 /* Pods_GoFit_Ai___live_HealthyUITests.framework */;
+			productType = "com.apple.product-type.framework";
 		};
 		FEA3B3A570634836C0457F3D7CEF1699 /* Google-Mobile-Ads-SDK */ = {
 			isa = PBXNativeTarget;
-			buildConfigurationList = 0156FB7CCC149A417F0003AE9B6FE0CA /* Build configuration list for PBXNativeTarget "Google-Mobile-Ads-SDK" */;
+			buildConfigurationList = 0133F7ACE4F2664542B16D7BCEF4D52E /* Build configuration list for PBXNativeTarget "Google-Mobile-Ads-SDK" */;
 			buildPhases = (
-				324B8CA9432319E7EF67FBADCA070BAA /* Headers */,
-				F4CCD70526D94A7E0AC7DCA7B2DC2868 /* [CP] Copy XCFrameworks */,
-				A38AA41AC07F86F361A04A51834676FD /* Sources */,
-				48B2836542BEE57EE156FB7878DA9239 /* Frameworks */,
-				66A327D6531F5F426DC053E16820F61D /* Copy generated compatibility header */,
+				B23F9353E3148B809D4BA25A333D0F47 /* Headers */,
+				62A1CB4E7755DF23F645AE7F4B214347 /* [CP] Copy XCFrameworks */,
+				DCEEB9F8EA09BB4BFEBDBD7594F8545D /* Sources */,
+				AAD84B30E2C97051DCF74675A166BD94 /* Frameworks */,
+				1CF44B3B9ECB7DB1FE1C8B3C244E4EAD /* Resources */,
 			);
 			buildRules = (
 			);
 			dependencies = (
-				FC517B2CEC215861A469846BF4738D70 /* PBXTargetDependency */,
-				CA2799911650C35353C579845B89B489 /* PBXTargetDependency */,
+				D44CEE28DEE487F753B59D1EBBAD6F65 /* PBXTargetDependency */,
+				761A4EE74CA3B9708AF8EDE42D7427D2 /* PBXTargetDependency */,
 			);
 			name = "Google-Mobile-Ads-SDK";
-			productName = "Google-Mobile-Ads-SDK";
-			productReference = F8ECCB3B4E33C0FDD00B394CC2C7EA2E /* Google-Mobile-Ads-SDK */;
-			productType = "com.apple.product-type.library.static";
+			productName = Google_Mobile_Ads_SDK;
+			productReference = F8ECCB3B4E33C0FDD00B394CC2C7EA2E /* Google_Mobile_Ads_SDK.framework */;
+			productType = "com.apple.product-type.framework";
 		};
 /* End PBXNativeTarget section */
 
@@ -439,8 +479,9 @@
 		BFDFE7DC352907FC980B868725387E98 /* Project object */ = {
 			isa = PBXProject;
 			attributes = {
+				BuildIndependentTargetsInParallel = YES;
 				LastSwiftUpdateCheck = 1600;
-				LastUpgradeCheck = 1600;
+				LastUpgradeCheck = 1620;
 			};
 			buildConfigurationList = 4821239608C13582E20E6DA73FD5F1F9 /* Build configuration list for PBXProject "Pods" */;
 			compatibilityVersion = "Xcode 16.0";
@@ -451,9 +492,7 @@
 				en,
 			);
 			mainGroup = CF1408CF629C7361332E53B88F7BD30C;
-			minimizedProjectReferenceProxies = 0;
-			preferredProjectObjectVersion = 77;
-			productRefGroup = 07CE97FE1556746AD13B6C9B98293E50 /* Products */;
+			productRefGroup = 63D41F5971F4F1D21D903F70262AC705 /* Products */;
 			projectDirPath = "";
 			projectRoot = "";
 			targets = (
@@ -468,59 +507,46 @@
 /* End PBXProject section */
 
 /* Begin PBXResourcesBuildPhase section */
-		928DF040E7353C82B7C46DDCA1050BD3 /* Resources */ = {
+		1CF44B3B9ECB7DB1FE1C8B3C244E4EAD /* Resources */ = {
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				531A4A84C12BC8EE42F3CCF4C5BFB35A /* PrivacyInfo.xcprivacy in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		8E81DDA50F9FC267E3AD1343F04B3309 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		9C956C26D3D2F61EC0A7D77DC530DF18 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		E35D9214222E6018BDA577EF467D6F22 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				6EAFEABA737FF5C3054B9253767DA5D5 /* PrivacyInfo.xcprivacy in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		E9F727DDA24C7388439999FB0185EC71 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXResourcesBuildPhase section */
 
 /* Begin PBXShellScriptBuildPhase section */
-		3ACD4293ADFC0815D026068DFC82854D /* [CP] Copy XCFrameworks */ = {
-			isa = PBXShellScriptBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			inputFileListPaths = (
-				"${PODS_ROOT}/Target Support Files/GoogleUserMessagingPlatform/GoogleUserMessagingPlatform-xcframeworks-input-files.xcfilelist",
-			);
-			name = "[CP] Copy XCFrameworks";
-			outputFileListPaths = (
-				"${PODS_ROOT}/Target Support Files/GoogleUserMessagingPlatform/GoogleUserMessagingPlatform-xcframeworks-output-files.xcfilelist",
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-			shellPath = /bin/sh;
-			shellScript = "\"${PODS_ROOT}/Target Support Files/GoogleUserMessagingPlatform/GoogleUserMessagingPlatform-xcframeworks.sh\"\n";
-			showEnvVarsInLog = 0;
-		};
-		66A327D6531F5F426DC053E16820F61D /* Copy generated compatibility header */ = {
-			isa = PBXShellScriptBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			inputFileListPaths = (
-			);
-			inputPaths = (
-				"${DERIVED_SOURCES_DIR}/${PRODUCT_MODULE_NAME}-Swift.h",
-				"${PODS_ROOT}/Headers/Public/Google_Mobile_Ads_SDK/Google-Mobile-Ads-SDK.modulemap",
-				"${PODS_ROOT}/Headers/Public/Google_Mobile_Ads_SDK/Google-Mobile-Ads-SDK-umbrella.h",
-			);
-			name = "Copy generated compatibility header";
-			outputFileListPaths = (
-			);
-			outputPaths = (
-				"${BUILT_PRODUCTS_DIR}/${PRODUCT_MODULE_NAME}.modulemap",
-				"${BUILT_PRODUCTS_DIR}/Google-Mobile-Ads-SDK-umbrella.h",
-				"${BUILT_PRODUCTS_DIR}/Swift Compatibility Header/${PRODUCT_MODULE_NAME}-Swift.h",
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-			shellPath = /bin/sh;
-			shellScript = "COMPATIBILITY_HEADER_PATH=\"${BUILT_PRODUCTS_DIR}/Swift Compatibility Header/${PRODUCT_MODULE_NAME}-Swift.h\"\nMODULE_MAP_PATH=\"${BUILT_PRODUCTS_DIR}/${PRODUCT_MODULE_NAME}.modulemap\"\n\nditto \"${DERIVED_SOURCES_DIR}/${PRODUCT_MODULE_NAME}-Swift.h\" \"${COMPATIBILITY_HEADER_PATH}\"\nditto \"${PODS_ROOT}/Headers/Public/Google_Mobile_Ads_SDK/Google-Mobile-Ads-SDK.modulemap\" \"${MODULE_MAP_PATH}\"\nditto \"${PODS_ROOT}/Headers/Public/Google_Mobile_Ads_SDK/Google-Mobile-Ads-SDK-umbrella.h\" \"${BUILT_PRODUCTS_DIR}\"\nprintf \"\\n\\nmodule ${PRODUCT_MODULE_NAME}.Swift {\\n  header \\\"${COMPATIBILITY_HEADER_PATH}\\\"\\n  requires objc\\n}\\n\" >> \"${MODULE_MAP_PATH}\"\n";
-		};
-		F4CCD70526D94A7E0AC7DCA7B2DC2868 /* [CP] Copy XCFrameworks */ = {
+		62A1CB4E7755DF23F645AE7F4B214347 /* [CP] Copy XCFrameworks */ = {
 			isa = PBXShellScriptBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -537,115 +563,100 @@
 			shellScript = "\"${PODS_ROOT}/Target Support Files/Google-Mobile-Ads-SDK/Google-Mobile-Ads-SDK-xcframeworks.sh\"\n";
 			showEnvVarsInLog = 0;
 		};
+		ED98B882C481E53EC8C2CA170437AF7F /* [CP] Copy XCFrameworks */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+				"${PODS_ROOT}/Target Support Files/GoogleUserMessagingPlatform/GoogleUserMessagingPlatform-xcframeworks-input-files.xcfilelist",
+			);
+			name = "[CP] Copy XCFrameworks";
+			outputFileListPaths = (
+				"${PODS_ROOT}/Target Support Files/GoogleUserMessagingPlatform/GoogleUserMessagingPlatform-xcframeworks-output-files.xcfilelist",
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "\"${PODS_ROOT}/Target Support Files/GoogleUserMessagingPlatform/GoogleUserMessagingPlatform-xcframeworks.sh\"\n";
+			showEnvVarsInLog = 0;
+		};
 /* End PBXShellScriptBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
-		237E90E2721197EA33FD7623EE826E1E /* Sources */ = {
+		8D9680F27B81BA9A3C98EAB15E1BE819 /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				1DA16312DCDB7F7A4CFF93B65F5F2770 /* Pods-GoFit.Ai - live HealthyUITests-dummy.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
-		74426F161614F2951823415A882C8DD4 /* Sources */ = {
+		9FE5969DD8F35D351BA16216807587DE /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				6485BB59BE591655167636B016BFEAE1 /* Pods-GoFit.Ai - live Healthy-dummy.m in Sources */,
+				9EE30F6F6C4F57AF01E757C4F6F87F4A /* Pods-GoFit.Ai - live HealthyTests-dummy.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
-		93295405B431F5788490EE200273A172 /* Sources */ = {
+		DC0DEC2D48A76B5D2DBBB9B6CB46E1D5 /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				B31FF5CED91EB57E4446B626AB042A9F /* Pods-GoFit.Ai - live HealthyTests-dummy.m in Sources */,
+				D83EFC24C08D34872CE2E4974B804938 /* Pods-GoFit.Ai - live HealthyUITests-dummy.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
-		A38AA41AC07F86F361A04A51834676FD /* Sources */ = {
+		DCEEB9F8EA09BB4BFEBDBD7594F8545D /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				7B6DF0B07891BC86FE4BF2DD81EB84F8 /* Google-Mobile-Ads-SDK-dummy.m in Sources */,
-				F40FD11049519721266A6E2CB03C4561 /* GoogleMobileAdsPlaceholder.swift in Sources */,
+				3317DC9751692475C7BF6CA18EE999CE /* Google-Mobile-Ads-SDK-dummy.m in Sources */,
+				1493DD91336DE7675C83360B987057DD /* GoogleMobileAdsPlaceholder.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
-		F8CB1BA68A2F9E720B9355F3E0C8AA18 /* Sources */ = {
+		FF8936F914BD0FF08869D60406A28179 /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				BB4C4E81FB93DE014401312F05D28193 /* Pods-GoFit.Ai - live Healthy-dummy.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXSourcesBuildPhase section */
 
 /* Begin PBXTargetDependency section */
-		00DAE7EA62B3AD27A32EF5E11DBFBB19 /* PBXTargetDependency */ = {
-			isa = PBXTargetDependency;
-			name = GoogleUserMessagingPlatform;
-			target = 458B188365A307B3C128ABF524D1A3E3 /* GoogleUserMessagingPlatform */;
-			targetProxy = 1BD734D905139DC3E9252CE1A65451EC /* PBXContainerItemProxy */;
-		};
-		43CD44BB39C171ABF80DC9483A64F697 /* PBXTargetDependency */ = {
+		5DC4215E92AFD9B6C232986073B4FC6B /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
 			name = "Google-Mobile-Ads-SDK";
 			target = FEA3B3A570634836C0457F3D7CEF1699 /* Google-Mobile-Ads-SDK */;
-			targetProxy = D67F20E30FD219FF32062163BEAB5163 /* PBXContainerItemProxy */;
+			targetProxy = 016B8DD830BB2903A409BEB487909E37 /* PBXContainerItemProxy */;
 		};
-		CA2799911650C35353C579845B89B489 /* PBXTargetDependency */ = {
+		761A4EE74CA3B9708AF8EDE42D7427D2 /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
 			name = GoogleUserMessagingPlatform;
 			target = 458B188365A307B3C128ABF524D1A3E3 /* GoogleUserMessagingPlatform */;
-			targetProxy = 332228296FD1E32D2A8463E388661A1A /* PBXContainerItemProxy */;
+			targetProxy = 6C410AD7B1396D76305E8D52D30D3BCE /* PBXContainerItemProxy */;
 		};
-		FC517B2CEC215861A469846BF4738D70 /* PBXTargetDependency */ = {
+		D44CEE28DEE487F753B59D1EBBAD6F65 /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
 			name = "Google-Mobile-Ads-SDK-GoogleMobileAdsResources";
 			target = 36FD0958A0EC4A0FCF599E9B22719B03 /* Google-Mobile-Ads-SDK-GoogleMobileAdsResources */;
-			targetProxy = 77729F91FB0C91CF8261F5BCED6237A4 /* PBXContainerItemProxy */;
+			targetProxy = 1F8F4C776085E6EC013B7514E902F277 /* PBXContainerItemProxy */;
+		};
+		FC033A08F486A7F8FFC6EF7BC545DC04 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			name = GoogleUserMessagingPlatform;
+			target = 458B188365A307B3C128ABF524D1A3E3 /* GoogleUserMessagingPlatform */;
+			targetProxy = EB4042EFA57A7C03E77144427367EBB8 /* PBXContainerItemProxy */;
 		};
 /* End PBXTargetDependency section */
 
 /* Begin XCBuildConfiguration section */
-		06C8887C8BBF0DF00D1F006B2060C5DF /* Debug */ = {
+		02245E1D391676997CDD1D9BE5474B5F /* Debug */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = 050B74D888016C08CBF800BE284F1B05 /* Google-Mobile-Ads-SDK.debug.xcconfig */;
+			baseConfigurationReference = 02F7ABABEE62CD712F92B30FFD47F8C7 /* Google-Mobile-Ads-SDK.debug.xcconfig */;
 			buildSettings = {
-				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = NO;
-				CLANG_ENABLE_OBJC_WEAK = NO;
-				"CODE_SIGN_IDENTITY[sdk=appletvos*]" = "";
-				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "";
-				"CODE_SIGN_IDENTITY[sdk=watchos*]" = "";
-				ENABLE_MODULE_VERIFIER = NO;
-				ENABLE_USER_SCRIPT_SANDBOXING = NO;
-				GCC_PREFIX_HEADER = "Target Support Files/Google-Mobile-Ads-SDK/Google-Mobile-Ads-SDK-prefix.pch";
-				GCC_PREPROCESSOR_DEFINITIONS = "$(inherited)";
-				GENERATE_INFOPLIST_FILE = NO;
-				IPHONEOS_DEPLOYMENT_TARGET = 13.0;
-				MODULEMAP_FILE = "Headers/Public/Google_Mobile_Ads_SDK/Google-Mobile-Ads-SDK.modulemap";
-				OTHER_LDFLAGS = "";
-				OTHER_LIBTOOLFLAGS = "";
-				PRIVATE_HEADERS_FOLDER_PATH = "";
-				PRODUCT_MODULE_NAME = Google_Mobile_Ads_SDK;
-				PRODUCT_NAME = "Google-Mobile-Ads-SDK";
-				PUBLIC_HEADERS_FOLDER_PATH = "";
-				SDKROOT = iphoneos;
-				SKIP_INSTALL = YES;
-				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "$(inherited) ";
-				SWIFT_INSTALL_OBJC_HEADER = YES;
-				SWIFT_VERSION = 5.3;
-				TARGETED_DEVICE_FAMILY = "1,2";
-			};
-			name = Debug;
-		};
-		09807A18519BDCB799525241F4B7284E /* Release */ = {
-			isa = XCBuildConfiguration;
-			baseConfigurationReference = 86BE5C81C5568AF63BF317A3648D2856 /* Google-Mobile-Ads-SDK.release.xcconfig */;
-			buildSettings = {
-				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = NO;
 				CODE_SIGNING_ALLOWED = NO;
 				CONFIGURATION_BUILD_DIR = "$(BUILD_DIR)/$(CONFIGURATION)$(EFFECTIVE_PLATFORM_NAME)/Google-Mobile-Ads-SDK";
 				GCC_PREPROCESSOR_DEFINITIONS = "$(inherited)";
@@ -658,143 +669,129 @@
 				TARGETED_DEVICE_FAMILY = "1,2";
 				WRAPPER_EXTENSION = bundle;
 			};
-			name = Release;
-		};
-		2A56B60655A13BE5BBAF743CD631B26A /* Debug */ = {
-			isa = XCBuildConfiguration;
-			baseConfigurationReference = 052BDE3E9BE9E87369C6440EA4AA82D1 /* Pods-GoFit.Ai - live HealthyTests.debug.xcconfig */;
-			buildSettings = {
-				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = NO;
-				CLANG_ENABLE_OBJC_WEAK = NO;
-				"CODE_SIGN_IDENTITY[sdk=appletvos*]" = "";
-				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "";
-				"CODE_SIGN_IDENTITY[sdk=watchos*]" = "";
-				ENABLE_MODULE_VERIFIER = NO;
-				ENABLE_USER_SCRIPT_SANDBOXING = NO;
-				GCC_PREPROCESSOR_DEFINITIONS = "$(inherited)";
-				IPHONEOS_DEPLOYMENT_TARGET = 13.0;
-				MACH_O_TYPE = staticlib;
-				OTHER_LDFLAGS = "";
-				OTHER_LIBTOOLFLAGS = "";
-				PODS_ROOT = "$(SRCROOT)";
-				PRODUCT_BUNDLE_IDENTIFIER = "org.cocoapods.${PRODUCT_NAME:rfc1034identifier}";
-				SDKROOT = iphoneos;
-				SKIP_INSTALL = YES;
-				TARGETED_DEVICE_FAMILY = "1,2";
-			};
 			name = Debug;
 		};
-		31B8B3231E8364C51D7C52C0990134C1 /* Release */ = {
+		33BE362A8AD91E9E4CB79D9C924EFA47 /* Release */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = 3D1FC20DEE75E96C02BD9E345A6ED67B /* Pods-GoFit.Ai - live HealthyUITests.release.xcconfig */;
+			baseConfigurationReference = F46F48842D2017E7EC8D024540DA77E8 /* Pods-GoFit.Ai - live Healthy.release.xcconfig */;
 			buildSettings = {
-				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = NO;
 				CLANG_ENABLE_OBJC_WEAK = NO;
-				"CODE_SIGN_IDENTITY[sdk=appletvos*]" = "";
-				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "";
-				"CODE_SIGN_IDENTITY[sdk=watchos*]" = "";
-				ENABLE_MODULE_VERIFIER = NO;
+				CODE_SIGN_IDENTITY = "";
+				CURRENT_PROJECT_VERSION = 1;
+				DEFINES_MODULE = YES;
+				DYLIB_COMPATIBILITY_VERSION = 1;
+				DYLIB_CURRENT_VERSION = 1;
+				DYLIB_INSTALL_NAME_BASE = "@rpath";
+				ENABLE_MODULE_VERIFIER = YES;
 				ENABLE_USER_SCRIPT_SANDBOXING = NO;
 				GCC_PREPROCESSOR_DEFINITIONS = "$(inherited)";
+				INFOPLIST_FILE = "Target Support Files/Pods-GoFit.Ai - live Healthy/Pods-GoFit.Ai - live Healthy-Info.plist";
+				INSTALL_PATH = "$(LOCAL_LIBRARY_DIR)/Frameworks";
 				IPHONEOS_DEPLOYMENT_TARGET = 13.0;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@loader_path/Frameworks",
+				);
 				MACH_O_TYPE = staticlib;
+				MODULEMAP_FILE = "Target Support Files/Pods-GoFit.Ai - live Healthy/Pods-GoFit.Ai - live Healthy.modulemap";
+				MODULE_VERIFIER_SUPPORTED_LANGUAGE_STANDARDS = "gnu11 gnu++14";
 				OTHER_LDFLAGS = "";
 				OTHER_LIBTOOLFLAGS = "";
 				PODS_ROOT = "$(SRCROOT)";
 				PRODUCT_BUNDLE_IDENTIFIER = "org.cocoapods.${PRODUCT_NAME:rfc1034identifier}";
+				PRODUCT_NAME = "$(TARGET_NAME:c99extidentifier)";
 				SDKROOT = iphoneos;
 				SKIP_INSTALL = YES;
 				TARGETED_DEVICE_FAMILY = "1,2";
 				VALIDATE_PRODUCT = YES;
+				VERSIONING_SYSTEM = "apple-generic";
+				VERSION_INFO_PREFIX = "";
 			};
 			name = Release;
 		};
-		41BF8D75846651BAB56B7C0305B479CC /* Debug */ = {
+		5E3E437D0B69684CFB33188A44D9BA05 /* Debug */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = 0FDD8462047E73A7ED2AD940EAAAB646 /* Pods-GoFit.Ai - live HealthyUITests.debug.xcconfig */;
+			baseConfigurationReference = 59311C3AF1DBFC6B543820BEFA4B29ED /* Pods-GoFit.Ai - live Healthy.debug.xcconfig */;
 			buildSettings = {
-				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = NO;
 				CLANG_ENABLE_OBJC_WEAK = NO;
-				"CODE_SIGN_IDENTITY[sdk=appletvos*]" = "";
-				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "";
-				"CODE_SIGN_IDENTITY[sdk=watchos*]" = "";
-				ENABLE_MODULE_VERIFIER = NO;
+				CODE_SIGN_IDENTITY = "";
+				CURRENT_PROJECT_VERSION = 1;
+				DEFINES_MODULE = YES;
+				DYLIB_COMPATIBILITY_VERSION = 1;
+				DYLIB_CURRENT_VERSION = 1;
+				DYLIB_INSTALL_NAME_BASE = "@rpath";
+				ENABLE_MODULE_VERIFIER = YES;
 				ENABLE_USER_SCRIPT_SANDBOXING = NO;
 				GCC_PREPROCESSOR_DEFINITIONS = "$(inherited)";
+				INFOPLIST_FILE = "Target Support Files/Pods-GoFit.Ai - live Healthy/Pods-GoFit.Ai - live Healthy-Info.plist";
+				INSTALL_PATH = "$(LOCAL_LIBRARY_DIR)/Frameworks";
 				IPHONEOS_DEPLOYMENT_TARGET = 13.0;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@loader_path/Frameworks",
+				);
 				MACH_O_TYPE = staticlib;
+				MODULEMAP_FILE = "Target Support Files/Pods-GoFit.Ai - live Healthy/Pods-GoFit.Ai - live Healthy.modulemap";
+				MODULE_VERIFIER_SUPPORTED_LANGUAGE_STANDARDS = "gnu11 gnu++14";
 				OTHER_LDFLAGS = "";
 				OTHER_LIBTOOLFLAGS = "";
 				PODS_ROOT = "$(SRCROOT)";
 				PRODUCT_BUNDLE_IDENTIFIER = "org.cocoapods.${PRODUCT_NAME:rfc1034identifier}";
+				PRODUCT_NAME = "$(TARGET_NAME:c99extidentifier)";
 				SDKROOT = iphoneos;
 				SKIP_INSTALL = YES;
 				TARGETED_DEVICE_FAMILY = "1,2";
+				VERSIONING_SYSTEM = "apple-generic";
+				VERSION_INFO_PREFIX = "";
 			};
 			name = Debug;
 		};
-		6F19447F27D4B95477C3D81C907DA606 /* Release */ = {
+		612A771FEC74E5BC5C4888D1C8CEEDAF /* Debug */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = 86BE5C81C5568AF63BF317A3648D2856 /* Google-Mobile-Ads-SDK.release.xcconfig */;
+			baseConfigurationReference = 02F7ABABEE62CD712F92B30FFD47F8C7 /* Google-Mobile-Ads-SDK.debug.xcconfig */;
 			buildSettings = {
-				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = NO;
 				CLANG_ENABLE_OBJC_WEAK = NO;
-				"CODE_SIGN_IDENTITY[sdk=appletvos*]" = "";
-				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "";
-				"CODE_SIGN_IDENTITY[sdk=watchos*]" = "";
-				ENABLE_MODULE_VERIFIER = NO;
+				CODE_SIGN_IDENTITY = "";
+				CURRENT_PROJECT_VERSION = 1;
+				DEFINES_MODULE = YES;
+				DYLIB_COMPATIBILITY_VERSION = 1;
+				DYLIB_CURRENT_VERSION = 1;
+				DYLIB_INSTALL_NAME_BASE = "@rpath";
+				ENABLE_MODULE_VERIFIER = YES;
 				ENABLE_USER_SCRIPT_SANDBOXING = NO;
 				GCC_PREFIX_HEADER = "Target Support Files/Google-Mobile-Ads-SDK/Google-Mobile-Ads-SDK-prefix.pch";
 				GCC_PREPROCESSOR_DEFINITIONS = "$(inherited)";
 				GENERATE_INFOPLIST_FILE = NO;
+				INFOPLIST_FILE = "Target Support Files/Google-Mobile-Ads-SDK/Google-Mobile-Ads-SDK-Info.plist";
+				INSTALL_PATH = "$(LOCAL_LIBRARY_DIR)/Frameworks";
 				IPHONEOS_DEPLOYMENT_TARGET = 13.0;
-				MODULEMAP_FILE = "Headers/Public/Google_Mobile_Ads_SDK/Google-Mobile-Ads-SDK.modulemap";
-				OTHER_LDFLAGS = "";
-				OTHER_LIBTOOLFLAGS = "";
-				PRIVATE_HEADERS_FOLDER_PATH = "";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@loader_path/Frameworks",
+				);
+				MACH_O_TYPE = staticlib;
+				MODULEMAP_FILE = "Target Support Files/Google-Mobile-Ads-SDK/Google-Mobile-Ads-SDK.modulemap";
+				MODULE_VERIFIER_SUPPORTED_LANGUAGE_STANDARDS = "gnu11 gnu++14";
 				PRODUCT_MODULE_NAME = Google_Mobile_Ads_SDK;
-				PRODUCT_NAME = "Google-Mobile-Ads-SDK";
-				PUBLIC_HEADERS_FOLDER_PATH = "";
+				PRODUCT_NAME = Google_Mobile_Ads_SDK;
 				SDKROOT = iphoneos;
 				SKIP_INSTALL = YES;
 				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "$(inherited) ";
 				SWIFT_INSTALL_OBJC_HEADER = YES;
 				SWIFT_VERSION = 5.3;
 				TARGETED_DEVICE_FAMILY = "1,2";
-				VALIDATE_PRODUCT = YES;
-			};
-			name = Release;
-		};
-		722C414AC18CA54E3EED6D66EFE21A4F /* Debug */ = {
-			isa = XCBuildConfiguration;
-			baseConfigurationReference = 422C0618C0148DA2ABC5AC151AC6B7AF /* Pods-GoFit.Ai - live Healthy.debug.xcconfig */;
-			buildSettings = {
-				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = NO;
-				CLANG_ENABLE_OBJC_WEAK = NO;
-				"CODE_SIGN_IDENTITY[sdk=appletvos*]" = "";
-				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "";
-				"CODE_SIGN_IDENTITY[sdk=watchos*]" = "";
-				ENABLE_MODULE_VERIFIER = NO;
-				ENABLE_USER_SCRIPT_SANDBOXING = NO;
-				GCC_PREPROCESSOR_DEFINITIONS = "$(inherited)";
-				IPHONEOS_DEPLOYMENT_TARGET = 13.0;
-				MACH_O_TYPE = staticlib;
-				MODULEMAP_FILE = "Target Support Files/Pods-GoFit.Ai - live Healthy/Pods-GoFit.Ai - live Healthy.modulemap";
-				OTHER_LDFLAGS = "";
-				OTHER_LIBTOOLFLAGS = "";
-				PODS_ROOT = "$(SRCROOT)";
-				PRODUCT_BUNDLE_IDENTIFIER = "org.cocoapods.${PRODUCT_NAME:rfc1034identifier}";
-				SDKROOT = iphoneos;
-				SKIP_INSTALL = YES;
-				TARGETED_DEVICE_FAMILY = "1,2";
+				VERSIONING_SYSTEM = "apple-generic";
+				VERSION_INFO_PREFIX = "";
 			};
 			name = Debug;
 		};
-		744B5509F04EEEA9A6D497408A94731B /* Release */ = {
+		83FAA3C7252D2BEEA8324C73EEFFA253 /* Release */ = {
 			isa = XCBuildConfiguration;
 			baseConfigurationReference = C8DDFA20AB0B140629838909D35A1F91 /* GoogleUserMessagingPlatform.release.xcconfig */;
 			buildSettings = {
-				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = NO;
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				ENABLE_USER_SCRIPT_SANDBOXING = NO;
@@ -845,6 +842,7 @@
 				CLANG_WARN_UNREACHABLE_CODE = YES;
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
 				COPY_PHASE_STRIP = NO;
+				DEAD_CODE_STRIPPING = YES;
 				DEBUG_INFORMATION_FORMAT = dwarf;
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
 				ENABLE_TESTABILITY = YES;
@@ -868,13 +866,69 @@
 				MTL_FAST_MATH = YES;
 				ONLY_ACTIVE_ARCH = YES;
 				PRODUCT_NAME = "$(TARGET_NAME)";
-				STRIP_INSTALLED_PRODUCT = NO;
 				SWIFT_ACTIVE_COMPILATION_CONDITIONS = DEBUG;
 				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
 				SWIFT_VERSION = 5.0;
 				SYMROOT = "${SRCROOT}/../build";
 			};
 			name = Debug;
+		};
+		9318CC957D7043ACBB0E8860371C5D20 /* Release */ = {
+			isa = XCBuildConfiguration;
+			baseConfigurationReference = 3593A59026EFB4F57DC6FBC91EB0575E /* Pods-GoFit.Ai - live HealthyTests.release.xcconfig */;
+			buildSettings = {
+				CLANG_ENABLE_OBJC_WEAK = NO;
+				CODE_SIGN_IDENTITY = "";
+				CURRENT_PROJECT_VERSION = 1;
+				DEFINES_MODULE = YES;
+				DYLIB_COMPATIBILITY_VERSION = 1;
+				DYLIB_CURRENT_VERSION = 1;
+				DYLIB_INSTALL_NAME_BASE = "@rpath";
+				ENABLE_MODULE_VERIFIER = YES;
+				ENABLE_USER_SCRIPT_SANDBOXING = NO;
+				GCC_PREPROCESSOR_DEFINITIONS = "$(inherited)";
+				INFOPLIST_FILE = "Target Support Files/Pods-GoFit.Ai - live HealthyTests/Pods-GoFit.Ai - live HealthyTests-Info.plist";
+				INSTALL_PATH = "$(LOCAL_LIBRARY_DIR)/Frameworks";
+				IPHONEOS_DEPLOYMENT_TARGET = 13.0;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@loader_path/Frameworks",
+				);
+				MACH_O_TYPE = staticlib;
+				MODULEMAP_FILE = "Target Support Files/Pods-GoFit.Ai - live HealthyTests/Pods-GoFit.Ai - live HealthyTests.modulemap";
+				MODULE_VERIFIER_SUPPORTED_LANGUAGE_STANDARDS = "gnu11 gnu++14";
+				OTHER_LDFLAGS = "";
+				OTHER_LIBTOOLFLAGS = "";
+				PODS_ROOT = "$(SRCROOT)";
+				PRODUCT_BUNDLE_IDENTIFIER = "org.cocoapods.${PRODUCT_NAME:rfc1034identifier}";
+				PRODUCT_NAME = "$(TARGET_NAME:c99extidentifier)";
+				SDKROOT = iphoneos;
+				SKIP_INSTALL = YES;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				VALIDATE_PRODUCT = YES;
+				VERSIONING_SYSTEM = "apple-generic";
+				VERSION_INFO_PREFIX = "";
+			};
+			name = Release;
+		};
+		9A91331F4B9CEA6853E33F6C70293937 /* Release */ = {
+			isa = XCBuildConfiguration;
+			baseConfigurationReference = 264C31FBA90BD8B8FDDFAA2EC55066D3 /* Google-Mobile-Ads-SDK.release.xcconfig */;
+			buildSettings = {
+				CODE_SIGNING_ALLOWED = NO;
+				CONFIGURATION_BUILD_DIR = "$(BUILD_DIR)/$(CONFIGURATION)$(EFFECTIVE_PLATFORM_NAME)/Google-Mobile-Ads-SDK";
+				GCC_PREPROCESSOR_DEFINITIONS = "$(inherited)";
+				IBSC_MODULE = Google_Mobile_Ads_SDK;
+				INFOPLIST_FILE = "Target Support Files/Google-Mobile-Ads-SDK/ResourceBundle-GoogleMobileAdsResources-Google-Mobile-Ads-SDK-Info.plist";
+				IPHONEOS_DEPLOYMENT_TARGET = 13.0;
+				PRODUCT_NAME = GoogleMobileAdsResources;
+				SDKROOT = iphoneos;
+				SKIP_INSTALL = YES;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				WRAPPER_EXTENSION = bundle;
+			};
+			name = Release;
 		};
 		9E406C6AAF85E580207CD97B0044DEAB /* Release */ = {
 			isa = XCBuildConfiguration;
@@ -911,6 +965,7 @@
 				CLANG_WARN_UNREACHABLE_CODE = YES;
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
 				COPY_PHASE_STRIP = NO;
+				DEAD_CODE_STRIPPING = YES;
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
 				ENABLE_NS_ASSERTIONS = NO;
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
@@ -930,7 +985,6 @@
 				MTL_ENABLE_DEBUG_INFO = NO;
 				MTL_FAST_MATH = YES;
 				PRODUCT_NAME = "$(TARGET_NAME)";
-				STRIP_INSTALLED_PRODUCT = NO;
 				SWIFT_COMPILATION_MODE = wholemodule;
 				SWIFT_OPTIMIZATION_LEVEL = "-O";
 				SWIFT_VERSION = 5.0;
@@ -938,81 +992,89 @@
 			};
 			name = Release;
 		};
-		9E89C92CE16935130C5CEFA7D0B2EDCD /* Debug */ = {
+		BA2AB6FB0451A4F73DDA8150E1858BF7 /* Release */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = 050B74D888016C08CBF800BE284F1B05 /* Google-Mobile-Ads-SDK.debug.xcconfig */;
+			baseConfigurationReference = 264C31FBA90BD8B8FDDFAA2EC55066D3 /* Google-Mobile-Ads-SDK.release.xcconfig */;
 			buildSettings = {
-				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = NO;
-				CODE_SIGNING_ALLOWED = NO;
-				CONFIGURATION_BUILD_DIR = "$(BUILD_DIR)/$(CONFIGURATION)$(EFFECTIVE_PLATFORM_NAME)/Google-Mobile-Ads-SDK";
+				CLANG_ENABLE_OBJC_WEAK = NO;
+				CODE_SIGN_IDENTITY = "";
+				CURRENT_PROJECT_VERSION = 1;
+				DEFINES_MODULE = YES;
+				DYLIB_COMPATIBILITY_VERSION = 1;
+				DYLIB_CURRENT_VERSION = 1;
+				DYLIB_INSTALL_NAME_BASE = "@rpath";
+				ENABLE_MODULE_VERIFIER = YES;
+				ENABLE_USER_SCRIPT_SANDBOXING = NO;
+				GCC_PREFIX_HEADER = "Target Support Files/Google-Mobile-Ads-SDK/Google-Mobile-Ads-SDK-prefix.pch";
 				GCC_PREPROCESSOR_DEFINITIONS = "$(inherited)";
-				IBSC_MODULE = Google_Mobile_Ads_SDK;
-				INFOPLIST_FILE = "Target Support Files/Google-Mobile-Ads-SDK/ResourceBundle-GoogleMobileAdsResources-Google-Mobile-Ads-SDK-Info.plist";
+				GENERATE_INFOPLIST_FILE = NO;
+				INFOPLIST_FILE = "Target Support Files/Google-Mobile-Ads-SDK/Google-Mobile-Ads-SDK-Info.plist";
+				INSTALL_PATH = "$(LOCAL_LIBRARY_DIR)/Frameworks";
 				IPHONEOS_DEPLOYMENT_TARGET = 13.0;
-				PRODUCT_NAME = GoogleMobileAdsResources;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@loader_path/Frameworks",
+				);
+				MACH_O_TYPE = staticlib;
+				MODULEMAP_FILE = "Target Support Files/Google-Mobile-Ads-SDK/Google-Mobile-Ads-SDK.modulemap";
+				MODULE_VERIFIER_SUPPORTED_LANGUAGE_STANDARDS = "gnu11 gnu++14";
+				PRODUCT_MODULE_NAME = Google_Mobile_Ads_SDK;
+				PRODUCT_NAME = Google_Mobile_Ads_SDK;
+				SDKROOT = iphoneos;
+				SKIP_INSTALL = YES;
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "$(inherited) ";
+				SWIFT_INSTALL_OBJC_HEADER = YES;
+				SWIFT_VERSION = 5.3;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				VALIDATE_PRODUCT = YES;
+				VERSIONING_SYSTEM = "apple-generic";
+				VERSION_INFO_PREFIX = "";
+			};
+			name = Release;
+		};
+		C91BBBE054DB5C4D7AD6DC7F20E13664 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			baseConfigurationReference = 1936D4DB5AF1C52B0C1060B83C51954F /* Pods-GoFit.Ai - live HealthyTests.debug.xcconfig */;
+			buildSettings = {
+				CLANG_ENABLE_OBJC_WEAK = NO;
+				CODE_SIGN_IDENTITY = "";
+				CURRENT_PROJECT_VERSION = 1;
+				DEFINES_MODULE = YES;
+				DYLIB_COMPATIBILITY_VERSION = 1;
+				DYLIB_CURRENT_VERSION = 1;
+				DYLIB_INSTALL_NAME_BASE = "@rpath";
+				ENABLE_MODULE_VERIFIER = YES;
+				ENABLE_USER_SCRIPT_SANDBOXING = NO;
+				GCC_PREPROCESSOR_DEFINITIONS = "$(inherited)";
+				INFOPLIST_FILE = "Target Support Files/Pods-GoFit.Ai - live HealthyTests/Pods-GoFit.Ai - live HealthyTests-Info.plist";
+				INSTALL_PATH = "$(LOCAL_LIBRARY_DIR)/Frameworks";
+				IPHONEOS_DEPLOYMENT_TARGET = 13.0;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@loader_path/Frameworks",
+				);
+				MACH_O_TYPE = staticlib;
+				MODULEMAP_FILE = "Target Support Files/Pods-GoFit.Ai - live HealthyTests/Pods-GoFit.Ai - live HealthyTests.modulemap";
+				MODULE_VERIFIER_SUPPORTED_LANGUAGE_STANDARDS = "gnu11 gnu++14";
+				OTHER_LDFLAGS = "";
+				OTHER_LIBTOOLFLAGS = "";
+				PODS_ROOT = "$(SRCROOT)";
+				PRODUCT_BUNDLE_IDENTIFIER = "org.cocoapods.${PRODUCT_NAME:rfc1034identifier}";
+				PRODUCT_NAME = "$(TARGET_NAME:c99extidentifier)";
 				SDKROOT = iphoneos;
 				SKIP_INSTALL = YES;
 				TARGETED_DEVICE_FAMILY = "1,2";
-				WRAPPER_EXTENSION = bundle;
+				VERSIONING_SYSTEM = "apple-generic";
+				VERSION_INFO_PREFIX = "";
 			};
 			name = Debug;
 		};
-		D504C6E0FA36BCE0B18B4867DE985625 /* Release */ = {
-			isa = XCBuildConfiguration;
-			baseConfigurationReference = C37FB818448C47FCB84EE9A72059138B /* Pods-GoFit.Ai - live Healthy.release.xcconfig */;
-			buildSettings = {
-				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = NO;
-				CLANG_ENABLE_OBJC_WEAK = NO;
-				"CODE_SIGN_IDENTITY[sdk=appletvos*]" = "";
-				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "";
-				"CODE_SIGN_IDENTITY[sdk=watchos*]" = "";
-				ENABLE_MODULE_VERIFIER = NO;
-				ENABLE_USER_SCRIPT_SANDBOXING = NO;
-				GCC_PREPROCESSOR_DEFINITIONS = "$(inherited)";
-				IPHONEOS_DEPLOYMENT_TARGET = 13.0;
-				MACH_O_TYPE = staticlib;
-				MODULEMAP_FILE = "Target Support Files/Pods-GoFit.Ai - live Healthy/Pods-GoFit.Ai - live Healthy.modulemap";
-				OTHER_LDFLAGS = "";
-				OTHER_LIBTOOLFLAGS = "";
-				PODS_ROOT = "$(SRCROOT)";
-				PRODUCT_BUNDLE_IDENTIFIER = "org.cocoapods.${PRODUCT_NAME:rfc1034identifier}";
-				SDKROOT = iphoneos;
-				SKIP_INSTALL = YES;
-				TARGETED_DEVICE_FAMILY = "1,2";
-				VALIDATE_PRODUCT = YES;
-			};
-			name = Release;
-		};
-		F3AC2AD5B0F77EE98AAC47A84ADBDC7D /* Release */ = {
-			isa = XCBuildConfiguration;
-			baseConfigurationReference = 83BA9D40C07ED3CF82DD467BDEB1F45F /* Pods-GoFit.Ai - live HealthyTests.release.xcconfig */;
-			buildSettings = {
-				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = NO;
-				CLANG_ENABLE_OBJC_WEAK = NO;
-				"CODE_SIGN_IDENTITY[sdk=appletvos*]" = "";
-				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "";
-				"CODE_SIGN_IDENTITY[sdk=watchos*]" = "";
-				ENABLE_MODULE_VERIFIER = NO;
-				ENABLE_USER_SCRIPT_SANDBOXING = NO;
-				GCC_PREPROCESSOR_DEFINITIONS = "$(inherited)";
-				IPHONEOS_DEPLOYMENT_TARGET = 13.0;
-				MACH_O_TYPE = staticlib;
-				OTHER_LDFLAGS = "";
-				OTHER_LIBTOOLFLAGS = "";
-				PODS_ROOT = "$(SRCROOT)";
-				PRODUCT_BUNDLE_IDENTIFIER = "org.cocoapods.${PRODUCT_NAME:rfc1034identifier}";
-				SDKROOT = iphoneos;
-				SKIP_INSTALL = YES;
-				TARGETED_DEVICE_FAMILY = "1,2";
-				VALIDATE_PRODUCT = YES;
-			};
-			name = Release;
-		};
-		F9392C5E75CB4AE04EE62709925A2774 /* Debug */ = {
+		DDF943CD1547686E91F4B210DCF8C243 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			baseConfigurationReference = 8BD9B44CD25EDC5AD58DC48C3DE0D94A /* GoogleUserMessagingPlatform.debug.xcconfig */;
 			buildSettings = {
-				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = NO;
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				ENABLE_USER_SCRIPT_SANDBOXING = NO;
@@ -1027,23 +1089,91 @@
 			};
 			name = Debug;
 		};
+		EC27523145089BE00B225309E223F9AD /* Debug */ = {
+			isa = XCBuildConfiguration;
+			baseConfigurationReference = 43288EC1E354C32BF3A34FE302723A09 /* Pods-GoFit.Ai - live HealthyUITests.debug.xcconfig */;
+			buildSettings = {
+				CLANG_ENABLE_OBJC_WEAK = NO;
+				CODE_SIGN_IDENTITY = "";
+				CURRENT_PROJECT_VERSION = 1;
+				DEFINES_MODULE = YES;
+				DYLIB_COMPATIBILITY_VERSION = 1;
+				DYLIB_CURRENT_VERSION = 1;
+				DYLIB_INSTALL_NAME_BASE = "@rpath";
+				ENABLE_MODULE_VERIFIER = YES;
+				ENABLE_USER_SCRIPT_SANDBOXING = NO;
+				GCC_PREPROCESSOR_DEFINITIONS = "$(inherited)";
+				INFOPLIST_FILE = "Target Support Files/Pods-GoFit.Ai - live HealthyUITests/Pods-GoFit.Ai - live HealthyUITests-Info.plist";
+				INSTALL_PATH = "$(LOCAL_LIBRARY_DIR)/Frameworks";
+				IPHONEOS_DEPLOYMENT_TARGET = 13.0;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@loader_path/Frameworks",
+				);
+				MACH_O_TYPE = staticlib;
+				MODULEMAP_FILE = "Target Support Files/Pods-GoFit.Ai - live HealthyUITests/Pods-GoFit.Ai - live HealthyUITests.modulemap";
+				MODULE_VERIFIER_SUPPORTED_LANGUAGE_STANDARDS = "gnu11 gnu++14";
+				OTHER_LDFLAGS = "";
+				OTHER_LIBTOOLFLAGS = "";
+				PODS_ROOT = "$(SRCROOT)";
+				PRODUCT_BUNDLE_IDENTIFIER = "org.cocoapods.${PRODUCT_NAME:rfc1034identifier}";
+				PRODUCT_NAME = "$(TARGET_NAME:c99extidentifier)";
+				SDKROOT = iphoneos;
+				SKIP_INSTALL = YES;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				VERSIONING_SYSTEM = "apple-generic";
+				VERSION_INFO_PREFIX = "";
+			};
+			name = Debug;
+		};
+		F21E8CC9771CD69F444A4470D3077EBD /* Release */ = {
+			isa = XCBuildConfiguration;
+			baseConfigurationReference = DD760EE38C4789D3D32CA40E7D6AD25B /* Pods-GoFit.Ai - live HealthyUITests.release.xcconfig */;
+			buildSettings = {
+				CLANG_ENABLE_OBJC_WEAK = NO;
+				CODE_SIGN_IDENTITY = "";
+				CURRENT_PROJECT_VERSION = 1;
+				DEFINES_MODULE = YES;
+				DYLIB_COMPATIBILITY_VERSION = 1;
+				DYLIB_CURRENT_VERSION = 1;
+				DYLIB_INSTALL_NAME_BASE = "@rpath";
+				ENABLE_MODULE_VERIFIER = YES;
+				ENABLE_USER_SCRIPT_SANDBOXING = NO;
+				GCC_PREPROCESSOR_DEFINITIONS = "$(inherited)";
+				INFOPLIST_FILE = "Target Support Files/Pods-GoFit.Ai - live HealthyUITests/Pods-GoFit.Ai - live HealthyUITests-Info.plist";
+				INSTALL_PATH = "$(LOCAL_LIBRARY_DIR)/Frameworks";
+				IPHONEOS_DEPLOYMENT_TARGET = 13.0;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@loader_path/Frameworks",
+				);
+				MACH_O_TYPE = staticlib;
+				MODULEMAP_FILE = "Target Support Files/Pods-GoFit.Ai - live HealthyUITests/Pods-GoFit.Ai - live HealthyUITests.modulemap";
+				MODULE_VERIFIER_SUPPORTED_LANGUAGE_STANDARDS = "gnu11 gnu++14";
+				OTHER_LDFLAGS = "";
+				OTHER_LIBTOOLFLAGS = "";
+				PODS_ROOT = "$(SRCROOT)";
+				PRODUCT_BUNDLE_IDENTIFIER = "org.cocoapods.${PRODUCT_NAME:rfc1034identifier}";
+				PRODUCT_NAME = "$(TARGET_NAME:c99extidentifier)";
+				SDKROOT = iphoneos;
+				SKIP_INSTALL = YES;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				VALIDATE_PRODUCT = YES;
+				VERSIONING_SYSTEM = "apple-generic";
+				VERSION_INFO_PREFIX = "";
+			};
+			name = Release;
+		};
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
-		0156FB7CCC149A417F0003AE9B6FE0CA /* Build configuration list for PBXNativeTarget "Google-Mobile-Ads-SDK" */ = {
+		0133F7ACE4F2664542B16D7BCEF4D52E /* Build configuration list for PBXNativeTarget "Google-Mobile-Ads-SDK" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
-				06C8887C8BBF0DF00D1F006B2060C5DF /* Debug */,
-				6F19447F27D4B95477C3D81C907DA606 /* Release */,
-			);
-			defaultConfigurationIsVisible = 0;
-			defaultConfigurationName = Release;
-		};
-		473D5636D2C6D9591498D86BC127FFC1 /* Build configuration list for PBXNativeTarget "Pods-GoFit.Ai - live HealthyTests" */ = {
-			isa = XCConfigurationList;
-			buildConfigurations = (
-				2A56B60655A13BE5BBAF743CD631B26A /* Debug */,
-				F3AC2AD5B0F77EE98AAC47A84ADBDC7D /* Release */,
+				612A771FEC74E5BC5C4888D1C8CEEDAF /* Debug */,
+				BA2AB6FB0451A4F73DDA8150E1858BF7 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
@@ -1057,38 +1187,47 @@
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
-		522982D0ADC93152A5C94920D86E086C /* Build configuration list for PBXAggregateTarget "GoogleUserMessagingPlatform" */ = {
+		7B63478E076458F20068DE7CC1FC2995 /* Build configuration list for PBXAggregateTarget "GoogleUserMessagingPlatform" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
-				F9392C5E75CB4AE04EE62709925A2774 /* Debug */,
-				744B5509F04EEEA9A6D497408A94731B /* Release */,
+				DDF943CD1547686E91F4B210DCF8C243 /* Debug */,
+				83FAA3C7252D2BEEA8324C73EEFFA253 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
-		94F97439BD79B0BF64A1D211C94FB3F4 /* Build configuration list for PBXNativeTarget "Pods-GoFit.Ai - live HealthyUITests" */ = {
+		827CCEEF2FE7824C98F74736F597C265 /* Build configuration list for PBXNativeTarget "Pods-GoFit.Ai - live HealthyTests" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
-				41BF8D75846651BAB56B7C0305B479CC /* Debug */,
-				31B8B3231E8364C51D7C52C0990134C1 /* Release */,
+				C91BBBE054DB5C4D7AD6DC7F20E13664 /* Debug */,
+				9318CC957D7043ACBB0E8860371C5D20 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
-		ED7F9B08684FEAE6C9A127EA9E79967D /* Build configuration list for PBXNativeTarget "Pods-GoFit.Ai - live Healthy" */ = {
+		C6A7ED1845F7BED9738832AEE4E256F7 /* Build configuration list for PBXNativeTarget "Pods-GoFit.Ai - live Healthy" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
-				722C414AC18CA54E3EED6D66EFE21A4F /* Debug */,
-				D504C6E0FA36BCE0B18B4867DE985625 /* Release */,
+				5E3E437D0B69684CFB33188A44D9BA05 /* Debug */,
+				33BE362A8AD91E9E4CB79D9C924EFA47 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
-		F3075B81AF13860458C1DB54E20913C0 /* Build configuration list for PBXNativeTarget "Google-Mobile-Ads-SDK-GoogleMobileAdsResources" */ = {
+		D60D9F8001BABB857D41F3C174CC426A /* Build configuration list for PBXNativeTarget "Pods-GoFit.Ai - live HealthyUITests" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
-				9E89C92CE16935130C5CEFA7D0B2EDCD /* Debug */,
-				09807A18519BDCB799525241F4B7284E /* Release */,
+				EC27523145089BE00B225309E223F9AD /* Debug */,
+				F21E8CC9771CD69F444A4470D3077EBD /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		EB39120F72AF0C186C3DD6AAD5961AA3 /* Build configuration list for PBXNativeTarget "Google-Mobile-Ads-SDK-GoogleMobileAdsResources" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				02245E1D391676997CDD1D9BE5474B5F /* Debug */,
+				9A91331F4B9CEA6853E33F6C70293937 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;

@@ -14,7 +14,7 @@ struct SocialHubView: View {
     @StateObject private var aiChallenges = AIChallengeService.shared
     @StateObject private var challengeService = ChallengeService()
 
-    @State private var selectedTab: SocialTab = .feed
+    @State private var selectedTab: SocialTab = .clubs
     @State private var showQuickAdd = false
     @State private var showRunTracker = false
     @State private var showCreateChallenge = false
@@ -25,16 +25,13 @@ struct SocialHubView: View {
     @StateObject private var runClubService = RunClubService.shared
     @State private var clubCityFilter = ""
     @State private var showCreateClubSheet = false
-    @State private var showClubDetailSheet = false
 
     enum SocialTab: String, CaseIterable {
-        case feed = "Feed"
         case clubs = "Clubs"
         case friends = "Friends"
 
         var icon: String {
             switch self {
-            case .feed: return "rectangle.stack.fill"
             case .clubs: return "person.3.fill"
             case .friends: return "person.2.fill"
             }
@@ -57,8 +54,6 @@ struct SocialHubView: View {
                 inviteTodayBanner
 
                 switch selectedTab {
-                case .feed:
-                    ActivityFeedView()
                 case .clubs:
                     runClubsSection
                 case .friends:
@@ -334,7 +329,6 @@ struct SocialHubView: View {
                     .padding(.horizontal, Design.Spacing.md)
                     .onTapGesture {
                         runClubService.selectedClub = club
-                        showClubDetailSheet = true
                     }
                 }
                 Spacer()
@@ -344,17 +338,14 @@ struct SocialHubView: View {
         .sheet(isPresented: $showCreateClubSheet) {
             CreateRunClubSheet(isPresented: $showCreateClubSheet) { club in
                 runClubService.selectedClub = club
-                showClubDetailSheet = true
             }
             .environmentObject(auth)
             .environmentObject(runClubService)
         }
-        .sheet(isPresented: $showClubDetailSheet) {
-            if let club = runClubService.selectedClub {
-                RunClubDetailView(club: club)
-                    .environmentObject(auth)
-                    .environmentObject(runClubService)
-            }
+        .sheet(item: $runClubService.selectedClub) { club in
+            RunClubDetailView(club: club)
+                .environmentObject(auth)
+                .environmentObject(runClubService)
         }
     }
 
