@@ -22,7 +22,7 @@ struct SocialHubView: View {
     @State private var errorMessage = ""
     @State private var showPaywall = false
     @State private var searchText = ""
-    @StateObject private var runClubService = RunClubService.shared
+    @ObservedObject private var runClubService = RunClubService.shared
     @State private var clubCityFilter = ""
     @State private var showCreateClubSheet = false
 
@@ -1020,8 +1020,8 @@ struct CreateRunClubSheet: View {
 
 struct RunClubDetailView: View {
     @EnvironmentObject var auth: AuthViewModel
-    @EnvironmentObject var runClubService: RunClubService
-    let club: RunClub
+    @ObservedObject var runClubService: RunClubService
+    @State var club: RunClub
 
     @State private var newEventTitle = ""
     @State private var newEventDetails = ""
@@ -1052,24 +1052,26 @@ struct RunClubDetailView: View {
                             .font(Design.Typography.subheadline)
                             .fontWeight(.semibold)
 
-                        if club.events.isEmpty {
-                            Text("No planned runs yet. Club owner can add events.")
-                                .font(Design.Typography.caption)
-                                .foregroundColor(.secondary)
-                        }
-                        ForEach(club.events) { event in
-                            VStack(alignment: .leading, spacing: 4) {
-                                Text(event.title)
-                                    .font(Design.Typography.bodyBold)
-                                Text(event.details ?? "")
+                        if let updatedClub = runClubService.clubs.first(where: { $0.id == club.id }) {
+                            ForEach(updatedClub.events) { event in
+                                VStack(alignment: .leading, spacing: 4) {
+                                    Text(event.title)
+                                        .font(Design.Typography.bodyBold)
+                                    Text(event.details ?? "")
+                                        .font(Design.Typography.caption)
+                                    Text("\(event.location ?? "TBD") • \(event.date, style: .date) \(event.date, style: .time)")
+                                        .font(Design.Typography.caption2)
+                                        .foregroundColor(.secondary)
+                                }
+                                .padding(12)
+                                .background(Design.Colors.cardBackground)
+                                .cornerRadius(12)
+                            }
+                            if updatedClub.events.isEmpty {
+                                Text("No planned runs yet. Club owner can add events.")
                                     .font(Design.Typography.caption)
-                                Text("\(event.location ?? "TBD") • \(event.date, style: .date) \(event.date, style: .time)")
-                                    .font(Design.Typography.caption2)
                                     .foregroundColor(.secondary)
                             }
-                            .padding(12)
-                            .background(Design.Colors.cardBackground)
-                            .cornerRadius(12)
                         }
                     }
 
@@ -1090,6 +1092,9 @@ struct RunClubDetailView: View {
                             Button("Post Run Event") {
                                 guard !newEventTitle.isEmpty else { return }
                                 runClubService.addEvent(to: club.id, title: newEventTitle, details: newEventDetails, location: newEventLocation, date: newEventDate, createdBy: auth.name)
+                                if let updated = runClubService.clubs.first(where: { $0.id == club.id }) {
+                                    club = updated
+                                }
                                 newEventTitle = ""
                                 newEventDetails = ""
                                 newEventLocation = ""
