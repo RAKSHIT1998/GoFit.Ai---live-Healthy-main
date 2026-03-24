@@ -132,9 +132,9 @@ struct RunTrackerView: View {
     }
 
     private var runMap: some View {
-        Map(position: $region, interactionModes: .all, showsUserLocation: true, userTrackingMode: .constant(.follow)) {
+        Map(coordinateRegion: $region, interactionModes: .all, showsUserLocation: true, userTrackingMode: .constant(.follow)) {
             if !routeCoordinates.isEmpty {
-                MapPolyline(coordinates: routeCoordinates)
+                MapPolyline(coordinates: routeCoordinates, count: routeCoordinates.count)
                     .stroke(Color.blue, lineWidth: 4)
             }
         }
