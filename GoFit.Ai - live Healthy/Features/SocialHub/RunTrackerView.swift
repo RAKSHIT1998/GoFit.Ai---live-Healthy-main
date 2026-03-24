@@ -132,15 +132,10 @@ struct RunTrackerView: View {
     }
 
     private var runMap: some View {
-        Map(coordinateRegion: $region, interactionModes: .all, showsUserLocation: true, userTrackingMode: .constant(.follow)) {
-            if !routeCoordinates.isEmpty {
-                MapPolyline(coordinates: routeCoordinates, count: routeCoordinates.count)
-                    .stroke(Color.blue, lineWidth: 4)
-            }
-        }
-        .frame(height: 260)
-        .cornerRadius(16)
-        .overlay(RoundedRectangle(cornerRadius: 16).stroke(Color.primary.opacity(0.15), lineWidth: 1))
+        RouteMapView(region: $region, routeCoordinates: routeCoordinates)
+            .frame(height: 260)
+            .cornerRadius(16)
+            .overlay(RoundedRectangle(cornerRadius: 16).stroke(Color.primary.opacity(0.15), lineWidth: 1))
     }
 
     private var runSummaryCards: some View {
@@ -167,8 +162,11 @@ struct RunTrackerView: View {
             }
         }
         .pickerStyle(.segmented)
-        .onChange(of: preferredUnitRaw) { _ in
+        .onChange(of: preferredUnitRaw) { oldValue, newValue in
             // persists automatically via AppStorage
+            // We could react to unit toggle if needed
+            _ = oldValue
+            _ = newValue
         }
     }
 
@@ -499,6 +497,52 @@ struct RunTrackerView: View {
         guard let settingsURL = URL(string: UIApplication.openSettingsURLString) else { return }
         if UIApplication.shared.canOpenURL(settingsURL) {
             UIApplication.shared.open(settingsURL)
+        }
+    }
+}
+
+private struct RouteMapView: UIViewRepresentable {
+    @Binding var region: MKCoordinateRegion
+    var routeCoordinates: [CLLocationCoordinate2D]
+
+    func makeCoordinator() -> Coordinator {
+        Coordinator(self)
+    }
+
+    func makeUIView(context: Context) -> MKMapView {
+        let mapView = MKMapView(frame: .zero)
+        mapView.delegate = context.coordinator
+        mapView.showsUserLocation = true
+        mapView.userTrackingMode = .follow
+        mapView.setRegion(region, animated: false)
+        return mapView
+    }
+
+    func updateUIView(_ mapView: MKMapView, context: Context) {
+        mapView.setRegion(region, animated: true)
+
+        mapView.removeOverlays(mapView.overlays)
+        if !routeCoordinates.isEmpty {
+            let polyline = MKPolyline(coordinates: routeCoordinates, count: routeCoordinates.count)
+            mapView.addOverlay(polyline)
+        }
+    }
+
+    class Coordinator: NSObject, MKMapViewDelegate {
+        var parent: RouteMapView
+
+        init(_ parent: RouteMapView) {
+            self.parent = parent
+        }
+
+        func mapView(_ mapView: MKMapView, rendererFor overlay: MKOverlay) -> MKOverlayRenderer {
+            if let polyline = overlay as? MKPolyline {
+                let renderer = MKPolylineRenderer(polyline: polyline)
+                renderer.strokeColor = UIColor.systemBlue
+                renderer.lineWidth = 4
+                return renderer
+            }
+            return MKOverlayRenderer(overlay: overlay)
         }
     }
 }
