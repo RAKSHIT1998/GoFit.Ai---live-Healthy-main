@@ -104,9 +104,13 @@ struct RunTrackerView: View {
                 .padding(16)
             }
             .navigationTitle("Run Tracker")
-            .toolbar { doneButton }
+            .toolbar {
+                ToolbarItem(placement: .confirmationAction) {
+                    Button("Done") { stopRun() }
+                }
+            }
             .sheet(isPresented: $showSummarySheet) { runSummarySheet }
-            .onChange(of: locationService.currentLocation) { _, newLocation in
+            .onChange(of: locationService.currentLocation) { oldLocation, newLocation in
                 guard isTracking, let location = newLocation else {
                     if isTracking {
                         errorDescription = "Waiting for GPS fix... switch to manual run if your device has no signal."
@@ -116,7 +120,7 @@ struct RunTrackerView: View {
                 errorDescription = nil
                 appendLocation(location)
             }
-            .onChange(of: locationService.authorizationStatus) { _, status in
+            .onChange(of: locationService.authorizationStatus) { oldStatus, status in
                 if status == .denied || status == .restricted {
                     errorDescription = "Location permission denied. Allow location in Settings or use manual run."
                 }
@@ -236,11 +240,7 @@ struct RunTrackerView: View {
         .padding(.top, 8)
     }
 
-    private var doneButton: some View {
-        ToolbarItem(placement: .confirmationAction) {
-            Button("Done") { stopRun() }
-        }
-    }
+    // Removed doneButton property; ToolbarItem is now inline in .toolbar
 
     @ViewBuilder
     private var runSummarySheet: some View {
