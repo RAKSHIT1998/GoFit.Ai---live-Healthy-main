@@ -396,7 +396,16 @@ struct RunTrackerView: View {
         runSessions.insert(run, at: 0)
         saveRunSessions()
 
-        actionMessage = "Run stopped. Total: \(String(format: "%.2f %@", run.distance(for: preferredUnit), preferredUnit.label)) in \(formattedTime)."
+        // Reset state for next run
+        previousLocation = nil
+        routeCoordinates = []
+        elapsedTime = 0
+        distanceMeters = 0
+        totalAscent = 0
+        totalDescent = 0
+        caloriesBurned = 0
+
+        actionMessage = "Run stopped. Total: \(String(format: "%.2f %@", run.distance(for: preferredUnit), preferredUnit.label)) in \(run.durationSeconds.stringFromTimeInterval())."
         lastSavedSession = run
         showSummarySheet = true
     }
@@ -454,9 +463,11 @@ struct RunTrackerView: View {
         RunHistoryStore.shared.storeRun(session)
         saveRunSessions()
 
-        actionMessage = "Manual run saved: \(String(format: "%.2f %@", session.distance(for: preferredUnit), preferredUnit.label))."
+        // Reset manual entry fields
         manualDistanceText = ""
         manualDurationText = ""
+
+        actionMessage = "Manual run saved: \(String(format: "%.2f %@", session.distance(for: preferredUnit), preferredUnit.label))."
         lastSavedSession = session
         showSummarySheet = true
     }
