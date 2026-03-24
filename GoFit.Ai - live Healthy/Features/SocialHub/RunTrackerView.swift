@@ -2,13 +2,19 @@ import SwiftUI
 import MapKit
 
 struct RunTrackerView: View {
+    @ObservedObject private var localUserStore = LocalUserStore.shared
     @StateObject private var locationService = LocationService.shared
 
     @State private var isTracking = false
     @State private var elapsedTime: TimeInterval = 0
     @State private var distanceMeters: Double = 0
+    @State private var totalAscent: Double = 0
+    @State private var totalDescent: Double = 0
+    @State private var caloriesBurned: Double = 0
     @State private var previousLocation: CLLocation?
     @State private var routeCoordinates: [CLLocationCoordinate2D] = []
+    @State private var runSessions: [RunSession] = []
+    @State private var milestoneMessage: String? = nil
 
     @State private var timer: Timer? = nil
     @State private var actionMessage: String = ""
@@ -99,11 +105,18 @@ struct RunTrackerView: View {
 
                 if let previous = previousLocation {
                     distanceMeters += location.distance(from: previous)
+                    let altitudeDiff = location.altitude - previous.altitude
+                    if altitudeDiff > 0 {
+                        totalAscent += altitudeDiff
+                    } else {
+                        totalDescent += abs(altitudeDiff)
+                    }
                 }
 
                 previousLocation = location
                 routeCoordinates.append(location.coordinate)
                 region.center = location.coordinate
+                calculateCalories()
             }
             .onDisappear {
                 stopRun()

@@ -8,6 +8,7 @@ struct HomeDashboardView: View {
     @ObservedObject private var streakManager = StreakManager.shared
     @ObservedObject private var fastingModel = FastingTimerModel.shared
     @State private var showingSleepTracker = false
+    @State private var showingRunTracker = false
 
     @State private var showingScanner = false
     @State private var showingHistory = false
@@ -106,6 +107,10 @@ struct HomeDashboardView: View {
                 }
                 .overlay(alignment: .bottomTrailing) {
                     instantQuickLogButtons
+                }
+                .sheet(isPresented: $showingRunTracker) {
+                    RunTrackerView()
+                        .environmentObject(auth)
                 }
                 .refreshable {
                     HapticManager.shared.lightTap()
@@ -612,9 +617,32 @@ struct HomeDashboardView: View {
                 Button {
                     HapticManager.shared.mediumTap()
                     withAnimation(.easeInOut(duration: 0.2)) {
-                        showingWorkout = true
+                        showingRunTracker = true
                     }
                 } label: {
+                    VStack(spacing: 12) {
+                        Image(systemName: "figure.run")
+                            .font(.title)
+                            .foregroundColor(.white)
+                            .frame(width: 60, height: 60)
+                            .background(Design.Colors.steps)
+                            .clipShape(Circle())
+                        
+                        Text("Run")
+                            .font(Design.Typography.caption)
+                            .foregroundColor(.primary)
+                    }
+                    .frame(maxWidth: .infinity)
+                    .padding(.vertical, Design.Spacing.md)
+                    .background(Design.Colors.cardBackground)
+                    .cornerRadius(16)
+                    .shadow(color: Color.primary.opacity(0.06), radius: 8, x: 0, y: 2)
+                }
+                .buttonStyle(SmoothButtonStyle())
+
+                Button {
+                    HapticManager.shared.mediumTap()
+                    withAnimation(.easeInOut(duration: 0.2)) {
                     VStack(spacing: 12) {
                         Image(systemName: "figure.walk")
                             .font(.title)
