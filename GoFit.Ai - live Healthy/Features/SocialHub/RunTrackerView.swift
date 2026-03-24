@@ -164,9 +164,30 @@ struct RunTrackerView: View {
         timer = nil
         actionMessage = "Run stopped. Total: \(formattedDistance) km in \(formattedTime)."
 
+        caloriesBurned = calculateCalories()
+
         let finalDistance = distanceMeters / 1000
+        let finalTimeInSeconds = elapsedTime
         let finalTime = formattedTime
-        print("Run complete: \(finalDistance) km in \(finalTime)")
+        let averagePace = finalDistance > 0 ? finalTimeInSeconds / (finalDistance * 60) : 0
+
+        let session = RunSession(
+            id: UUID().uuidString,
+            date: Date(),
+            distanceKm: finalDistance,
+            durationSeconds: finalTimeInSeconds,
+            calories: caloriesBurned,
+            ascentMeters: totalAscent,
+            descentMeters: totalDescent,
+            paceMinPerKm: averagePace,
+            route: routeCoordinates
+        )
+
+        runSessions.insert(session, at: 0)
+        saveRunSessions()
+        checkMilestone(for: session)
+
+        print("Run complete: \(finalDistance) km in \(finalTime) with \(caloriesBurned) kcal")
     }
 
     private func resetRun() {
