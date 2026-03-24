@@ -124,6 +124,40 @@ struct RunTrackerView: View {
         }
     }
 
+    private func calculateCalories() -> Double {
+        let kcalPerMinute: Double
+        let weightKg = localUserStore.userProfile?.weightKg ?? 70.0
+        let met = 9.0 // moderate run
+        kcalPerMinute = (met * 3.5 * weightKg) / 200.0
+        return kcalPerMinute * (elapsedTime / 60.0)
+    }
+
+    private func loadRunSessions() {
+        guard let data = UserDefaults.standard.data(forKey: "run_sessions") else { return }
+        if let saved = try? JSONDecoder().decode([RunSession].self, from: data) {
+            runSessions = saved
+        }
+    }
+
+    private func saveRunSessions() {
+        if let data = try? JSONEncoder().encode(runSessions) {
+            UserDefaults.standard.set(data, forKey: "run_sessions")
+        }
+    }
+
+    private func checkMilestone(for session: RunSession) {
+        let distance = session.distanceKm
+        let milestone = [1.0, 5.0, 10.0, 21.1, 42.2].first(where: { d in
+            d <= distance && !runSessions.contains(where: { abs($0.distanceKm - d) < 0.001 })
+        })
+        if let found = milestone {
+            milestoneMessage = "🏅 Milestone unlocked: \(Int(found))km run!"
+            NotificationService.shared.sendNowNotification(title: "Milestone reached!", body: milestoneMessage!)
+            // small reward points
+            PointsManager.shared.addPoints(200)
+        }
+    }
+
     private func runStatCard(label: String, value: String) -> some View {
         VStack(alignment: .leading, spacing: 8) {
             Text(label)
