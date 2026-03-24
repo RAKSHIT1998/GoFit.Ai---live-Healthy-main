@@ -643,6 +643,9 @@ struct HomeDashboardView: View {
                 Button {
                     HapticManager.shared.mediumTap()
                     withAnimation(.easeInOut(duration: 0.2)) {
+                        showingWorkout = true
+                    }
+                } label: {
                     VStack(spacing: 12) {
                         Image(systemName: "figure.walk")
                             .font(.title)

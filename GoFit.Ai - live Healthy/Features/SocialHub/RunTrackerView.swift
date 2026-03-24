@@ -55,6 +55,53 @@ struct RunTrackerView: View {
                     runStatCard(label: "Distance (km)", value: formattedDistance)
                 }
 
+                HStack(spacing: 20) {
+                    runStatCard(label: "Calories", value: String(format: "%.0f kcal", caloriesBurned))
+                    runStatCard(label: "Ascent", value: String(format: "%.0f m", totalAscent))
+                    runStatCard(label: "Descent", value: String(format: "%.0f m", totalDescent))
+                }
+
+                if let milestone = milestoneMessage {
+                    Text(milestone)
+                        .font(.subheadline)
+                        .fontWeight(.semibold)
+                        .padding(10)
+                        .frame(maxWidth: .infinity)
+                        .background(Color.green.opacity(0.15))
+                        .cornerRadius(12)
+                        .foregroundColor(.green)
+                        .onTapGesture {
+                            milestoneMessage = nil
+                        }
+                }
+
+                if !runSessions.isEmpty {
+                    VStack(alignment: .leading, spacing: 8) {
+                        Text("Recent Runs")
+                            .font(.headline)
+                        ForEach(runSessions.prefix(3)) { session in
+                            HStack {
+                                VStack(alignment: .leading, spacing: 2) {
+                                    Text(session.date, style: .date)
+                                        .font(.subheadline)
+                                        .fontWeight(.semibold)
+                                    Text("\(String(format: "%.2f", session.distanceKm)) km • \(session.paceFormatted)/km")
+                                        .font(.caption)
+                                        .foregroundColor(.secondary)
+                                }
+                                Spacer()
+                                Text("\(Int(session.calories)) kcal")
+                                    .font(.caption2)
+                                    .fontWeight(.semibold)
+                            }
+                            .padding(8)
+                            .background(Color(.systemGray6))
+                            .cornerRadius(12)
+                        }
+                    }
+                    .padding(.top, 8)
+                }
+
                 VStack(spacing: 12) {
                     Text(actionMessage)
                         .font(.caption2)
@@ -118,6 +165,9 @@ struct RunTrackerView: View {
                 region.center = location.coordinate
                 calculateCalories()
             }
+            .onAppear {
+                loadRunSessions()
+            }
             .onDisappear {
                 stopRun()
             }
@@ -147,14 +197,17 @@ struct RunTrackerView: View {
 
     private func checkMilestone(for session: RunSession) {
         let distance = session.distanceKm
-        let milestone = [1.0, 5.0, 10.0, 21.1, 42.2].first(where: { d in
-            d <= distance && !runSessions.contains(where: { abs($0.distanceKm - d) < 0.001 })
+        let existingMilestones = runSessions.map { Int($0.distanceKm) }
+        let possibleMilestones = [1, 5, 10, 21, 42]
+
+        let milestone = possibleMilestones.first(where: { m in
+            distance >= Double(m) && !existingMilestones.contains(m)
         })
+
         if let found = milestone {
-            milestoneMessage = "🏅 Milestone unlocked: \(Int(found))km run!"
+            milestoneMessage = "🏅 Milestone unlocked: \(found) km run!"
             NotificationService.shared.sendNowNotification(title: "Milestone reached!", body: milestoneMessage!)
-            // small reward points
-            PointsManager.shared.addPoints(200)
+            StreakManager.shared.awardPoints(200)
         }
     }
 
@@ -205,6 +258,7 @@ struct RunTrackerView: View {
         let finalTime = formattedTime
         let averagePace = finalDistance > 0 ? finalTimeInSeconds / (finalDistance * 60) : 0
 
+        let routePoints = routeCoordinates.map { RunPoint(latitude: $0.latitude, longitude: $0.longitude) }
         let session = RunSession(
             id: UUID().uuidString,
             date: Date(),
@@ -214,12 +268,12 @@ struct RunTrackerView: View {
             ascentMeters: totalAscent,
             descentMeters: totalDescent,
             paceMinPerKm: averagePace,
-            route: routeCoordinates
+            route: routePoints
         )
 
+        checkMilestone(for: session)
         runSessions.insert(session, at: 0)
         saveRunSessions()
-        checkMilestone(for: session)
 
         print("Run complete: \(finalDistance) km in \(finalTime) with \(caloriesBurned) kcal")
     }
@@ -227,6 +281,9 @@ struct RunTrackerView: View {
     private func resetRun() {
         distanceMeters = 0
         elapsedTime = 0
+        totalAscent = 0
+        totalDescent = 0
+        caloriesBurned = 0
         previousLocation = nil
         routeCoordinates = []
         actionMessage = "Ready to start a new run." 
@@ -234,5 +291,28 @@ struct RunTrackerView: View {
             center: locationService.currentLocation?.coordinate ?? region.center,
             span: MKCoordinateSpan(latitudeDelta: 0.05, longitudeDelta: 0.05)
         )
+    }
+}
+
+struct RunPoint: Codable {
+    let latitude: Double
+    let longitude: Double
+}
+
+struct RunSession: Codable, Identifiable {
+    let id: String
+    let date: Date
+    let distanceKm: Double
+    let durationSeconds: TimeInterval
+    let calories: Double
+    let ascentMeters: Double
+    let descentMeters: Double
+    let paceMinPerKm: Double
+    let route: [RunPoint]
+
+    var paceFormatted: String {
+        let minutes = Int(paceMinPerKm)
+        let seconds = Int((paceMinPerKm - Double(minutes)) * 60)
+        return String(format: "%02d:%02d", minutes, seconds)
     }
 }
