@@ -1302,6 +1302,9 @@ struct OnboardingSignupView: View {
                     // Initialize trial for new user
                     purchases.initializeTrialForNewUser()
                     
+                    // Reset one-time tutorial flag for a fresh user experience
+                    UserDefaults.standard.set(false, forKey: "hasSeenFirstTimeAppTutorial")
+                    
                     // Mark onboarding as complete
                     auth.didFinishOnboarding = true
                     auth.saveLocalState()

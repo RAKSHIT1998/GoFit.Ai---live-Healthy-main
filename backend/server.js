@@ -1,4 +1,6 @@
 import express from 'express';
+import clubsRoutes from './routes/clubs.js';
+import runsRoutes from './routes/runs.js';
 import { createServer } from 'http';
 import cors from 'cors';
 import helmet from 'helmet';
@@ -237,6 +239,11 @@ app.use('/api/notifications', notificationRoutes);
 app.use('/api/friends', friendsRoutes);
 app.use('/api/messages', messagesRoutes);
 app.use('/api/logs', logsRoutes);
+
+// Clubs and Run Tracker APIs
+import authMiddleware from './middleware/authMiddleware.js';
+app.use('/api/clubs', authMiddleware, clubsRoutes);
+app.use('/api/runs', authMiddleware, runsRoutes);
 
 // Error handling middleware
 app.use((err, req, res, next) => {

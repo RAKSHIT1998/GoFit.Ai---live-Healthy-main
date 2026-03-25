@@ -2,6 +2,8 @@ import SwiftUI
 import MapKit
 import CoreLocation
 
+
+
 struct RunTrackerView: View {
     @Environment(\.dismiss) private var dismiss
     @ObservedObject private var localUserStore = LocalUserStore.shared
@@ -59,7 +61,7 @@ struct RunTrackerView: View {
     var body: some View {
         NavigationView {
             ScrollView {
-                VStack(spacing: 16) {
+                VStack(spacing: AppDesign.Spacing.md) {
                     runMap
                     runSummaryCards
                     unitSelection
@@ -68,11 +70,11 @@ struct RunTrackerView: View {
                         Text(milestone)
                             .font(.subheadline)
                             .fontWeight(.semibold)
-                            .padding(10)
+                            .padding(AppDesign.Spacing.sm)
                             .frame(maxWidth: .infinity)
-                            .background(Color.green.opacity(0.15))
-                            .cornerRadius(12)
-                            .foregroundColor(.green)
+                            .background(AppDesign.Colors.success.opacity(0.15))
+                            .cornerRadius(AppDesign.Radius.medium)
+                            .foregroundColor(AppDesign.Colors.success)
                             .onTapGesture { milestoneMessage = nil }
                     }
 
@@ -88,13 +90,13 @@ struct RunTrackerView: View {
                             }
                             .buttonStyle(.borderedProminent)
                         }
-                        .padding(12)
-                        .background(Color.red.opacity(0.08))
-                        .cornerRadius(12)
+                        .padding(AppDesign.Spacing.sm)
+                        .background(AppDesign.Colors.error.opacity(0.08))
+                        .cornerRadius(AppDesign.Radius.medium)
                     }
 
                     runButtons
-                        .padding(.top, 4)
+                        .padding(.top, AppDesign.Spacing.xs)
 
                     manualRunEntry
 
@@ -104,7 +106,7 @@ struct RunTrackerView: View {
 
                     Spacer(minLength: 30)
                 }
-                .padding(16)
+                .padding(AppDesign.Spacing.md)
             }
             .navigationTitle("Run Tracker")
             .toolbar {
@@ -129,47 +131,38 @@ struct RunTrackerView: View {
                 }
             }
             .onAppear { loadRunSessions() }
-            .onDisappear { stopRun() }
-            .alert("Stop Run", isPresented: $showStopConfirmation) {
-                Button("Stop", role: .destructive) {
-                    stopRun()
-                }
-                Button("Cancel", role: .cancel) { }
-            } message: {
-                Text("Are you sure you want to stop your run?")
-            }
-        }
-    }
 
+    // MARK: - Custom Views for Main UI
     private var runMap: some View {
-        RouteMapView(region: $region, routeCoordinates: routeCoordinates)
-            .frame(height: 260)
-            .cornerRadius(16)
-            .overlay(RoundedRectangle(cornerRadius: 16).stroke(Color.primary.opacity(0.15), lineWidth: 1))
+        RouteMapView(route: routeCoordinates, region: $region)
+            .frame(height: 220)
+            .cornerRadius(AppDesign.Radius.large)
+            .shadow(color: AppDesign.Colors.primary.opacity(0.06), radius: 4, x: 0, y: 2)
+            .padding(.bottom, AppDesign.Spacing.xs)
     }
 
     private var runSummaryCards: some View {
-        VStack(spacing: 12) {
-            HStack(spacing: 12) {
-                runStatCard(label: "Time", value: formattedTime)
-                runStatCard(label: "Distance", value: formattedDistance)
-            }
-            HStack(spacing: 12) {
-                runStatCard(label: "Pace", value: formattedPace)
-                runStatCard(label: "Calories", value: String(format: "%.0f kcal", caloriesBurned))
-            }
-            HStack(spacing: 12) {
-                runStatCard(label: "Ascent", value: String(format: "%.0f m", totalAscent))
-                runStatCard(label: "Descent", value: String(format: "%.0f m", totalDescent))
-            }
+        HStack(spacing: AppDesign.Spacing.sm) {
+            runStatCard(label: "Distance", value: formattedDistance)
+            runStatCard(label: "Time", value: formattedTime)
+            runStatCard(label: "Pace", value: formattedPace)
         }
     }
 
     private var unitSelection: some View {
         Picker("Unit", selection: $preferredUnitRaw) {
-            ForEach(DistanceUnit.allCases) { unit in
-                Text(unit == .kilometers ? "Metric (km)" : "Imperial (mi)").tag(unit.rawValue)
+            ForEach(DistanceUnit.allCases, id: \ .rawValue) { unit in
+                Text(unit.label).tag(unit.rawValue)
             }
+        }
+        .pickerStyle(.segmented)
+        .onChange(of: preferredUnitRaw) { oldValue, newValue in
+            // persists automatically via AppStorage
+            // We could react to unit toggle if needed
+            _ = oldValue
+            _ = newValue
+        }
+    }
         }
         .pickerStyle(.segmented)
         .onChange(of: preferredUnitRaw) { oldValue, newValue in

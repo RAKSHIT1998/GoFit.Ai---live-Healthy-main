@@ -17,6 +17,11 @@ struct FirstTimeTutorialView: View {
             subtitle: "See your daily calories, macros, steps, streaks, and progress in one place."
         ),
         TutorialPage(
+            icon: "runner.fill",
+            title: "Run Tracker",
+            subtitle: "Start and stop GPS runs, track distance, pace, and elevation in real time."
+        ),
+        TutorialPage(
             icon: "camera.fill",
             title: "Log Meals Fast",
             subtitle: "Tap Scan Meal on Home to capture food with camera, or add meals manually."
@@ -32,16 +37,9 @@ struct FirstTimeTutorialView: View {
             subtitle: "Add friends, chat, and share your daily log progress."
         ),
         TutorialPage(
-            icon: "person.circle.fill",
-            title: "Profile Tab",
-            subtitle: "Update personal details, goals, and app preferences anytime."
-        )
-    ]
-
-    var body: some View {
-        ZStack {
-            LinearGradient(
-                colors: [
+            icon: "bolt.heart.fill",
+            title: "Clubs & Challenges",
+            subtitle: "Join clubs, compete with friends, and stay motivated with community goals."
                     Design.Colors.primary.opacity(0.12),
                     Design.Colors.background,
                     Design.Colors.background

@@ -28,23 +28,15 @@ struct SocialHubView: View {
 
     enum SocialTab: String, CaseIterable {
         case clubs = "Clubs"
-        case friends = "Friends"
+        case friendsChats = "Friends & Chats"
 
         var icon: String {
             switch self {
             case .clubs: return "person.3.fill"
-            case .friends: return "person.2.fill"
+            case .friendsChats: return "bubble.left.and.bubble.right"
             }
         }
     }
-
-    enum FriendsSubTab: String, CaseIterable {
-        case ranks = "Ranks"
-        case chats = "Chats"
-        case challenges = "Challenges"
-    }
-
-    @State private var selectedFriendsSubTab: FriendsSubTab = .ranks
 
     var body: some View {
         NavigationStack {
@@ -56,8 +48,8 @@ struct SocialHubView: View {
                 switch selectedTab {
                 case .clubs:
                     runClubsSection
-                case .friends:
-                    friendsSection
+                case .friendsChats:
+                    friendsChatsSection
                 }
             }
             .background(Design.Colors.background.ignoresSafeArea())
@@ -167,7 +159,25 @@ struct SocialHubView: View {
         ScrollViewReader { proxy in
             ScrollView(.horizontal, showsIndicators: false) {
                 HStack(spacing: 6) {
-                    ForEach(SocialTab.allCases, id: \.self) { tab in
+                    ForEach(SocialTab.allCases, id: \ .self) { tab in
+                        let isSelected = selectedTab == tab
+                        let tabText = Text(tab.rawValue)
+                            .font(.system(size: 14, weight: isSelected ? .bold : .medium, design: .rounded))
+                        let tabIcon = Image(systemName: tab.icon)
+                            .font(.system(size: 12))
+                        let badge: Text? = {
+                            if tab == .friends && friendsService.friendRequests.count > 0 {
+                                return Text("\(friendsService.friendRequests.count)")
+                                    .font(.system(size: 9, weight: .bold))
+                            } else {
+                                return nil
+                            }
+                        }()
+                                .foregroundColor(.white)
+                                .frame(width: 16, height: 16)
+                                .background(Color.red)
+                                .clipShape(Circle())
+                            : nil
                         Button {
                             withAnimation(.easeInOut(duration: 0.2)) {
                                 selectedTab = tab
@@ -175,27 +185,16 @@ struct SocialHubView: View {
                             HapticManager.shared.lightTap()
                         } label: {
                             HStack(spacing: 6) {
-                                Image(systemName: tab.icon)
-                                    .font(.system(size: 12))
-
-                                Text(tab.rawValue)
-                                    .font(.system(size: 14, weight: selectedTab == tab ? .bold : .medium, design: .rounded))
-
-                                if tab == .friends && friendsService.friendRequests.count > 0 {
-                                    Text("\(friendsService.friendRequests.count)")
-                                        .font(.system(size: 9, weight: .bold))
-                                        .foregroundColor(.white)
-                                        .frame(width: 16, height: 16)
-                                        .background(Color.red)
-                                        .clipShape(Circle())
-                                }
+                                tabIcon
+                                tabText
+                                if let badge = badge { badge }
                             }
-                            .foregroundColor(selectedTab == tab ? .white : .secondary)
+                            .foregroundColor(isSelected ? .white : .secondary)
                             .padding(.horizontal, 14)
                             .padding(.vertical, 9)
                             .background(
                                 Group {
-                                    if selectedTab == tab {
+                                    if isSelected {
                                         Capsule().fill(Design.Colors.primaryGradient)
                                     } else {
                                         Capsule().fill(Color.gray.opacity(0.08))
@@ -217,43 +216,23 @@ struct SocialHubView: View {
     }
 
     // MARK: - Friends Section
-    private var friendsSection: some View {
+    private var friendsChatsSection: some View {
         ScrollView {
             VStack(spacing: Design.Spacing.md) {
-                Picker("Friends", selection: $selectedFriendsSubTab) {
-                    ForEach(FriendsSubTab.allCases, id: \.self) { tab in
-                        Text(tab.rawValue).tag(tab)
-                    }
-                }
-                .pickerStyle(.segmented)
-                .padding(.horizontal, Design.Spacing.md)
-
-                switch selectedFriendsSubTab {
-                case .ranks:
-                    leaderboardSection
-
-                    if friendsService.friends.isEmpty {
-                        emptyFriendsState
-                    } else {
-                        VStack(alignment: .leading, spacing: 12) {
-                            Text("Friends")
-                                .font(Design.Typography.headline)
-                                .padding(.horizontal, Design.Spacing.md)
-
-                            ForEach(friendsService.friends, id: \.id) { friend in
+                if friendsService.friends.isEmpty {
+                    emptyFriendsState
+                } else {
+                    VStack(alignment: .leading, spacing: 12) {
+                        Text("Friends & Chats")
+                            .font(Design.Typography.headline)
+                            .padding(.horizontal, Design.Spacing.md)
+                        ForEach(friendsService.friends, id: \.id) { friend in
+                            NavigationLink(destination: ChatView(friend: friend, currentUserId: auth.userId ?? "")) {
                                 FriendCardView(friend: friend, currentUserId: auth.userId ?? "")
                                     .padding(.horizontal, Design.Spacing.md)
                             }
                         }
                     }
-
-                case .chats:
-                    ConversationsView()
-                        .environmentObject(auth)
-                        .padding(.horizontal, Design.Spacing.md)
-
-                case .challenges:
-                    challengesSection
                 }
             }
             .padding(.vertical, Design.Spacing.md)
@@ -343,7 +322,7 @@ struct SocialHubView: View {
             .environmentObject(runClubService)
         }
         .sheet(item: $runClubService.selectedClub) { club in
-            RunClubDetailView(club: club)
+            RunClubDetailView(runClubService: runClubService, club: club)
                 .environmentObject(auth)
                 .environmentObject(runClubService)
         }
