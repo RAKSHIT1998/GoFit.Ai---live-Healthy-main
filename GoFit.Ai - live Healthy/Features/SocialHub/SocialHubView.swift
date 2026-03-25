@@ -160,46 +160,8 @@ struct SocialHubView: View {
             ScrollView(.horizontal, showsIndicators: false) {
                 HStack(spacing: 6) {
                     ForEach(SocialTab.allCases, id: \ .self) { tab in
-                        let isSelected = selectedTab == tab
-                        let tabText = Text(tab.rawValue)
-                            .font(.system(size: 14, weight: isSelected ? .bold : .medium, design: .rounded))
-                        let tabIcon = Image(systemName: tab.icon)
-                            .font(.system(size: 12))
-
-                        let pendingRequests = (tab == .friends) ? friendsService.friendRequests.count : 0
-
-                        Button {
-                            withAnimation(.easeInOut(duration: 0.2)) {
-                                selectedTab = tab
-                            }
-                            HapticManager.shared.lightTap()
-                        } label: {
-                            HStack(spacing: 6) {
-                                tabIcon
-                                tabText
-                                if pendingRequests > 0 {
-                                    Text("\(pendingRequests)")
-                                        .font(.system(size: 9, weight: .bold))
-                                        .foregroundColor(.white)
-                                        .frame(width: 16, height: 16)
-                                        .background(Color.red)
-                                        .clipShape(Circle())
-                                }
-                            }
-                            .foregroundColor(isSelected ? .white : .secondary)
-                            .padding(.horizontal, 14)
-                            .padding(.vertical, 9)
-                            .background(
-                                Group {
-                                    if isSelected {
-                                        Capsule().fill(Design.Colors.primaryGradient)
-                                    } else {
-                                        Capsule().fill(Color.gray.opacity(0.08))
-                                    }
-                                }
-                            )
-                        }
-                        .id(tab)
+                        tabButton(for: tab)
+                            .id(tab)
                     }
                 }
                 .padding(.horizontal, Design.Spacing.md)
@@ -209,6 +171,45 @@ struct SocialHubView: View {
             .onChange(of: selectedTab) { _, newTab in
                 withAnimation { proxy.scrollTo(newTab, anchor: .center) }
             }
+        }
+    }
+
+    private func tabButton(for tab: SocialTab) -> some View {
+        let isSelected = selectedTab == tab
+        let pendingRequests = (tab == .friends) ? friendsService.friendRequests.count : 0
+
+        return Button {
+            withAnimation(.easeInOut(duration: 0.2)) {
+                selectedTab = tab
+            }
+            HapticManager.shared.lightTap()
+        } label: {
+            HStack(spacing: 6) {
+                Image(systemName: tab.icon)
+                    .font(.system(size: 12))
+                Text(tab.rawValue)
+                    .font(.system(size: 14, weight: isSelected ? .bold : .medium, design: .rounded))
+                if pendingRequests > 0 {
+                    Text("\(pendingRequests)")
+                        .font(.system(size: 9, weight: .bold))
+                        .foregroundColor(.white)
+                        .frame(width: 16, height: 16)
+                        .background(Color.red)
+                        .clipShape(Circle())
+                }
+            }
+            .foregroundColor(isSelected ? .white : .secondary)
+            .padding(.horizontal, 14)
+            .padding(.vertical, 9)
+            .background(
+                Group {
+                    if isSelected {
+                        Capsule().fill(Design.Colors.primaryGradient)
+                    } else {
+                        Capsule().fill(Color.gray.opacity(0.08))
+                    }
+                }
+            )
         }
     }
 
