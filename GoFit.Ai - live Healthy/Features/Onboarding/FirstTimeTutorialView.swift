@@ -40,6 +40,18 @@ struct FirstTimeTutorialView: View {
             icon: "bolt.heart.fill",
             title: "Clubs & Challenges",
             subtitle: "Join clubs, compete with friends, and stay motivated with community goals."
+        ),
+        TutorialPage(
+            icon: "person.circle.fill",
+            title: "Profile Tab",
+            subtitle: "Update personal details, goals, and app preferences anytime."
+        )
+    ]
+
+    var body: some View {
+        ZStack {
+            LinearGradient(
+                colors: [
                     Design.Colors.primary.opacity(0.12),
                     Design.Colors.background,
                     Design.Colors.background
