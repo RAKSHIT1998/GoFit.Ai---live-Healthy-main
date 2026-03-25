@@ -176,7 +176,7 @@ struct SocialHubView: View {
 
     private func tabButton(for tab: SocialTab) -> some View {
         let isSelected = selectedTab == tab
-        let pendingRequests = (tab == .friends) ? friendsService.friendRequests.count : 0
+        let pendingRequests = (tab == .friendsChats) ? friendsService.friendRequests.count : 0
 
         return Button {
             withAnimation(.easeInOut(duration: 0.2)) {

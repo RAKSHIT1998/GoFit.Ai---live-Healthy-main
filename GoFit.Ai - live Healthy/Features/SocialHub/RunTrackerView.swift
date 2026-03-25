@@ -136,7 +136,7 @@ struct RunTrackerView: View {
 
     // MARK: - Custom Views for Main UI
     private var runMap: some View {
-        RouteMapView(routeCoordinates: routeCoordinates, region: $region)
+        RouteMapView(region: $region, routeCoordinates: routeCoordinates)
             .frame(height: 220)
             .cornerRadius(AppDesign.Radius.large)
             .shadow(color: AppDesign.Colors.primary.opacity(0.06), radius: 4, x: 0, y: 2)
