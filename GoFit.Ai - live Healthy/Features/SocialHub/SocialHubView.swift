@@ -165,19 +165,9 @@ struct SocialHubView: View {
                             .font(.system(size: 14, weight: isSelected ? .bold : .medium, design: .rounded))
                         let tabIcon = Image(systemName: tab.icon)
                             .font(.system(size: 12))
-                        let badge: Text? = {
-                            if tab == .friends && friendsService.friendRequests.count > 0 {
-                                return Text("\(friendsService.friendRequests.count)")
-                                    .font(.system(size: 9, weight: .bold))
-                            } else {
-                                return nil
-                            }
-                        }()
-                                .foregroundColor(.white)
-                                .frame(width: 16, height: 16)
-                                .background(Color.red)
-                                .clipShape(Circle())
-                            : nil
+
+                        let pendingRequests = (tab == .friends) ? friendsService.friendRequests.count : 0
+
                         Button {
                             withAnimation(.easeInOut(duration: 0.2)) {
                                 selectedTab = tab
@@ -187,7 +177,14 @@ struct SocialHubView: View {
                             HStack(spacing: 6) {
                                 tabIcon
                                 tabText
-                                if let badge = badge { badge }
+                                if pendingRequests > 0 {
+                                    Text("\(pendingRequests)")
+                                        .font(.system(size: 9, weight: .bold))
+                                        .foregroundColor(.white)
+                                        .frame(width: 16, height: 16)
+                                        .background(Color.red)
+                                        .clipShape(Circle())
+                                }
                             }
                             .foregroundColor(isSelected ? .white : .secondary)
                             .padding(.horizontal, 14)

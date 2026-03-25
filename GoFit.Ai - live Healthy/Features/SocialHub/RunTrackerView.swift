@@ -131,6 +131,8 @@ struct RunTrackerView: View {
                 }
             }
             .onAppear { loadRunSessions() }
+        }
+    }
 
     // MARK: - Custom Views for Main UI
     private var runMap: some View {
@@ -154,15 +156,6 @@ struct RunTrackerView: View {
             ForEach(DistanceUnit.allCases, id: \ .rawValue) { unit in
                 Text(unit.label).tag(unit.rawValue)
             }
-        }
-        .pickerStyle(.segmented)
-        .onChange(of: preferredUnitRaw) { oldValue, newValue in
-            // persists automatically via AppStorage
-            // We could react to unit toggle if needed
-            _ = oldValue
-            _ = newValue
-        }
-    }
         }
         .pickerStyle(.segmented)
         .onChange(of: preferredUnitRaw) { oldValue, newValue in
