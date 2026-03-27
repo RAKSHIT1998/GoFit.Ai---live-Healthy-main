@@ -1,4 +1,45 @@
-import SwiftUI
+2026-03-27T10:56:16.561317856Z ==> Cloning from https://github.com/RAKSHIT1998/GoFit.Ai---live-Healthy-main
+2026-03-27T10:56:17.683926596Z ==> Checking out commit 2bc572b9989f29b5e73304a24e63e21636c780fa in branch main
+2026-03-27T10:56:18.706200204Z ==> Using Node.js version 22.16.0 (default)
+2026-03-27T10:56:18.727259596Z ==> Docs on specifying a Node.js version: https://render.com/docs/node-version
+2026-03-27T10:56:20.581688144Z ==> Running build command 'npm install'...
+2026-03-27T10:56:25.384911515Z 
+2026-03-27T10:56:25.384932035Z added 237 packages, and audited 238 packages in 5s
+2026-03-27T10:56:25.384935036Z 
+2026-03-27T10:56:25.384936858Z 39 packages are looking for funding
+2026-03-27T10:56:25.384939406Z   run `npm fund` for details
+2026-03-27T10:56:25.397964914Z 
+2026-03-27T10:56:25.397974791Z 7 vulnerabilities (2 low, 1 moderate, 4 high)
+2026-03-27T10:56:25.397976476Z 
+2026-03-27T10:56:25.397978815Z To address issues that do not require attention, run:
+2026-03-27T10:56:25.397980459Z   npm audit fix
+2026-03-27T10:56:25.397981923Z 
+2026-03-27T10:56:25.397983875Z To address all issues (including breaking changes), run:
+2026-03-27T10:56:25.397985783Z   npm audit fix --force
+2026-03-27T10:56:25.397987215Z 
+2026-03-27T10:56:25.397989945Z Run `npm audit` for details.
+2026-03-27T10:56:26.584091093Z ==> Uploading build...
+2026-03-27T10:56:33.045500321Z ==> Uploaded in 5.4s. Compression took 1.1s
+2026-03-27T10:56:33.062305903Z ==> Build successful 🎉
+2026-03-27T10:56:35.447394666Z ==> Deploying...
+2026-03-27T10:56:35.55641983Z ==> Setting WEB_CONCURRENCY=1 by default, based on available CPUs in the instance
+2026-03-27T10:56:52.445138043Z ==> Running 'npm start'
+2026-03-27T10:56:52.75569674Z 
+2026-03-27T10:56:52.755721352Z > gofit-ai-backend@1.0.0 start
+2026-03-27T10:56:52.755725642Z > node server.js
+2026-03-27T10:56:52.755728103Z 
+2026-03-27T10:56:53.633842439Z file:///opt/render/project/src/backend/server.js:2
+2026-03-27T10:56:53.633870381Z import clubsRoutes from './routes/clubs.js';
+2026-03-27T10:56:53.633874732Z        ^^^^^^^^^^^
+2026-03-27T10:56:53.633878602Z SyntaxError: The requested module './routes/clubs.js' does not provide an export named 'default'
+2026-03-27T10:56:53.633883912Z     at ModuleJob._instantiate (node:internal/modules/esm/module_job:182:21)
+2026-03-27T10:56:53.633886613Z     at async ModuleJob.run (node:internal/modules/esm/module_job:266:5)
+2026-03-27T10:56:53.633888973Z     at async onImport.tracePromise.__proto__ (node:internal/modules/esm/loader:644:26)
+2026-03-27T10:56:53.633891323Z     at async asyncRunEntryPointWithESMLoader (node:internal/modules/run_main:117:5)
+2026-03-27T10:56:53.633893533Z 
+2026-03-27T10:56:53.633895773Z Node.js v22.16.0
+2026-03-27T10:56:58.353209158Z ==> Exited with status 1
+2026-03-27T10:56:58.359259313Z ==> Common ways to troubleshoot your deploy: https://render.com/docs/troubleshooting-deploysimport SwiftUI
 
 struct TargetSettingsView: View {
     @EnvironmentObject var auth: AuthViewModel

@@ -14,24 +14,30 @@ struct MainTabView: View {
                     Label("Home", systemImage: selectedTab == 0 ? "house.fill" : "house")
                 }
                 .tag(0)
-            
+
             MealHistoryView()
                 .tabItem {
                     Label("Meals", systemImage: selectedTab == 1 ? "fork.knife.circle.fill" : "fork.knife.circle")
                 }
                 .tag(1)
-            
+
             SocialHubView()
                 .tabItem {
                     Label("Social", systemImage: selectedTab == 2 ? "person.2.circle.fill" : "person.2.circle")
                 }
                 .tag(2)
-            
+
             ProfileView()
                 .tabItem {
                     Label("Profile", systemImage: selectedTab == 3 ? "person.circle.fill" : "person.circle")
                 }
                 .tag(3)
+
+            FeatureWireframeView()
+                .tabItem {
+                    Label("Features", systemImage: selectedTab == 4 ? "sparkles.rectangle.stack.fill" : "sparkles.rectangle.stack")
+                }
+                .tag(4)
         }
         .accentColor(Design.Colors.primary)
         .background(Design.Colors.background)
@@ -39,7 +45,7 @@ struct MainTabView: View {
         .onChange(of: selectedTab) { oldValue, newValue in
             // Haptic feedback on tab switch
             HapticManager.shared.lightTap()
-            
+
             withAnimation(Design.Animation.springFast) {
                 previousTab = newValue
             }
