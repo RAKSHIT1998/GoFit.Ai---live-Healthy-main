@@ -319,6 +319,11 @@ router.get('/me', authMiddleware, async (req, res) => {
     // No additional database query needed - this should be very fast
     const user = req.user;
     
+    // Ensure targetCalories is always integer if present
+    const metrics = { ...(user.metrics || {}) };
+    if (metrics.targetCalories !== undefined && metrics.targetCalories !== null) {
+      metrics.targetCalories = Math.round(metrics.targetCalories);
+    }
     res.json({
       id: user._id.toString(),
       name: user.name,
@@ -330,7 +335,7 @@ router.get('/me', authMiddleware, async (req, res) => {
       fastingPreference: user.fastingPreference || 'none',
       appleHealthEnabled: user.appleHealthEnabled || false,
       subscription: user.subscription || { status: 'free' },
-      metrics: user.metrics || {}
+      metrics
     });
   } catch (error) {
     console.error('❌ Get user error:', error);
