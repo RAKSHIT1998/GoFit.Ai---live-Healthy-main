@@ -1,6 +1,4 @@
 import SwiftUI
-2026-03-2710:56:58.353209158Z ==> Exited with status 1
-2026-03-2710:56:58.359259313Z ==> Common ways to troubleshoot your deploy: https://render.com/docs/troubleshooting-deploysimport SwiftUI
 
 struct TargetSettingsView: View {
     @EnvironmentObject var auth: AuthViewModel
