@@ -489,7 +489,7 @@ struct TargetSettingsView: View {
                     "targetCarbs": targetCarbs,
                     "targetFat": targetFat,
                     "liquidIntakeGoal": liquidIntakeGoal,
-                    "goals": goal,
+                    "goals": goal, // always use plural to match backend
                     "activityLevel": activityLevel
                 ]
                 let cleanBody = body.compactMapValues { $0 }
