@@ -476,7 +476,7 @@ struct FriendRequestsView: View {
             } else {
                 VStack(spacing: Design.Spacing.md) {
                     ForEach(requests, id: \.id) { request in
-                        FriendRequestCardView(request: request, onAccept: { onAccept(request.id) }, onDecline: { onDecline(request.id) })
+                        FriendRequestCardView(request: request, onAccept: { onAccept(request.requesterId) }, onDecline: { onDecline(request.requesterId) })
                     }
                 }
                 .padding(.horizontal, Design.Spacing.md)
