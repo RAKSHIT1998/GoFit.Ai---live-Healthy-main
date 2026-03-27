@@ -20,6 +20,7 @@ struct TargetSettingsView: View {
     @State private var errorMessage: String?
     @State private var showingError = false
     @State private var showingSuccess = false
+    @State private var skipLoadOnAppear = false
     
     let goals = ["lose", "maintain", "gain"]
     let activityLevels = ["sedentary", "light", "moderate", "active", "very_active"]
@@ -358,7 +359,9 @@ struct TargetSettingsView: View {
                 }
             }
             .onAppear {
-                loadCurrentTargets()
+                if !skipLoadOnAppear {
+                    loadCurrentTargets()
+                }
             }
             .alert("Error", isPresented: $showingError) {
                 Button("OK") { }
@@ -367,6 +370,7 @@ struct TargetSettingsView: View {
             }
             .alert("Success", isPresented: $showingSuccess) {
                 Button("OK") {
+                    skipLoadOnAppear = false
                     dismiss()
                 }
             } message: {
@@ -473,7 +477,6 @@ struct TargetSettingsView: View {
     private func saveTargets() {
         errorMessage = nil
         isLoading = true
-        
         Task {
             do {
                 let body: [String: Any?] = [
@@ -489,19 +492,13 @@ struct TargetSettingsView: View {
                     "goals": goal,
                     "activityLevel": activityLevel
                 ]
-                
-                // Remove nil values and convert to non-optional dictionary
                 let cleanBody = body.compactMapValues { $0 }
-                
-                // Encode body to Data
                 let bodyData = try JSONSerialization.data(withJSONObject: cleanBody, options: [])
-                
                 let _: [String: Any] = try await NetworkManager.shared.requestDictionary(
                     "auth/targets",
                     method: "PUT",
                     body: bodyData
                 )
-                
                 await MainActor.run {
                     // Update local auth state
                     auth.weightKg = weightKg
@@ -515,6 +512,7 @@ struct TargetSettingsView: View {
 
                     isLoading = false
                     showingSuccess = true
+                    skipLoadOnAppear = true
                 }
             } catch {
                 await MainActor.run {
