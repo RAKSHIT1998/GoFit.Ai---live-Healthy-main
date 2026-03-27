@@ -453,8 +453,11 @@ router.put('/targets', authMiddleware, async (req, res) => {
       { new: true }
     ).select('-passwordHash');
 
-    // Recalculate calories if weight, height, goals, or activity level changed
-    if (weightKg !== undefined || heightCm !== undefined || goals || activityLevel) {
+    // Only recalculate if targetCalories is NOT provided
+    if (
+      targetCalories === undefined &&
+      (weightKg !== undefined || heightCm !== undefined || goals || activityLevel)
+    ) {
       try {
         const { calculateCalories, calculateMacros } = await import('../utils/calorieCalculator.js');
         const calorieData = calculateCalories(user);
