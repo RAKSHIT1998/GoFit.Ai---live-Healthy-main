@@ -31,11 +31,13 @@ struct SocialHubView: View {
     /// - `friendsChats`: friends and chat view
     enum SocialTab: String, CaseIterable {
         case rankings = "Rankings"
+        case requests = "Requests"
         case friendsChats = "Friends & Chats"
 
         var icon: String {
             switch self {
             case .rankings: return "list.number"
+            case .requests: return "envelope"
             case .friendsChats: return "bubble.left.and.bubble.right"
             }
         }
@@ -59,6 +61,25 @@ struct SocialHubView: View {
                 switch selectedTab {
                 case .rankings:
                     rankingsSection
+                case .requests:
+                    FriendRequestsView(
+                        requests: friendsService.friendRequests,
+                        isLoading: friendsService.isLoading,
+                        onAccept: { friendRequestId in
+                            friendsService.acceptFriendRequest(from: friendRequestId) { _ in
+                                friendsService.fetchFriendRequests { _ in }
+                                friendsService.fetchFriends { _ in }
+                            }
+                        },
+                        onDecline: { friendRequestId in
+                            friendsService.rejectFriendRequest(from: friendRequestId) { _ in
+                                friendsService.fetchFriendRequests { _ in }
+                            }
+                        }
+                    )
+                    .onAppear {
+                        friendsService.fetchFriendRequests { _ in }
+                    }
                 case .friendsChats:
                     friendsChatsSection
                 }
