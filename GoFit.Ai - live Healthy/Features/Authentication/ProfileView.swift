@@ -30,6 +30,13 @@ struct ProfileView: View {
     @State private var errorMessage: String?
     @State private var showingError = false
 
+    // Backend-fetched stats
+    @State private var profileCalories: String = "—"
+    @State private var profileSteps: Int = 0
+    @State private var profileWater: Double = 0.0
+    @State private var profileTargetCalories: Int? = nil
+    @State private var profileFasting: String = "—"
+
     enum UnitSystem: String, CaseIterable {
         case metric = "Metric"
         case imperial = "Imperial"
@@ -101,9 +108,10 @@ struct ProfileView: View {
                 MedicalCitationsView()
             }
             .onAppear {
-                // Refresh subscription status when profile appears
+                // Refresh subscription status and stats when profile appears
                 Task {
                     await purchases.checkTrialAndSubscriptionStatus()
+                    await loadProfileStats()
                 }
             }
             .onChange(of: purchases.subscriptionStatus) { oldValue, newValue in
@@ -114,10 +122,10 @@ struct ProfileView: View {
             }
             .sheet(isPresented: $showingShareProgress) {
                 ShareProgressView(
-                    calories: "1,450", // TODO: Get actual calories from backend
-                    steps: healthKit.todaySteps,
+                    calories: profileCalories,
+                    steps: profileSteps,
                     activeCalories: healthKit.todayActiveCalories,
-                    waterIntake: 0.0, // TODO: Get actual water intake
+                    waterIntake: profileWater,
                     heartRate: healthKit.restingHeartRate > 0 ? healthKit.restingHeartRate : nil
                 )
                 .environmentObject(auth)
@@ -377,11 +385,11 @@ struct ProfileView: View {
     private var quickStatsSection: some View {
         VStack(spacing: 12) {
             HStack(spacing: 12) {
-                StatCard(icon: "flame.fill", value: "1,450", label: "Calories", color: .orange)
-                StatCard(icon: "figure.walk", value: "\(healthKit.todaySteps)", label: "Steps", color: .green)
-                StatCard(icon: "timer", value: "12h", label: "Fasting", color: .purple)
+                StatCard(icon: "flame.fill", value: profileCalories, label: "Calories", color: .orange)
+                StatCard(icon: "figure.walk", value: "\(profileSteps)", label: "Steps", color: .green)
+                StatCard(icon: "timer", value: profileFasting, label: "Fasting", color: .purple)
             }
-            
+
             // Share Progress Button
             Button {
                 showingShareProgress = true
@@ -400,6 +408,114 @@ struct ProfileView: View {
                 .background(Design.Colors.primaryGradient)
                 .cornerRadius(16)
             }
+        }
+    }
+
+    // MARK: - Backend Stats Loader
+    private func loadProfileStats() async {
+        await loadProfileTargetCalories()
+        await loadProfileSummary()
+        await loadProfileWaterIntake()
+        await loadProfileFasting()
+    }
+
+    private func loadProfileTargetCalories() async {
+        guard auth.isLoggedIn else { return }
+        guard let token = AuthService.shared.readToken()?.accessToken, !token.isEmpty else { return }
+        do {
+            struct UserProfile: Codable {
+                let metrics: Metrics?
+            }
+            struct Metrics: Codable {
+                let targetCalories: Int?
+            }
+            let profile: UserProfile = try await NetworkManager.shared.request(
+                "auth/me",
+                method: "GET",
+                body: nil
+            )
+            await MainActor.run {
+                profileTargetCalories = profile.metrics?.targetCalories
+            }
+        } catch {}
+    }
+
+    private func loadProfileSummary() async {
+        guard auth.isLoggedIn else { return }
+        guard let token = AuthService.shared.readToken()?.accessToken, !token.isEmpty else { return }
+        do {
+            struct Summary: Codable {
+                let calories: Double
+                let protein: Double
+                let carbs: Double
+                let fat: Double
+                let sugar: Double?
+            }
+            let endpoint = "meals/summary/today?t=\(Date().timeIntervalSince1970)"
+            let summary: Summary = try await NetworkManager.shared.request(
+                endpoint,
+                method: "GET",
+                body: nil
+            )
+            await MainActor.run {
+                profileCalories = String(Int(summary.calories))
+            }
+        } catch {
+            await MainActor.run { profileCalories = "—" }
+        }
+        // Steps are from HealthKit
+        await MainActor.run { profileSteps = healthKit.todaySteps }
+    }
+
+    private func loadProfileWaterIntake() async {
+        guard auth.isLoggedIn else { return }
+        guard let token = AuthService.shared.readToken()?.accessToken, !token.isEmpty else { return }
+        do {
+            struct HealthSummary: Codable {
+                let today: TodayData
+            }
+            struct TodayData: Codable {
+                let water: Double?
+            }
+            let endpoint = "health/summary?t=\(Date().timeIntervalSince1970)"
+            let summary: HealthSummary = try await NetworkManager.shared.request(
+                endpoint,
+                method: "GET",
+                body: nil
+            )
+            await MainActor.run {
+                profileWater = summary.today.water ?? 0.0
+            }
+        } catch {
+            await MainActor.run { profileWater = 0.0 }
+        }
+    }
+
+    private func loadProfileFasting() async {
+        guard auth.isLoggedIn else { return }
+        guard let token = AuthService.shared.readToken()?.accessToken, !token.isEmpty else { return }
+        do {
+            struct Fasting: Codable {
+                let status: String
+                let remainingHours: Double?
+            }
+            let fasting: Fasting = try await NetworkManager.shared.request(
+                "fasting/current",
+                method: "GET",
+                body: nil
+            )
+            await MainActor.run {
+                if fasting.status == "fasting", let remaining = fasting.remainingHours, remaining.isFinite, !remaining.isNaN {
+                    let h = Int(remaining)
+                    let minutes = (remaining - Double(h)) * 60
+                    let m = minutes.isFinite && !minutes.isNaN ? Int(minutes) : 0
+                    profileFasting = "\(h)h \(m)m"
+                } else {
+                    profileFasting = "—"
+                }
+            }
+        } catch {
+            await MainActor.run { profileFasting = "—" }
         }
     }
 
@@ -500,7 +616,7 @@ struct ProfileView: View {
                 icon: "target",
                 iconColor: .purple,
                 title: "Weight & Targets",
-                subtitle: "Update your goals and targets",
+                subtitle: profileTargetCalories != nil ? "Target Calories: \(profileTargetCalories!) kcal" : "Update your goals and targets",
                 action: { showingTargetSettings = true }
             )
         }
