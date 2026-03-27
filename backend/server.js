@@ -241,7 +241,7 @@ app.use('/api/messages', messagesRoutes);
 app.use('/api/logs', logsRoutes);
 
 // Clubs and Run Tracker APIs
-import authMiddleware from './middleware/authMiddleware.js';
+import { authMiddleware } from './middleware/authMiddleware.js';
 app.use('/api/clubs', authMiddleware, clubsRoutes);
 app.use('/api/runs', authMiddleware, runsRoutes);
 
