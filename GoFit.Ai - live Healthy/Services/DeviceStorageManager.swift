@@ -102,6 +102,9 @@ final class DeviceStorageManager: ObservableObject {
     func save<T: Codable>(_ object: T, forKey key: String) -> Bool {
         return storageLock.sync {
             do {
+                // Ensure storage directory exists before writing
+                try fileManager.createDirectory(at: appStorageURL, withIntermediateDirectories: true, attributes: nil)
+
                 let data = try JSONEncoder().encode(object)
                 let path = appStorageURL.appendingPathComponent("\(key).json")
                 try data.write(to: path, options: [.atomic])
@@ -116,8 +119,13 @@ final class DeviceStorageManager: ObservableObject {
     
     func load<T: Codable>(_ type: T.Type, forKey key: String) -> T? {
         return storageLock.sync {
+            let path = appStorageURL.appendingPathComponent("\(key).json")
+            guard fileManager.fileExists(atPath: path.path) else {
+                print("ℹ️ Codable object not found (expected): \(key)")
+                return nil
+            }
+
             do {
-                let path = appStorageURL.appendingPathComponent("\(key).json")
                 let data = try Data(contentsOf: path)
                 let object = try JSONDecoder().decode(T.self, from: data)
                 print("✅ Loaded codable object: \(key)")
@@ -131,8 +139,13 @@ final class DeviceStorageManager: ObservableObject {
     
     func removeStoredObject(forKey key: String) -> Bool {
         return storageLock.sync {
+            let path = appStorageURL.appendingPathComponent("\(key).json")
+            guard fileManager.fileExists(atPath: path.path) else {
+                print("ℹ️ No stored object to remove: \(key)")
+                return true
+            }
+
             do {
-                let path = appStorageURL.appendingPathComponent("\(key).json")
                 try fileManager.removeItem(at: path)
                 print("✅ Removed stored object: \(key)")
                 return true

@@ -68,7 +68,7 @@ struct HomeDashboardView: View {
                         SocialActivityCard()
                             .delayedAppear(0.12)
                         
-                        FriendsLeaderboardCard()
+                        FriendsLeaderboardCard(period: "daily")
                             .delayedAppear(0.16)
                         
                         // ━━━ SECTION 3: Gamification ━━━

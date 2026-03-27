@@ -120,9 +120,11 @@ class FriendsService: NSObject, ObservableObject {
     
     /// Accept a friend request
     func acceptFriendRequest(from friendId: String, completion: @escaping (Result<String, Error>) -> Void) {
+        isLoading = true
         let endpoint = "\(baseURL)/api/friends/accept/\(friendId)"
         
         guard let url = URL(string: endpoint) else {
+            isLoading = false
             completion(.failure(NSError(domain: "Invalid URL", code: -1)))
             return
         }
@@ -138,6 +140,7 @@ class FriendsService: NSObject, ObservableObject {
         URLSession.shared.dataTask(with: request) { [weak self] data, response, error in
             DispatchQueue.main.async {
                 if let error = error {
+                    self?.isLoading = false
                     self?.error = error.localizedDescription
                     completion(.failure(error))
                     return
@@ -149,7 +152,9 @@ class FriendsService: NSObject, ObservableObject {
                         self?.friendRequests.removeAll { $0.id == friendId }
                         completion(.success(response.message))
                     }
+                    self?.isLoading = false
                 } catch {
+                    self?.isLoading = false
                     self?.error = error.localizedDescription
                     completion(.failure(error))
                 }
@@ -159,9 +164,11 @@ class FriendsService: NSObject, ObservableObject {
     
     /// Reject a friend request
     func rejectFriendRequest(from friendId: String, completion: @escaping (Result<String, Error>) -> Void) {
+        isLoading = true
         let endpoint = "\(baseURL)/api/friends/reject/\(friendId)"
         
         guard let url = URL(string: endpoint) else {
+            isLoading = false
             completion(.failure(NSError(domain: "Invalid URL", code: -1)))
             return
         }
@@ -177,12 +184,14 @@ class FriendsService: NSObject, ObservableObject {
         URLSession.shared.dataTask(with: request) { [weak self] data, response, error in
             DispatchQueue.main.async {
                 if let error = error {
+                    self?.isLoading = false
                     self?.error = error.localizedDescription
                     completion(.failure(error))
                     return
                 }
                 
                 self?.friendRequests.removeAll { $0.id == friendId }
+                self?.isLoading = false
                 completion(.success("Friend request rejected"))
             }
         }.resume()

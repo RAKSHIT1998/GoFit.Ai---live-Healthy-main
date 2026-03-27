@@ -38,42 +38,42 @@ final class RunHistoryStore {
         let idAttr = NSAttributeDescription()
         idAttr.name = "id"
         idAttr.attributeType = .stringAttributeType
-        idAttr.isOptional = false
+        idAttr.isOptional = true
 
         let dateAttr = NSAttributeDescription()
         dateAttr.name = "date"
         dateAttr.attributeType = .dateAttributeType
-        dateAttr.isOptional = false
+        dateAttr.isOptional = true
 
         let distAttr = NSAttributeDescription()
         distAttr.name = "distanceKm"
         distAttr.attributeType = .doubleAttributeType
-        distAttr.isOptional = false
+        distAttr.isOptional = true
 
         let durationAttr = NSAttributeDescription()
         durationAttr.name = "durationSeconds"
         durationAttr.attributeType = .doubleAttributeType
-        durationAttr.isOptional = false
+        durationAttr.isOptional = true
 
         let caloriesAttr = NSAttributeDescription()
         caloriesAttr.name = "calories"
         caloriesAttr.attributeType = .doubleAttributeType
-        caloriesAttr.isOptional = false
+        caloriesAttr.isOptional = true
 
         let ascentAttr = NSAttributeDescription()
         ascentAttr.name = "ascentMeters"
         ascentAttr.attributeType = .doubleAttributeType
-        ascentAttr.isOptional = false
+        ascentAttr.isOptional = true
 
         let descentAttr = NSAttributeDescription()
         descentAttr.name = "descentMeters"
         descentAttr.attributeType = .doubleAttributeType
-        descentAttr.isOptional = false
+        descentAttr.isOptional = true
 
         let paceAttr = NSAttributeDescription()
         paceAttr.name = "paceMinPerKm"
         paceAttr.attributeType = .doubleAttributeType
-        paceAttr.isOptional = false
+        paceAttr.isOptional = true
 
         let routeAttr = NSAttributeDescription()
         routeAttr.name = "routeData"

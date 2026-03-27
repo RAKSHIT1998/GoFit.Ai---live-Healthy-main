@@ -7,6 +7,7 @@ struct TargetSettingsView: View {
     @State private var weightKg: Double = 70
     @State private var heightCm: Double = 170
     @State private var targetWeightKg: Double?
+    @State private var targetTimeWeeks: Int = 12
     @State private var targetCalories: Double?
     @State private var targetProtein: Double?
     @State private var targetCarbs: Double?
@@ -91,6 +92,34 @@ struct TargetSettingsView: View {
                                             .frame(width: 100)
                                         Text("kg")
                                             .foregroundColor(.secondary)
+                                    }
+
+                                    HStack {
+                                        Text("Target Timeframe")
+                                            .font(Design.Typography.body)
+                                            .foregroundColor(.primary)
+                                        Spacer()
+                                        Stepper(value: $targetTimeWeeks, in: 4...52, step: 1) {
+                                            Text("\(targetTimeWeeks) weeks")
+                                                .font(Design.Typography.body)
+                                                .foregroundColor(.secondary)
+                                        }
+                                        .frame(width: 200)
+                                    }
+
+                                    HStack {
+                                        Spacer()
+                                        Button(action: recalculateTargets) {
+                                            Text("Recalculate Calories")
+                                                .font(Design.Typography.caption)
+                                                .fontWeight(.semibold)
+                                                .foregroundColor(.white)
+                                                .padding(.horizontal, 20)
+                                                .padding(.vertical, 10)
+                                                .background(Design.Colors.primary)
+                                                .cornerRadius(10)
+                                        }
+                                        Spacer()
                                     }
                                 }
                             }
@@ -381,6 +410,9 @@ struct TargetSettingsView: View {
                     if let liquid = metrics["liquidIntakeGoal"] as? Double {
                         liquidIntakeGoal = liquid
                     }
+                    if let weeks = metrics["targetTimeWeeks"] as? Int {
+                        targetTimeWeeks = weeks
+                    }
                 }
                 if let activity = response["activityLevel"] as? String {
                     activityLevel = activity
@@ -393,8 +425,48 @@ struct TargetSettingsView: View {
     }
     
     private func recalculateTargets() {
-        // This would typically call the backend to recalculate based on weight, height, goal, activity level
-        // For now, we'll just save and let the backend recalculate
+        guard weightKg > 0, heightCm > 0, let targetWeight = targetWeightKg, targetWeight > 0 else {
+            errorMessage = "Please enter valid current and target weight values."
+            showingError = true
+            return
+        }
+
+        let age = 30.0
+        let bmrMale = 10 * weightKg + 6.25 * heightCm - 5 * age + 5
+        let bmrFemale = 10 * weightKg + 6.25 * heightCm - 5 * age - 161
+        let bmr = (bmrMale + bmrFemale) / 2
+
+        let activityMultiplier: Double
+        switch activityLevel {
+        case "sedentary": activityMultiplier = 1.2
+        case "light": activityMultiplier = 1.375
+        case "moderate": activityMultiplier = 1.55
+        case "active": activityMultiplier = 1.725
+        case "very_active": activityMultiplier = 1.9
+        default: activityMultiplier = 1.55
+        }
+
+        let tdee = bmr * activityMultiplier
+
+        let weeks = max(targetTimeWeeks, 4)
+        let deltaKg = targetWeight - weightKg
+        let dailyWeightChange = deltaKg / Double(weeks * 7)
+        let changeCalories = dailyWeightChange * 7700
+
+        let base = tdee
+        let daily = base + changeCalories
+
+        targetCalories = max(1100, daily)
+
+        // optional macro split suggestions
+        targetProtein = round((targetCalories ?? 0) * 0.25 / 4)
+        targetCarbs = round((targetCalories ?? 0) * 0.45 / 4)
+        targetFat = round((targetCalories ?? 0) * 0.30 / 9)
+
+        // update local user store quickly
+        LocalUserStore.shared.updateNutritionTargets(targetCalories: targetCalories, targetProtein: targetProtein, targetCarbs: targetCarbs, targetFat: targetFat)
+
+        // send to backend as well
         saveTargets()
     }
     
@@ -408,6 +480,7 @@ struct TargetSettingsView: View {
                     "weightKg": weightKg,
                     "heightCm": heightCm,
                     "targetWeightKg": targetWeightKg,
+                    "targetTimeWeeks": targetTimeWeeks,
                     "targetCalories": targetCalories,
                     "targetProtein": targetProtein,
                     "targetCarbs": targetCarbs,
@@ -435,7 +508,11 @@ struct TargetSettingsView: View {
                     auth.heightCm = heightCm
                     auth.goal = goal
                     auth.saveLocalState()
-                    
+
+                    // Keep local cache in sync
+                    LocalUserStore.shared.updateBasicInfo(weightKg: weightKg, heightCm: heightCm, targetWeightKg: targetWeightKg)
+                    LocalUserStore.shared.updateNutritionTargets(targetCalories: targetCalories, targetProtein: targetProtein, targetCarbs: targetCarbs, targetFat: targetFat, liquidIntakeGoal: liquidIntakeGoal)
+
                     isLoading = false
                     showingSuccess = true
                 }

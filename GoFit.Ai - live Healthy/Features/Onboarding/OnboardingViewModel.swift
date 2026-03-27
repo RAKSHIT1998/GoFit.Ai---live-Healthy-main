@@ -19,6 +19,7 @@ class OnboardingViewModel: ObservableObject {
     @Published var weightKg: Double = 70
     @Published var heightCm: Double = 170
     @Published var targetWeightKg: Double? = nil
+    @Published var targetTimeWeeks: Int = 12
     @Published var workoutPreferences: Set<WorkoutType> = []
     @Published var favoriteCuisines: Set<CuisineType> = []
     @Published var foodPreferences: Set<FoodPreference> = []
@@ -441,4 +442,50 @@ class OnboardingViewModel: ObservableObject {
         default: return true
         }
     }
+
+    // MARK: - Calorie estimation helpers
+
+    func activityMultiplier() -> Double {
+        switch activityLevel {
+        case .sedentary: return 1.2
+        case .light: return 1.375
+        case .moderate: return 1.55
+        case .active: return 1.725
+        case .veryActive: return 1.9
+        }
+    }
+
+    func baseBMR(weightKg: Double, heightCm: Double) -> Double {
+        // Estimate BMR with generalized assumption: age ~ 30, gender neutrality
+        // 10*weight + 6.25*height - 5*age + 5 (approx for male) and  -161 for female
+        let age = 30.0
+        let bmrMale = 10 * weightKg + 6.25 * heightCm - 5 * age + 5
+        let bmrFemale = 10 * weightKg + 6.25 * heightCm - 5 * age - 161
+        return (bmrMale + bmrFemale) / 2.0
+    }
+
+    func estimatedTargetCalories() -> Int {
+        guard let targetWeight = targetWeightKg, targetWeight > 0, weightKg > 0, heightCm > 0 else {
+            return 0
+        }
+
+        let bmr = baseBMR(weightKg: weightKg, heightCm: heightCm)
+        let tdee = bmr * activityMultiplier()
+
+        let deltaKg = targetWeight - weightKg
+        let weeks = targetTimeWeeks > 0 ? targetTimeWeeks : 12
+        let dailyWeightChange = deltaKg / Double(weeks * 7)
+        let dailyCalorieChange = dailyWeightChange * 7700.0
+
+        let goalAdjustment: Double
+        switch goal {
+        case .lose: goalAdjustment = min(dailyCalorieChange, -250) // avoid too weak
+        case .gain: goalAdjustment = max(dailyCalorieChange, 250)
+        case .maintain: goalAdjustment = 0
+        }
+
+        let target = tdee + goalAdjustment
+        return max(1100, Int(round(target)))
+    }
 }
+

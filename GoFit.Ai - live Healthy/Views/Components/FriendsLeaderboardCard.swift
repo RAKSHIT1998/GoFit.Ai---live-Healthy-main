@@ -1,9 +1,14 @@
 import SwiftUI
 
 // MARK: - Friends Leaderboard Card
-/// Compact weekly leaderboard card for the home dashboard.
-/// Uses existing GamificationService.getLeaderboard() → [LeaderboardEntry] model.
+/// Compact leaderboard card for the home dashboard.
+/// Shows friends ranking by XP for the selected period.
+///
+/// `period` is currently controlled by SocialHubView's picker to display
+/// daily or monthly leaderboard state.
 struct FriendsLeaderboardCard: View {
+    let period: String
+
         private func friendBubble(entry: LeaderboardEntry) -> some View {
             VStack(spacing: 4) {
                 Circle()
@@ -65,7 +70,7 @@ struct FriendsLeaderboardCard: View {
                     VStack(alignment: .leading, spacing: 1) {
                         Text("Leaderboard")
                             .font(Design.Typography.headline)
-                        Text("This Week")
+                        Text(period)
                             .font(Design.Typography.caption2)
                             .foregroundColor(.secondary)
                     }
@@ -190,6 +195,11 @@ struct FriendsLeaderboardCard: View {
         .task {
             await loadLeaderboard()
         }
+        .onChange(of: period) { _ in
+            Task {
+                await loadLeaderboard()
+            }
+        }
     }
     
     // MARK: - Leaderboard Row
@@ -289,7 +299,8 @@ struct FriendsLeaderboardCard: View {
     // MARK: - Load Data
     private func loadLeaderboard() async {
         do {
-            try await gamService.getLeaderboard()
+            let scope = period.lowercased() == "monthly" ? "monthly" : "daily"
+            try await gamService.getLeaderboard(scope: scope)
             
             await MainActor.run {
                 entries = gamService.leaderboard

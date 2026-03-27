@@ -254,11 +254,12 @@ class GamificationService: NSObject, ObservableObject {
 
     // MARK: - Get Leaderboard
 
-    func getLeaderboard(limit: Int = 50, offset: Int = 0) async throws {
+    func getLeaderboard(scope: String = "daily", limit: Int = 50, offset: Int = 0) async throws {
         isLoading = true
         defer { isLoading = false }
 
-        let endpoint = "\(baseURL)/leaderboard?limit=\(limit)&offset=\(offset)"
+        let safeScope = scope.lowercased() == "monthly" ? "monthly" : "daily"
+        let endpoint = "\(baseURL)/leaderboard?scope=\(safeScope)&limit=\(limit)&offset=\(offset)"
         guard let url = URL(string: endpoint) else { throw NetworkError.invalidURL }
 
         var request = URLRequest(url: url)

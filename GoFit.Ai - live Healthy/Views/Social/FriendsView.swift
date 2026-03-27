@@ -172,14 +172,15 @@ struct FriendsView: View {
                         case .requests:
                             FriendRequestsView(
                                 requests: friendsService.friendRequests,
-                                onAccept: { friendId in
-                                    friendsService.acceptFriendRequest(from: friendId) { _ in
+                                isLoading: friendsService.isLoading,
+                                onAccept: { friendRequestId in
+                                    friendsService.acceptFriendRequest(from: friendRequestId) { _ in
                                         friendsService.fetchFriendRequests { _ in }
                                         friendsService.fetchFriends { _ in }
                                     }
                                 },
-                                onDecline: { friendId in
-                                    friendsService.rejectFriendRequest(from: friendId) { _ in
+                                onDecline: { friendRequestId in
+                                    friendsService.rejectFriendRequest(from: friendRequestId) { _ in
                                         friendsService.fetchFriendRequests { _ in }
                                     }
                                 }
@@ -427,38 +428,59 @@ struct FriendCardView: View {
 // MARK: - Friend Requests View
 struct FriendRequestsView: View {
     let requests: [FriendRequest]
+    let isLoading: Bool
     let onAccept: (String) -> Void
     let onDecline: (String) -> Void
     
     var body: some View {
-        if requests.isEmpty {
-            VStack(spacing: 24) {
-                Image(systemName: "envelope.open")
-                    .font(.system(size: 64))
-                    .foregroundColor(Design.Colors.primary.opacity(0.3))
-                
-                VStack(spacing: 8) {
-                    Text("All Caught Up!")
-                        .font(Design.Typography.headline)
-                        .foregroundColor(.primary)
+        ZStack {
+            content
+            if isLoading {
+                Color.black.opacity(0.25)
+                    .ignoresSafeArea()
+                VStack(spacing: 12) {
+                    ProgressView("Processing...")
+                        .progressViewStyle(CircularProgressViewStyle(tint: .white))
+                        .foregroundColor(.white)
+                }
+                .padding(16)
+                .background(Color.black.opacity(0.7))
+                .cornerRadius(12)
+            }
+        }
+    }
+
+    private var content: some View {
+        Group {
+            if requests.isEmpty {
+                VStack(spacing: 24) {
+                    Image(systemName: "envelope.open")
+                        .font(.system(size: 64))
+                        .foregroundColor(Design.Colors.primary.opacity(0.3))
                     
-                    Text("You don't have any pending friend requests")
-                        .font(Design.Typography.body)
-                        .foregroundColor(.secondary)
-                        .multilineTextAlignment(.center)
+                    VStack(spacing: 8) {
+                        Text("All Caught Up!")
+                            .font(Design.Typography.headline)
+                            .foregroundColor(.primary)
+                        
+                        Text("You don't have any pending friend requests")
+                            .font(Design.Typography.body)
+                            .foregroundColor(.secondary)
+                            .multilineTextAlignment(.center)
+                    }
+                    
+                    Spacer()
                 }
-                
-                Spacer()
-            }
-            .frame(maxHeight: .infinity, alignment: .center)
-            .padding(.horizontal, Design.Spacing.lg)
-        } else {
-            VStack(spacing: Design.Spacing.md) {
-                ForEach(requests, id: \.id) { request in
-                    FriendRequestCardView(request: request, onAccept: { onAccept(request.requesterId) }, onDecline: { onDecline(request.requesterId) })
+                .frame(maxHeight: .infinity, alignment: .center)
+                .padding(.horizontal, Design.Spacing.lg)
+            } else {
+                VStack(spacing: Design.Spacing.md) {
+                    ForEach(requests, id: \.id) { request in
+                        FriendRequestCardView(request: request, onAccept: { onAccept(request.id) }, onDecline: { onDecline(request.id) })
+                    }
                 }
+                .padding(.horizontal, Design.Spacing.md)
             }
-            .padding(.horizontal, Design.Spacing.md)
         }
     }
 }
@@ -468,7 +490,9 @@ struct FriendRequestCardView: View {
     let request: FriendRequest
     let onAccept: () -> Void
     let onDecline: () -> Void
+    @State private var showAcceptConfirm = false
     @State private var showDeclineConfirm = false
+    @State private var isProcessing = false
     
     var body: some View {
         VStack(spacing: 12) {
@@ -517,7 +541,7 @@ struct FriendRequestCardView: View {
                         .cornerRadius(8)
                 }
                 
-                Button(action: onAccept) {
+                Button(action: { showAcceptConfirm = true }) {
                     HStack(spacing: 6) {
                         Image(systemName: "checkmark.circle.fill")
                         Text("Accept")
@@ -531,14 +555,39 @@ struct FriendRequestCardView: View {
                     .cornerRadius(8)
                 }
             }
+            if isProcessing {
+                ProgressView("Processing...")
+                    .frame(maxWidth: .infinity)
+                    .padding(8)
+                    .background(Color.black.opacity(0.25))
+                    .cornerRadius(8)
+            }
         }
         .padding(Design.Spacing.md)
         .background(Design.Colors.cardBackground)
         .cornerRadius(Design.Radius.medium)
         .shadow(color: Color.black.opacity(0.05), radius: 8, x: 0, y: 2)
+        .confirmationDialog("Confirm Request", isPresented: $showAcceptConfirm) {
+            Button("Cancel", role: .cancel) { }
+            Button("Accept", role: .none) {
+                isProcessing = true
+                onAccept()
+                DispatchQueue.main.asyncAfter(deadline: .now() + 0.2) {
+                    isProcessing = false
+                }
+            }
+        } message: {
+            Text("Accept this friend request?")
+        }
         .confirmationDialog("Decline Request", isPresented: $showDeclineConfirm) {
             Button("Cancel", role: .cancel) { }
-            Button("Decline", role: .destructive) { onDecline() }
+            Button("Decline", role: .destructive) {
+                isProcessing = true
+                onDecline()
+                DispatchQueue.main.asyncAfter(deadline: .now() + 0.2) {
+                    isProcessing = false
+                }
+            }
         } message: {
             Text("Are you sure you want to decline this friend request?")
         }

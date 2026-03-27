@@ -913,31 +913,52 @@ struct TargetWeightStep: View {
     }
     
     var body: some View {
+        targetWeightContent
+    }
+    
+    private var targetWeightContent: some View {
         ScrollView {
             VStack(spacing: 32) {
                 Spacer(minLength: 20)
-                
-                VStack(spacing: 16) {
-                    Image(systemName: "target")
-                        .font(.system(size: Design.Scale.value(60, textStyle: .title1)))
-                        .foregroundColor(Design.Colors.primary)
-                    
-                    Text("Your Target Weight")
-                        .font(Design.Typography.largeTitle)
-                    .minimumScaleFactor(0.85)
-                        .foregroundColor(.primary)
-                        .multilineTextAlignment(.center)
-                    
-                    Text("Tell us your goal weight and we'll calculate your ideal calorie and protein intake")
-                        .font(.body)
-                        .foregroundColor(.secondary)
-                        .multilineTextAlignment(.center)
-                        .padding(.horizontal)
+                targetWeightHeader
+                targetWeightForm
+                Spacer(minLength: 20)
+            }
+        }
+        .toolbar {
+            ToolbarItemGroup(placement: .keyboard) {
+                Spacer()
+                Button("Done") {
+                    isFocused = false
                 }
-                
-                VStack(spacing: 24) {
-                    // Target Weight Input
-                    VStack(alignment: .leading, spacing: 8) {
+            }
+        }
+    }
+
+    private var targetWeightHeader: some View {
+        VStack(spacing: 16) {
+            Image(systemName: "target")
+                .font(.system(size: Design.Scale.value(60, textStyle: .title1)))
+                .foregroundColor(Design.Colors.primary)
+
+            Text("Your Target Weight")
+                .font(Design.Typography.largeTitle)
+                .minimumScaleFactor(0.85)
+                .foregroundColor(.primary)
+                .multilineTextAlignment(.center)
+
+            Text("Tell us your goal weight and we'll calculate your ideal calorie and protein intake")
+                .font(.body)
+                .foregroundColor(.secondary)
+                .multilineTextAlignment(.center)
+                .padding(.horizontal)
+        }
+    }
+
+    private var targetWeightForm: some View {
+        VStack(spacing: 24) {
+            // Target Weight Input
+            VStack(alignment: .leading, spacing: 8) {
                         Text(unitSystem == .metric ? "Target Weight (kg)" : "Target Weight (lbs)")
                             .font(.headline)
                             .foregroundColor(.primary)
@@ -995,6 +1016,61 @@ struct TargetWeightStep: View {
                                 .cornerRadius(12)
                         }
                     }
+
+                    // Timeframe for goal
+                    VStack(alignment: .leading, spacing: 8) {
+                        HStack {
+                            Text("Target Duration")
+                                .font(.headline)
+                                .foregroundColor(.primary)
+                            Spacer()
+                            Text("\(viewModel.targetTimeWeeks) weeks")
+                                .font(.subheadline)
+                                .foregroundColor(.secondary)
+                        }
+                        Stepper(value: $viewModel.targetTimeWeeks, in: 4...52, step: 1) {
+                            Text("Reach target in \(viewModel.targetTimeWeeks) weeks")
+                                .font(.caption)
+                                .foregroundColor(.secondary)
+                        }
+                    }
+                    .padding(.top, 8)
+
+                    // Calculate recommendations
+                    Button(action: {
+                        recommendations = nil
+                        errorMessage = nil
+                        let estimated = viewModel.estimatedTargetCalories()
+                        let estimatedDouble = Double(estimated)
+                        let protein = Int((estimatedDouble * 0.25) / 4)
+                        let carbs = Int((estimatedDouble * 0.45) / 4)
+                        let fat = Int((estimatedDouble * 0.30) / 9)
+                        recommendations = TargetWeightRecommendations(
+                            dailyCalories: estimated,
+                            dailyProtein: protein,
+                            dailyCarbs: carbs,
+                            dailyFat: fat,
+                            proteinPercent: 25,
+                            carbsPercent: 45,
+                            fatPercent: 30,
+                            message: "Estimated target calories based on your goal and timeframe"
+                        )
+                    }) {
+                        Text("Estimate calories for target")
+                            .font(.headline)
+                            .foregroundColor(.white)
+                            .frame(maxWidth: .infinity)
+                            .padding(.vertical, 12)
+                            .background(Design.Colors.primary)
+                            .cornerRadius(12)
+                    }
+
+                    if let rec = recommendations {
+                        RecommendationCard(icon: "flame.fill", title: "Calories", value: "\(rec.dailyCalories)", unit: "kcal", color: .orange, description: rec.message)
+                        RecommendationCard(icon: "leaf.fill", title: "Protein", value: "\(rec.dailyProtein)", unit: "g", color: .green, description: "~\(rec.proteinPercent)%")
+                        RecommendationCard(icon: "bolt.fill", title: "Carbs", value: "\(rec.dailyCarbs)", unit: "g", color: .blue, description: "~\(rec.carbsPercent)%")
+                        RecommendationCard(icon: "drop.fill", title: "Fat", value: "\(rec.dailyFat)", unit: "g", color: .pink, description: "~\(rec.fatPercent)%")
+                    }
                     
 
                     
@@ -1002,20 +1078,8 @@ struct TargetWeightStep: View {
 
                 }
                 .padding(.horizontal, 24)
-                
-                Spacer(minLength: 20)
             }
-        }
-        .toolbar {
-            ToolbarItemGroup(placement: .keyboard) {
-                Spacer()
-                Button("Done") {
-                    isFocused = false
-                }
-            }
-        }
-    }
-    
+
     private func updateWeightForUnit() {
         guard let targetWeight = viewModel.targetWeightKg else { return }
         if unitSystem == .metric {
@@ -1049,6 +1113,7 @@ struct TargetWeightStep: View {
                     "weightKg": viewModel.weightKg,
                     "heightCm": viewModel.heightCm,
                     "targetWeightKg": targetWeight,
+                    "targetTimeWeeks": viewModel.targetTimeWeeks,
                     "goal": viewModel.goal.rawValue,
                     "activityLevel": viewModel.activityLevel.rawValue,
                     "dietaryPreferences": Array(viewModel.dietaryPreferences.map { $0.rawValue })

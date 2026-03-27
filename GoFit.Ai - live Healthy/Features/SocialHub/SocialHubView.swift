@@ -14,28 +14,39 @@ struct SocialHubView: View {
     @StateObject private var aiChallenges = AIChallengeService.shared
     @StateObject private var challengeService = ChallengeService()
 
-    @State private var selectedTab: SocialTab = .clubs
+    @State private var selectedTab: SocialTab = .rankings
     @State private var showQuickAdd = false
     @State private var showRunTracker = false
+    // State for social tab behavior + leaderboard mode
     @State private var showCreateChallenge = false
     @State private var showError = false
     @State private var errorMessage = ""
     @State private var showPaywall = false
     @State private var searchText = ""
-    @ObservedObject private var runClubService = RunClubService.shared
-    @State private var clubCityFilter = ""
-    @State private var showCreateClubSheet = false
+    @State private var leaderboardMode: LeaderboardMode = .daily
 
+    /// High-level tabs for social features.
+    ///
+    /// - `rankings`: friend XP board (daily/monthly)
+    /// - `friendsChats`: friends and chat view
     enum SocialTab: String, CaseIterable {
-        case clubs = "Clubs"
+        case rankings = "Rankings"
         case friendsChats = "Friends & Chats"
 
         var icon: String {
             switch self {
-            case .clubs: return "person.3.fill"
+            case .rankings: return "list.number"
             case .friendsChats: return "bubble.left.and.bubble.right"
             }
         }
+    }
+
+    /// Toggle between daily and monthly leaderboard rankings.
+    enum LeaderboardMode: String, CaseIterable, Identifiable {
+        case daily = "Daily"
+        case monthly = "Monthly"
+
+        var id: String { rawValue }
     }
 
     var body: some View {
@@ -46,8 +57,8 @@ struct SocialHubView: View {
                 inviteTodayBanner
 
                 switch selectedTab {
-                case .clubs:
-                    runClubsSection
+                case .rankings:
+                    rankingsSection
                 case .friendsChats:
                     friendsChatsSection
                 }
@@ -241,88 +252,38 @@ struct SocialHubView: View {
         }
     }
 
-    private var runClubsSection: some View {
+    private var rankingsSection: some View {
         ScrollView {
             VStack(spacing: Design.Spacing.lg) {
                 HStack {
-                    Text("Run Clubs")
-                        .font(Design.Typography.headline)
-                    Spacer()
-                    Button {
-                        showCreateClubSheet = true
-                    } label: {
-                        Image(systemName: "plus.circle.fill")
-                        Text("Create Club")
+                    VStack(alignment: .leading, spacing: 4) {
+                        Text("Friend XP Rankings")
+                            .font(Design.Typography.headline)
+                        Text("See which friends are leading in XP today or this month")
+                            .font(Design.Typography.caption)
+                            .foregroundColor(.secondary)
                     }
-                    .buttonStyle(.borderedProminent)
+                    Spacer()
                 }
                 .padding(.horizontal, Design.Spacing.md)
 
-                TextField("Filter by city", text: $clubCityFilter)
-                    .textFieldStyle(RoundedBorderTextFieldStyle())
-                    .padding(.horizontal, Design.Spacing.md)
-
-                ForEach(runClubService.getClubs(city: clubCityFilter)) { club in
-                    VStack(alignment: .leading, spacing: 8) {
-                        HStack {
-                            Text(club.name)
-                                .font(Design.Typography.headline)
-                            Spacer()
-                            Button(club.members.contains(where: { $0.userId == auth.userId }) ? "Joined" : "Join") {
-                                if let userId = auth.userId {
-                                    if club.members.contains(where: { $0.userId == userId }) {
-                                        runClubService.leaveClub(club.id, userId: userId)
-                                    } else {
-                                        runClubService.joinClub(club.id, userId: userId, username: auth.name)
-                                    }
-                                }
-                            }
-                            .buttonStyle(.bordered)
-                        }
-
-                        Text(club.description ?? "No description")
-                            .font(Design.Typography.caption)
-                            .foregroundColor(.secondary)
-                        HStack {
-                            Label(club.city ?? "Global", systemImage: "map.fill")
-                                .font(Design.Typography.caption2)
-                                .foregroundColor(.secondary)
-                            Spacer()
-                            Button("Share Link") {
-                                let link = "gofit://runclub/\(club.id)"
-                                let shareText = "Join our Run Club \(club.name)! \(link)"
-                                let vc = UIActivityViewController(activityItems: [shareText], applicationActivities: nil)
-                                if let scene = UIApplication.shared.connectedScenes.first as? UIWindowScene,
-                                   let root = scene.windows.first?.rootViewController {
-                                    root.present(vc, animated: true)
-                                }
-                            }
-                            .buttonStyle(.bordered)
-                        }
-                    }
-                    .padding(16)
-                    .background(Design.Colors.cardBackground)
-                    .cornerRadius(14)
-                    .padding(.horizontal, Design.Spacing.md)
-                    .onTapGesture {
-                        runClubService.selectedClub = club
+                Picker("Leaderboard Mode", selection: $leaderboardMode) {
+                    ForEach(LeaderboardMode.allCases) { mode in
+                        Text(mode.rawValue).tag(mode)
                     }
                 }
-                Spacer()
+                .pickerStyle(.segmented)
+                .padding(.horizontal, Design.Spacing.md)
+
+                Text("Top friends by \(leaderboardMode.rawValue) XP")
+                    .font(Design.Typography.caption)
+                    .foregroundColor(.secondary)
+                    .padding(.horizontal, Design.Spacing.md)
+
+                FriendsLeaderboardCard(period: leaderboardMode.rawValue)
+                    .padding(.horizontal, Design.Spacing.md)
             }
             .padding(.vertical, Design.Spacing.md)
-        }
-        .sheet(isPresented: $showCreateClubSheet) {
-            CreateRunClubSheet(isPresented: $showCreateClubSheet) { club in
-                runClubService.selectedClub = club
-            }
-            .environmentObject(auth)
-            .environmentObject(runClubService)
-        }
-        .sheet(item: $runClubService.selectedClub) { club in
-            RunClubDetailView(runClubService: runClubService, club: club)
-                .environmentObject(auth)
-                .environmentObject(runClubService)
         }
     }
 
@@ -395,7 +356,7 @@ struct SocialHubView: View {
     private var leaderboardSection: some View {
         ScrollView {
             VStack(spacing: Design.Spacing.lg) {
-                FriendsLeaderboardCard()
+                FriendsLeaderboardCard(period: leaderboardMode.rawValue)
                     .padding(.horizontal, Design.Spacing.md)
 
                 badgesPreview
