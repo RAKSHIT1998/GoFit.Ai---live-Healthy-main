@@ -32,12 +32,6 @@ struct MainTabView: View {
                     Label("Profile", systemImage: selectedTab == 3 ? "person.circle.fill" : "person.circle")
                 }
                 .tag(3)
-
-            FeatureWireframeView()
-                .tabItem {
-                    Label("Features", systemImage: selectedTab == 4 ? "sparkles.rectangle.stack.fill" : "sparkles.rectangle.stack")
-                }
-                .tag(4)
         }
         .accentColor(Design.Colors.primary)
         .background(Design.Colors.background)
