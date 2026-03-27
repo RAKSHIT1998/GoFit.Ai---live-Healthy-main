@@ -1,6 +1,6 @@
 import express from 'express';
-import clubsRoutes from './routes/clubs.js';
-import runsRoutes from './routes/runs.js';
+const clubsRoutes = require('./routes/clubs.js');
+const runsRoutes = require('./routes/runs.js');
 import { createServer } from 'http';
 import cors from 'cors';
 import helmet from 'helmet';
