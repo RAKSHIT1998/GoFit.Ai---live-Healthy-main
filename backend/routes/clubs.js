@@ -1,6 +1,6 @@
-const express = require('express');
-const Club = require('../models/Club');
-const User = require('../models/User');
+import express from 'express';
+import Club from '../models/Club.js';
+import User from '../models/User.js';
 const router = express.Router();
 
 // Create a club
@@ -56,4 +56,4 @@ router.get('/:id/members', async (req, res) => {
   res.json(club.members);
 });
 
-module.exports = router;
+export default router;

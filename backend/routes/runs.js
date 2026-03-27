@@ -1,5 +1,5 @@
-const express = require('express');
-const RunSession = require('../models/RunSession');
+import express from 'express';
+import RunSession from '../models/RunSession.js';
 const router = express.Router();
 
 // Save a run session
@@ -26,4 +26,4 @@ router.get('/:id', async (req, res) => {
   res.json(run);
 });
 
-module.exports = router;
+export default router;
