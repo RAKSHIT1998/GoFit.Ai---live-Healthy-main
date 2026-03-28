@@ -1,221 +1,220 @@
 import SwiftUI
 
 struct TargetSettingsView: View {
-
-            // MARK: - Subviews to help SwiftUI type checker
-            private var bodyMetricsCard: some View {
-                ModernCard {
-                    VStack(alignment: .leading, spacing: Design.Spacing.md) {
-                        Text("Body Metrics")
-                            .font(Design.Typography.headline)
-                            .foregroundColor(.primary)
-                        VStack(spacing: Design.Spacing.md) {
-                            HStack {
-                                Text("Current Weight")
-                                    .font(Design.Typography.body)
-                                    .foregroundColor(.primary)
-                                Spacer()
-                                TextField("kg", value: $weightKg, format: .number, onEditingChanged: { editing in
-                                    if !editing { saveTargets() }
-                                })
-                                    .keyboardType(.decimalPad)
-                                    .padding(.horizontal, 12)
-                                    .padding(.vertical, 8)
-                                    .background(Color(.secondarySystemBackground))
-                                    .foregroundColor(.primary)
-                                    .accentColor(Design.Colors.primary)
-                                    .cornerRadius(8)
-                                    .frame(width: 100)
-                                Text("kg").foregroundColor(.secondary)
-                            }
-                            HStack {
-                                Text("Height")
-                                    .font(Design.Typography.body)
-                                    .foregroundColor(.primary)
-                                Spacer()
-                                TextField("cm", value: $heightCm, format: .number)
-                                    .keyboardType(.decimalPad)
-                                    .padding(.horizontal, 12)
-                                    .padding(.vertical, 8)
-                                    .background(Color(.secondarySystemBackground))
-                                    .foregroundColor(.primary)
-                                    .accentColor(Design.Colors.primary)
-                                    .cornerRadius(8)
-                                    .frame(width: 100)
-                                Text("cm").foregroundColor(.secondary)
-                            }
-                            HStack {
-                                Text("Target Weight")
-                                    .font(Design.Typography.body)
-                                    .foregroundColor(.primary)
-                                Spacer()
-                                TextField("kg", value: $targetWeightKg, format: .number, onEditingChanged: { editing in
-                                    if !editing { saveTargets() }
-                                })
-                                    .keyboardType(.decimalPad)
-                                    .padding(.horizontal, 12)
-                                    .padding(.vertical, 8)
-                                    .background(Color(.secondarySystemBackground))
-                                    .foregroundColor(.primary)
-                                    .accentColor(Design.Colors.primary)
-                                    .cornerRadius(8)
-                                    .frame(width: 100)
-                                Text("kg").foregroundColor(.secondary)
-                            }
-                            HStack {
-                                Text("Target Timeframe")
-                                    .font(Design.Typography.body)
-                                    .foregroundColor(.primary)
-                                Spacer()
-                                Stepper(value: $targetTimeWeeks, in: 4...52, step: 1) {
-                                    Text("\(targetTimeWeeks) weeks")
-                                        .font(Design.Typography.body)
-                                        .foregroundColor(.secondary)
-                                }
-                                .frame(width: 200)
-                            }
-                            HStack {
-                                Spacer()
-                                Button(action: recalculateTargets) {
-                                    Text("Recalculate Calories")
-                                        .font(Design.Typography.caption)
-                                        .fontWeight(.semibold)
-                                        .foregroundColor(.white)
-                                        .padding(.horizontal, 20)
-                                        .padding(.vertical, 10)
-                                        .background(Design.Colors.primary)
-                                        .cornerRadius(10)
-                                }
-                                Spacer()
-                            }
-                        }
-                    }
-                    .padding(Design.Spacing.md)
-                }
-                .padding(.horizontal, Design.Spacing.md)
-            }
-
-            private var goalsCard: some View {
-                ModernCard {
-                    VStack(alignment: .leading, spacing: Design.Spacing.md) {
-                        Text("Fitness Goal")
-                            .font(Design.Typography.headline)
-                            .foregroundColor(.primary)
-                        Picker("Goal", selection: $goal) {
-                            ForEach(goals, id: \.self) { goalOption in
-                                Text(goalOption.capitalized).tag(goalOption)
-                            }
-                        }
-                        .pickerStyle(.segmented)
-                        Text("Activity Level")
+    // MARK: - Subviews
+    private var bodyMetricsCard: some View {
+        ModernCard {
+            VStack(alignment: .leading, spacing: Design.Spacing.md) {
+                Text("Body Metrics")
+                    .font(Design.Typography.headline)
+                    .foregroundColor(.primary)
+                VStack(spacing: Design.Spacing.md) {
+                    HStack {
+                        Text("Current Weight")
                             .font(Design.Typography.body)
-                            .padding(.top, Design.Spacing.sm)
-                        Picker("Activity Level", selection: $activityLevel) {
-                            ForEach(activityLevels, id: \.self) { level in
-                                Text(level.replacingOccurrences(of: "_", with: " ").capitalized).tag(level)
-                            }
-                        }
-                        .pickerStyle(.menu)
-                    }
-                    .padding(Design.Spacing.md)
-                }
-                .padding(.horizontal, Design.Spacing.md)
-            }
-
-            private var nutritionTargetsCard: some View {
-                ModernCard {
-                    VStack(alignment: .leading, spacing: Design.Spacing.md) {
-                        Text("Nutrition Targets")
-                            .font(Design.Typography.headline)
                             .foregroundColor(.primary)
-                        VStack(spacing: Design.Spacing.md) {
-                            HStack {
-                                Text("Target Calories")
-                                    .font(Design.Typography.body)
-                                    .foregroundColor(.primary)
-                                Spacer()
-                                TextField("kcal", value: $targetCalories, format: .number, onEditingChanged: { editing in
-                                    if !editing { saveTargets() }
-                                })
-                                    .keyboardType(.decimalPad)
-                                    .padding(.horizontal, 12)
-                                    .padding(.vertical, 8)
-                                    .background(Color(.secondarySystemBackground))
-                                    .foregroundColor(.primary)
-                                    .accentColor(Design.Colors.primary)
-                                    .cornerRadius(8)
-                                    .frame(width: 100)
-                                Text("kcal").foregroundColor(.secondary)
-                            }
-                            HStack {
-                                Text("Target Protein")
-                                    .font(Design.Typography.body)
-                                    .foregroundColor(.primary)
-                                Spacer()
-                                TextField("g", value: $targetProtein, format: .number)
-                                    .keyboardType(.decimalPad)
-                                    .padding(.horizontal, 12)
-                                    .padding(.vertical, 8)
-                                    .background(Color(.secondarySystemBackground))
-                                    .foregroundColor(.primary)
-                                    .accentColor(Design.Colors.primary)
-                                    .cornerRadius(8)
-                                    .frame(width: 100)
-                                Text("g").foregroundColor(.secondary)
-                            }
-                            HStack {
-                                Text("Target Carbs")
-                                    .font(Design.Typography.body)
-                                    .foregroundColor(.primary)
-                                Spacer()
-                                TextField("g", value: $targetCarbs, format: .number)
-                                    .keyboardType(.decimalPad)
-                                    .padding(.horizontal, 12)
-                                    .padding(.vertical, 8)
-                                    .background(Color(.secondarySystemBackground))
-                                    .foregroundColor(.primary)
-                                    .accentColor(Design.Colors.primary)
-                                    .cornerRadius(8)
-                                    .frame(width: 100)
-                                Text("g").foregroundColor(.secondary)
-                            }
-                            HStack {
-                                Text("Target Fat")
-                                    .font(Design.Typography.body)
-                                    .foregroundColor(.primary)
-                                Spacer()
-                                TextField("g", value: $targetFat, format: .number)
-                                    .keyboardType(.decimalPad)
-                                    .padding(.horizontal, 12)
-                                    .padding(.vertical, 8)
-                                    .background(Color(.secondarySystemBackground))
-                                    .foregroundColor(.primary)
-                                    .accentColor(Design.Colors.primary)
-                                    .cornerRadius(8)
-                                    .frame(width: 100)
-                                Text("g").foregroundColor(.secondary)
-                            }
-                        }
-                        Button(action: {
-                            recalculateTargets()
-                        }) {
-                            HStack {
-                                Image(systemName: "arrow.clockwise")
-                                Text("Recalculate Targets")
-                            }
-                            .font(Design.Typography.body)
-                            .foregroundColor(Design.Colors.primary)
-                            .frame(maxWidth: .infinity)
-                            .padding(.vertical, Design.Spacing.sm)
-                            .background(Design.Colors.primary.opacity(0.1))
-                            .cornerRadius(Design.Radius.medium)
-                        }
-                        .padding(.top, Design.Spacing.sm)
+                        Spacer()
+                        TextField("kg", value: $weightKg, format: .number, onEditingChanged: { editing in
+                            if !editing { saveTargets() }
+                        })
+                            .keyboardType(.decimalPad)
+                            .padding(.horizontal, 12)
+                            .padding(.vertical, 8)
+                            .background(Color(.secondarySystemBackground))
+                            .foregroundColor(.primary)
+                            .accentColor(Design.Colors.primary)
+                            .cornerRadius(8)
+                            .frame(width: 100)
+                        Text("kg").foregroundColor(.secondary)
                     }
-                    .padding(Design.Spacing.md)
+                    HStack {
+                        Text("Height")
+                            .font(Design.Typography.body)
+                            .foregroundColor(.primary)
+                        Spacer()
+                        TextField("cm", value: $heightCm, format: .number)
+                            .keyboardType(.decimalPad)
+                            .padding(.horizontal, 12)
+                            .padding(.vertical, 8)
+                            .background(Color(.secondarySystemBackground))
+                            .foregroundColor(.primary)
+                            .accentColor(Design.Colors.primary)
+                            .cornerRadius(8)
+                            .frame(width: 100)
+                        Text("cm").foregroundColor(.secondary)
+                    }
+                    HStack {
+                        Text("Target Weight")
+                            .font(Design.Typography.body)
+                            .foregroundColor(.primary)
+                        Spacer()
+                        TextField("kg", value: $targetWeightKg, format: .number, onEditingChanged: { editing in
+                            if !editing { saveTargets() }
+                        })
+                            .keyboardType(.decimalPad)
+                            .padding(.horizontal, 12)
+                            .padding(.vertical, 8)
+                            .background(Color(.secondarySystemBackground))
+                            .foregroundColor(.primary)
+                            .accentColor(Design.Colors.primary)
+                            .cornerRadius(8)
+                            .frame(width: 100)
+                        Text("kg").foregroundColor(.secondary)
+                    }
+                    HStack {
+                        Text("Target Timeframe")
+                            .font(Design.Typography.body)
+                            .foregroundColor(.primary)
+                        Spacer()
+                        Stepper(value: $targetTimeWeeks, in: 4...52, step: 1) {
+                            Text("\(targetTimeWeeks) weeks")
+                                .font(Design.Typography.body)
+                                .foregroundColor(.secondary)
+                        }
+                        .frame(width: 200)
+                    }
+                    HStack {
+                        Spacer()
+                        Button(action: recalculateTargets) {
+                            Text("Recalculate Calories")
+                                .font(Design.Typography.caption)
+                                .fontWeight(.semibold)
+                                .foregroundColor(.white)
+                                .padding(.horizontal, 20)
+                                .padding(.vertical, 10)
+                                .background(Design.Colors.primary)
+                                .cornerRadius(10)
+                        }
+                        Spacer()
+                    }
                 }
-                .padding(.horizontal, Design.Spacing.md)
             }
+            .padding(Design.Spacing.md)
+        }
+        .padding(.horizontal, Design.Spacing.md)
+    }
+
+    private var goalsCard: some View {
+        ModernCard {
+            VStack(alignment: .leading, spacing: Design.Spacing.md) {
+                Text("Fitness Goal")
+                    .font(Design.Typography.headline)
+                    .foregroundColor(.primary)
+                Picker("Goal", selection: $goal) {
+                    ForEach(goals, id: \.self) { goalOption in
+                        Text(goalOption.capitalized).tag(goalOption)
+                    }
+                }
+                .pickerStyle(.segmented)
+                Text("Activity Level")
+                    .font(Design.Typography.body)
+                    .padding(.top, Design.Spacing.sm)
+                Picker("Activity Level", selection: $activityLevel) {
+                    ForEach(activityLevels, id: \.self) { level in
+                        Text(level.replacingOccurrences(of: "_", with: " ").capitalized).tag(level)
+                    }
+                }
+                .pickerStyle(.menu)
+            }
+            .padding(Design.Spacing.md)
+        }
+        .padding(.horizontal, Design.Spacing.md)
+    }
+
+    private var nutritionTargetsCard: some View {
+        ModernCard {
+            VStack(alignment: .leading, spacing: Design.Spacing.md) {
+                Text("Nutrition Targets")
+                    .font(Design.Typography.headline)
+                    .foregroundColor(.primary)
+                VStack(spacing: Design.Spacing.md) {
+                    HStack {
+                        Text("Target Calories")
+                            .font(Design.Typography.body)
+                            .foregroundColor(.primary)
+                        Spacer()
+                        TextField("kcal", value: $targetCalories, format: .number, onEditingChanged: { editing in
+                            if !editing { saveTargets() }
+                        })
+                            .keyboardType(.decimalPad)
+                            .padding(.horizontal, 12)
+                            .padding(.vertical, 8)
+                            .background(Color(.secondarySystemBackground))
+                            .foregroundColor(.primary)
+                            .accentColor(Design.Colors.primary)
+                            .cornerRadius(8)
+                            .frame(width: 100)
+                        Text("kcal").foregroundColor(.secondary)
+                    }
+                    HStack {
+                        Text("Target Protein")
+                            .font(Design.Typography.body)
+                            .foregroundColor(.primary)
+                        Spacer()
+                        TextField("g", value: $targetProtein, format: .number)
+                            .keyboardType(.decimalPad)
+                            .padding(.horizontal, 12)
+                            .padding(.vertical, 8)
+                            .background(Color(.secondarySystemBackground))
+                            .foregroundColor(.primary)
+                            .accentColor(Design.Colors.primary)
+                            .cornerRadius(8)
+                            .frame(width: 100)
+                        Text("g").foregroundColor(.secondary)
+                    }
+                    HStack {
+                        Text("Target Carbs")
+                            .font(Design.Typography.body)
+                            .foregroundColor(.primary)
+                        Spacer()
+                        TextField("g", value: $targetCarbs, format: .number)
+                            .keyboardType(.decimalPad)
+                            .padding(.horizontal, 12)
+                            .padding(.vertical, 8)
+                            .background(Color(.secondarySystemBackground))
+                            .foregroundColor(.primary)
+                            .accentColor(Design.Colors.primary)
+                            .cornerRadius(8)
+                            .frame(width: 100)
+                        Text("g").foregroundColor(.secondary)
+                    }
+                    HStack {
+                        Text("Target Fat")
+                            .font(Design.Typography.body)
+                            .foregroundColor(.primary)
+                        Spacer()
+                        TextField("g", value: $targetFat, format: .number)
+                            .keyboardType(.decimalPad)
+                            .padding(.horizontal, 12)
+                            .padding(.vertical, 8)
+                            .background(Color(.secondarySystemBackground))
+                            .foregroundColor(.primary)
+                            .accentColor(Design.Colors.primary)
+                            .cornerRadius(8)
+                            .frame(width: 100)
+                        Text("g").foregroundColor(.secondary)
+                    }
+                }
+                Button(action: {
+                    recalculateTargets()
+                }) {
+                    HStack {
+                        Image(systemName: "arrow.clockwise")
+                        Text("Recalculate Targets")
+                    }
+                    .font(Design.Typography.body)
+                    .foregroundColor(Design.Colors.primary)
+                    .frame(maxWidth: .infinity)
+                    .padding(.vertical, Design.Spacing.sm)
+                    .background(Design.Colors.primary.opacity(0.1))
+                    .cornerRadius(Design.Radius.medium)
+                }
+                .padding(.top, Design.Spacing.sm)
+            }
+            .padding(Design.Spacing.md)
+        }
+        .padding(.horizontal, Design.Spacing.md)
+    }
 
         @State private var isLoadingTargets = false
     @EnvironmentObject var auth: AuthViewModel
