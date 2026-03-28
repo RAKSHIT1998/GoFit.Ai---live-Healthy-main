@@ -8,6 +8,13 @@ struct WorkoutPreferenceSettingsView: View {
     @State private var isLoading = false
     @State private var errorMessage: String?
     @State private var showSuccess = false
+    @State private var workoutMode: WorkoutMode = .home
+
+    enum WorkoutMode: String, CaseIterable, Identifiable {
+        case home = "Home"
+        case gym = "Gym"
+        var id: String { rawValue }
+    }
     
     enum WorkoutPreferenceType: String, CaseIterable, Identifiable {
         case gym = "Gym"
@@ -92,6 +99,24 @@ struct WorkoutPreferenceSettingsView: View {
         NavigationStack {
             ScrollView {
                 VStack(alignment: .leading, spacing: Design.Spacing.lg) {
+                    // Home/Gym Toggle
+                    VStack(alignment: .leading, spacing: Design.Spacing.sm) {
+                        Text("Workout Mode")
+                            .font(Design.Typography.title)
+                            .fontWeight(.bold)
+                        Picker("Workout Mode", selection: $workoutMode) {
+                            ForEach(WorkoutMode.allCases) { mode in
+                                Text(mode.rawValue).tag(mode)
+                            }
+                        }
+                        .pickerStyle(SegmentedPickerStyle())
+                        .padding(.vertical, 4)
+                        Text("Switch between home and gym workouts. This will adapt your recommendations based on available equipment.")
+                            .font(Design.Typography.caption)
+                            .foregroundColor(.secondary)
+                    }
+                    .padding(.horizontal, Design.Spacing.md)
+                    .padding(.top, Design.Spacing.md)
                     // Header
                     VStack(alignment: .leading, spacing: Design.Spacing.sm) {
                         Text("Choose Your Workout Style")
@@ -226,6 +251,10 @@ struct WorkoutPreferenceSettingsView: View {
             selectedPreferences = Set(currentPrefs.compactMap { pref in
                 WorkoutPreferenceType.allCases.first { $0.rawValue.lowercased() == pref.lowercased() }
             })
+            // Load workout mode if present
+            if let modeString = profile.workoutMode, let mode = WorkoutMode(rawValue: modeString) {
+                workoutMode = mode
+            }
         }
     }
     
@@ -233,41 +262,32 @@ struct WorkoutPreferenceSettingsView: View {
         isLoading = true
         errorMessage = nil
         showSuccess = false
-        
         do {
             let preferencesArray = Array(selectedPreferences).map { $0.rawValue }
-            
-            // Update LocalUserStore to persist preferences
-            LocalUserStore.shared.updateGoals(workoutPreferences: preferencesArray)
-            
+            // Update LocalUserStore to persist preferences and mode
+            LocalUserStore.shared.updateGoals(workoutPreferences: preferencesArray, workoutMode: workoutMode.rawValue)
             // Update backend
             guard let token = AuthService.shared.readToken()?.accessToken else {
                 throw NSError(domain: "AuthError", code: 401, userInfo: [NSLocalizedDescriptionKey: "Not authenticated"])
             }
-            
             let url = NetworkManager.shared.baseURL.appendingPathComponent("auth/profile")
             var request = URLRequest(url: url)
             request.httpMethod = "PUT"
             request.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
             request.setValue("application/json", forHTTPHeaderField: "Content-Type")
-            
             let body: [String: Any] = [
-                "workoutPreferences": preferencesArray
+                "workoutPreferences": preferencesArray,
+                "workoutMode": workoutMode.rawValue
             ]
             request.httpBody = try JSONSerialization.data(withJSONObject: body)
-            
             let (data, response) = try await URLSession.shared.data(for: request)
-            
             guard let httpResponse = response as? HTTPURLResponse else {
                 throw NSError(domain: "NetworkError", code: 0, userInfo: [NSLocalizedDescriptionKey: "Invalid response"])
             }
-            
             if httpResponse.statusCode == 200 {
                 await MainActor.run {
                     isLoading = false
                     showSuccess = true
-                    
-                    // Hide success message after 2 seconds
                     DispatchQueue.main.asyncAfter(deadline: .now() + 2) {
                         showSuccess = false
                     }

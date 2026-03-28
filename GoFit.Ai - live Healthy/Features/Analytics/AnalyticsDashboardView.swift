@@ -1,15 +1,17 @@
+
 import SwiftUI
+import Foundation
+
+// Import local models and services for Analytics
+
+// NOTE: Ensure AnalyticsData.swift and NetworkManager+Analytics.swift are in the same target as this file.
+// If you see 'Cannot find type' errors, add these files to the build target in Xcode.
 
 struct AnalyticsDashboardView: View {
-    // Placeholder data for demonstration
-    let caloriesData: [Double] = [2100, 1800, 2000, 2200, 1950, 2050, 2300]
-    let stepsData: [Int] = [8000, 9500, 10000, 12000, 11000, 9000, 10500]
-    let dates: [String] = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"]
-    let aiInsights: [String] = [
-        "You hit your calorie goal 5/7 days!",
-        "Try to increase your protein intake on workout days.",
-        "Great job staying active! Steps above 10k for 4 days."
-    ]
+    @State private var analytics: AnalyticsData?
+    @State private var isLoading = false
+    @State private var errorMessage: String?
+    @State private var period: String = "weekly"
     
     var body: some View {
         NavigationStack {
@@ -20,50 +22,77 @@ struct AnalyticsDashboardView: View {
                         .fontWeight(.bold)
                         .padding(.top)
                     
-                    // Calories Chart
-                    VStack(alignment: .leading, spacing: 12) {
-                        Text("Calories (last 7 days)")
-                            .font(.headline)
-                        ChartView(data: caloriesData, labels: dates, color: .orange, valueLabel: "kcal")
-                    }
-                    .padding()
-                    .background(Color.gray.opacity(0.12))
-                    .cornerRadius(16)
-                    
-                    // Steps Chart
-                    VStack(alignment: .leading, spacing: 12) {
-                        Text("Steps (last 7 days)")
-                            .font(.headline)
-                        ChartView(data: stepsData.map { Double($0) }, labels: dates, color: .green, valueLabel: "steps")
-                    }
-                    .padding()
-                    .background(Color.gray.opacity(0.12))
-                    .cornerRadius(16)
-                    
-                    // AI Insights
-                    VStack(alignment: .leading, spacing: 10) {
-                        Text("AI Insights")
-                            .font(.headline)
-                        ForEach(aiInsights, id: \.self) { insight in
-                            HStack(alignment: .top, spacing: 8) {
-                                Image(systemName: "sparkles")
-                                    .foregroundColor(.blue)
-                                Text(insight)
-                                    .font(.body)
-                                    .foregroundColor(.secondary)
+                    if isLoading {
+                        ProgressView("Loading analytics...")
+                            .padding()
+                    } else if let analytics = analytics {
+                        // Calories Chart
+                        if let calories = analytics.nutrition.averageCalories {
+                            VStack(alignment: .leading, spacing: 12) {
+                                Text("Avg Calories (") + Text(period.capitalized) + Text(")")
+                                    .font(.headline)
+                                ChartView(data: [calories], labels: [period.capitalized], color: .orange, valueLabel: "kcal")
                             }
+                            .padding()
+                            .background(Color.gray.opacity(0.12))
+                            .cornerRadius(16)
                         }
+                        // Steps Chart (if available)
+                        if let fitness = analytics.fitness.totalWorkouts {
+                            VStack(alignment: .leading, spacing: 12) {
+                                Text("Workouts (") + Text(period.capitalized) + Text(")")
+                                    .font(.headline)
+                                ChartView(data: [Double(fitness)], labels: [period.capitalized], color: .green, valueLabel: "workouts")
+                            }
+                            .padding()
+                            .background(Color.gray.opacity(0.12))
+                            .cornerRadius(16)
+                        }
+                        // AI Insights
+                        if let insights = analytics.insights, !insights.isEmpty {
+                            VStack(alignment: .leading, spacing: 10) {
+                                Text("AI Insights")
+                                    .font(.headline)
+                                ForEach(insights, id: \.self) { insight in
+                                    HStack(alignment: .top, spacing: 8) {
+                                        Image(systemName: "sparkles")
+                                            .foregroundColor(.blue)
+                                        Text(insight)
+                                            .font(.body)
+                                            .foregroundColor(.secondary)
+                                    }
+                                }
+                            }
+                            .padding()
+                            .background(Color.gray.opacity(0.12))
+                            .cornerRadius(16)
+                        }
+                    } else if let errorMessage = errorMessage {
+                        Text(errorMessage)
+                            .foregroundColor(.red)
+                            .padding()
                     }
-                    .padding()
-                    .background(Color.gray.opacity(0.12))
-                    .cornerRadius(16)
-                    
                     Spacer(minLength: 40)
                 }
                 .padding()
             }
             .navigationTitle("Analytics")
+            .task {
+                await loadAnalytics()
+            }
         }
+    }
+    
+    private func loadAnalytics() async {
+        isLoading = true
+        errorMessage = nil
+        do {
+            let data = try await NetworkManager.shared.fetchAnalytics(period: period)
+            analytics = data
+        } catch {
+            errorMessage = error.localizedDescription
+        }
+        isLoading = false
     }
 }
 
