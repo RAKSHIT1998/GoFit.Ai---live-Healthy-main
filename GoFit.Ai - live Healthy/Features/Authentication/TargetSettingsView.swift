@@ -433,8 +433,5 @@ struct TargetSettingsView: View {
         }
     }
 }
-'''
-path.write_text(content)
-print('wrote file', path)
-PY
+
 
