@@ -5,7 +5,7 @@ struct MainTabView: View {
     @EnvironmentObject var purchases: PurchaseManager
     @State private var selectedTab = 0
     @State private var previousTab = 0
-    @State private var tabBounce: [Bool] = [false, false, false, false, false]
+    @State private var tabBounce: [Bool] = [false, false, false, false, false, false]
     
     var body: some View {
         TabView(selection: $selectedTab) {
@@ -27,17 +27,23 @@ struct MainTabView: View {
                 }
                 .tag(2)
 
-            SocialHubView()
+            AnalyticsDashboardView()
                 .tabItem {
-                    Label("Social", systemImage: selectedTab == 3 ? "person.2.circle.fill" : "person.2.circle")
+                    Label("Analytics", systemImage: selectedTab == 3 ? "chart.bar.fill" : "chart.bar")
                 }
                 .tag(3)
 
-            ProfileView()
+            SocialHubView()
                 .tabItem {
-                    Label("Profile", systemImage: selectedTab == 4 ? "person.circle.fill" : "person.circle")
+                    Label("Social", systemImage: selectedTab == 4 ? "person.2.circle.fill" : "person.2.circle")
                 }
                 .tag(4)
+
+            ProfileView()
+                .tabItem {
+                    Label("Profile", systemImage: selectedTab == 5 ? "person.circle.fill" : "person.circle")
+                }
+                .tag(5)
         }
         .accentColor(Design.Colors.primary)
         .background(Design.Colors.background)
