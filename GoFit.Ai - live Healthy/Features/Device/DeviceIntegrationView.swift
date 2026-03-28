@@ -98,7 +98,7 @@ struct DeviceIntegrationView: View {
         Task {
             do {
                 try await healthKit.readTodayData()
-                try await healthKit.syncToBackend()
+                await healthKit.syncToBackend()
                 syncStatus = "Synced successfully at \(DateFormatter.localizedString(from: Date(), dateStyle: .none, timeStyle: .short))"
             } catch {
                 errorMessage = error.localizedDescription

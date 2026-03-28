@@ -195,7 +195,7 @@ struct FriendsLeaderboardCard: View {
         .task {
             await loadLeaderboard()
         }
-        .onChange(of: period) { _ in
+        .onChange(of: period) { _, _ in
             Task {
                 await loadLeaderboard()
             }

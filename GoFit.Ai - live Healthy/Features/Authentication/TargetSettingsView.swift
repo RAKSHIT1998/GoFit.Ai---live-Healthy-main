@@ -27,6 +27,11 @@ struct TargetSettingsView: View {
     let activityLevels = ["sedentary", "light", "moderate", "active", "very_active"]
 
     var body: some View {
+        bodyContent
+    }
+
+    @ViewBuilder
+    private var bodyContent: some View {
         NavigationStack {
             ZStack {
                 Design.Colors.background
