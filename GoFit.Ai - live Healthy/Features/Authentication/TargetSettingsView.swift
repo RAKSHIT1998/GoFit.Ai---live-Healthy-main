@@ -38,73 +38,7 @@ struct TargetSettingsView: View {
                     .ignoresSafeArea()
 
                 ScrollView {
-                    VStack(spacing: Design.Spacing.xl) {
-                        bodyMetricsCard
-                        goalsCard
-                        nutritionTargetsCard
-
-                        ModernCard {
-                            VStack(alignment: .leading, spacing: Design.Spacing.md) {
-                                Text("Hydration Goal")
-                                    .font(Design.Typography.headline)
-                                    .foregroundColor(.primary)
-
-                                HStack {
-                                    Text("Liquid Intake (L)")
-                                        .font(Design.Typography.body)
-                                        .foregroundColor(.secondary)
-                                    Spacer()
-                                    TextField("2.5", value: $liquidIntakeGoal, format: .number)
-                                        .keyboardType(.decimalPad)
-                                        .textFieldStyle(.roundedBorder)
-                                        .frame(width: 80)
-                                }
-
-                                Text("Set your daily water/liquid intake goal. Default is 2.5L.")
-                                    .font(Design.Typography.caption)
-                                    .foregroundColor(.secondary)
-                            }
-                            .padding(Design.Spacing.md)
-                        }
-                        .padding(.horizontal, Design.Spacing.md)
-
-                        if let error = errorMessage {
-                            HStack(spacing: 8) {
-                                Image(systemName: "exclamationmark.triangle.fill")
-                                    .foregroundColor(.red)
-                                Text(error)
-                                    .font(Design.Typography.body)
-                                    .foregroundColor(.red)
-                            }
-                            .padding(Design.Spacing.md)
-                            .background(Design.Colors.secondaryBackground)
-                            .cornerRadius(Design.Radius.medium)
-                            .padding(.horizontal, Design.Spacing.md)
-                        }
-
-                        Button(action: saveTargets) {
-                            HStack {
-                                if isLoading {
-                                    ProgressView()
-                                        .progressViewStyle(CircularProgressViewStyle(tint: .white))
-                                } else {
-                                    Image(systemName: "checkmark.circle.fill")
-                                }
-                                Text(isLoading ? "Saving..." : "Save Changes")
-                                    .fontWeight(.semibold)
-                            }
-                            .foregroundColor(.white)
-                            .frame(maxWidth: .infinity)
-                            .padding(.vertical, 16)
-                            .background(isLoading ? Color.gray : Design.Colors.primaryGradient)
-                            .cornerRadius(16)
-                            .shadow(color: Design.Colors.primary.opacity(0.2), radius: 10, x: 0, y: 6)
-                        }
-                        .disabled(isLoading)
-                        .padding(.horizontal, Design.Spacing.md)
-                        .padding(.bottom, Design.Spacing.xl)
-                    }
-                    .padding(.top, Design.Spacing.md)
+                    mainVStack
                 }
             }
             .navigationTitle("Goals & Targets")
@@ -137,6 +71,89 @@ struct TargetSettingsView: View {
                 Text("Your targets have been updated successfully!")
             })
         }
+    }
+
+    @ViewBuilder
+    private var mainVStack: some View {
+        VStack(spacing: Design.Spacing.xl) {
+            bodyMetricsCard
+            goalsCard
+            nutritionTargetsCard
+            hydrationCard
+            errorCard
+            saveButton
+        }
+        .padding(.top, Design.Spacing.md)
+    }
+
+    @ViewBuilder
+    private var hydrationCard: some View {
+        ModernCard {
+            VStack(alignment: .leading, spacing: Design.Spacing.md) {
+                Text("Hydration Goal")
+                    .font(Design.Typography.headline)
+                    .foregroundColor(.primary)
+
+                HStack {
+                    Text("Liquid Intake (L)")
+                        .font(Design.Typography.body)
+                        .foregroundColor(.secondary)
+                    Spacer()
+                    TextField("2.5", value: $liquidIntakeGoal, format: .number)
+                        .keyboardType(.decimalPad)
+                        .textFieldStyle(.roundedBorder)
+                        .frame(width: 80)
+                }
+
+                Text("Set your daily water/liquid intake goal. Default is 2.5L.")
+                    .font(Design.Typography.caption)
+                    .foregroundColor(.secondary)
+            }
+            .padding(Design.Spacing.md)
+        }
+        .padding(.horizontal, Design.Spacing.md)
+    }
+
+    @ViewBuilder
+    private var errorCard: some View {
+        if let error = errorMessage {
+            HStack(spacing: 8) {
+                Image(systemName: "exclamationmark.triangle.fill")
+                    .foregroundColor(.red)
+                Text(error)
+                    .font(Design.Typography.body)
+                    .foregroundColor(.red)
+            }
+            .padding(Design.Spacing.md)
+            .background(Design.Colors.secondaryBackground)
+            .cornerRadius(Design.Radius.medium)
+            .padding(.horizontal, Design.Spacing.md)
+        }
+    }
+
+    @ViewBuilder
+    private var saveButton: some View {
+        Button(action: saveTargets) {
+            HStack {
+                if isLoading {
+                    ProgressView()
+                        .progressViewStyle(CircularProgressViewStyle(tint: .white))
+                } else {
+                    Image(systemName: "checkmark.circle.fill")
+                }
+                Text(isLoading ? "Saving..." : "Save Changes")
+                    .fontWeight(.semibold)
+            }
+            .foregroundColor(.white)
+            .frame(maxWidth: .infinity)
+            .padding(.vertical, 16)
+            .background(isLoading ? Color.gray : Design.Colors.primaryGradient)
+            .cornerRadius(16)
+            .shadow(color: Design.Colors.primary.opacity(0.2), radius: 10, x: 0, y: 6)
+        }
+        .disabled(isLoading)
+        .padding(.horizontal, Design.Spacing.md)
+        .padding(.bottom, Design.Spacing.xl)
     }
 
     private var bodyMetricsCard: some View {
