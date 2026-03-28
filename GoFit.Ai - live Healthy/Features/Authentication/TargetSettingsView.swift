@@ -1,6 +1,7 @@
 import SwiftUI
 
 struct TargetSettingsView: View {
+        @State private var isLoadingTargets = false
     @EnvironmentObject var auth: AuthViewModel
     @Environment(\.dismiss) var dismiss
     
@@ -359,7 +360,8 @@ struct TargetSettingsView: View {
                 }
             }
             .onAppear {
-                if !skipLoadOnAppear {
+                if !skipLoadOnAppear && !isLoadingTargets {
+                    isLoadingTargets = true
                     loadCurrentTargets()
                 }
             }
@@ -394,6 +396,7 @@ struct TargetSettingsView: View {
                             weightKg = w
                         }
                         if let h = metrics["heightCm"] as? Double {
+                            if isLoadingTargets == false { isLoadingTargets = true }
                             heightCm = h
                         }
                         if let tw = metrics["targetWeightKg"] as? Double {
@@ -435,8 +438,10 @@ struct TargetSettingsView: View {
             return
         }
 
+                                    isLoadingTargets = false
         let age = 30.0
         let bmrMale = 10 * weightKg + 6.25 * heightCm - 5 * age + 5
+                                    isLoadingTargets = false
         let bmrFemale = 10 * weightKg + 6.25 * heightCm - 5 * age - 161
         let bmr = (bmrMale + bmrFemale) / 2
 
