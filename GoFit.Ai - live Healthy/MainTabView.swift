@@ -33,17 +33,23 @@ struct MainTabView: View {
                 }
                 .tag(3)
 
-            SocialHubView()
+            DeviceIntegrationView()
                 .tabItem {
-                    Label("Social", systemImage: selectedTab == 4 ? "person.2.circle.fill" : "person.2.circle")
+                    Label("Device", systemImage: selectedTab == 4 ? "applewatch" : "applewatch")
                 }
                 .tag(4)
 
-            ProfileView()
+            SocialHubView()
                 .tabItem {
-                    Label("Profile", systemImage: selectedTab == 5 ? "person.circle.fill" : "person.circle")
+                    Label("Social", systemImage: selectedTab == 5 ? "person.2.circle.fill" : "person.2.circle")
                 }
                 .tag(5)
+
+            ProfileView()
+                .tabItem {
+                    Label("Profile", systemImage: selectedTab == 6 ? "person.circle.fill" : "person.circle")
+                }
+                .tag(6)
         }
         .accentColor(Design.Colors.primary)
         .background(Design.Colors.background)
