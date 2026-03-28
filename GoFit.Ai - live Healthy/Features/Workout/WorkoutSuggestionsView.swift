@@ -353,6 +353,45 @@ struct WorkoutSuggestionsView: View {
                 
                 Spacer()
             }
+
+            // Feedback & Customization Buttons
+            HStack(spacing: 16) {
+                Button(action: {
+                    // TODO: Send like feedback for this exercise
+                }) {
+                    Label("Like", systemImage: "hand.thumbsup.fill")
+                        .labelStyle(IconOnlyLabelStyle())
+                        .foregroundColor(.green)
+                        .font(.title3)
+                }
+                .buttonStyle(PlainButtonStyle())
+
+                Button(action: {
+                    // TODO: Send dislike feedback for this exercise
+                }) {
+                    Label("Dislike", systemImage: "hand.thumbsdown.fill")
+                        .labelStyle(IconOnlyLabelStyle())
+                        .foregroundColor(.red)
+                        .font(.title3)
+                }
+                .buttonStyle(PlainButtonStyle())
+
+                Button(action: {
+                    // TODO: Swap this exercise for a new one
+                }) {
+                    Label("Swap", systemImage: "arrow.triangle.2.circlepath")
+                        .labelStyle(IconOnlyLabelStyle())
+                        .foregroundColor(.blue)
+                        .font(.title3)
+                }
+                .buttonStyle(PlainButtonStyle())
+            }
+            .padding(.vertical, 4)
+            .padding(.horizontal, 2)
+            .frame(maxWidth: .infinity, alignment: .trailing)
+            .background(Color(.systemGray6).opacity(0.5))
+            .cornerRadius(8)
+            .padding(.bottom, 2)
             
             HStack(spacing: Design.Spacing.md) {
                 if let sets = exercise.sets {
