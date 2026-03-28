@@ -47,7 +47,12 @@ struct TargetSettingsView: View {
                                             .font(Design.Typography.body)
                                             .foregroundColor(.primary)
                                         Spacer()
-                                        TextField("kg", value: $weightKg, format: .number)
+                                        TextField("kg", value: $weightKg, format: .number, onEditingChanged: { editing in
+                                            if !editing {
+                                                // Only save when editing ends
+                                                saveTargets()
+                                            }
+                                        })
                                             .keyboardType(.decimalPad)
                                             .padding(.horizontal, 12)
                                             .padding(.vertical, 8)
@@ -83,7 +88,11 @@ struct TargetSettingsView: View {
                                             .font(Design.Typography.body)
                                             .foregroundColor(.primary)
                                         Spacer()
-                                        TextField("kg", value: $targetWeightKg, format: .number)
+                                        TextField("kg", value: $targetWeightKg, format: .number, onEditingChanged: { editing in
+                                            if !editing {
+                                                saveTargets()
+                                            }
+                                        })
                                             .keyboardType(.decimalPad)
                                             .padding(.horizontal, 12)
                                             .padding(.vertical, 8)
@@ -171,7 +180,11 @@ struct TargetSettingsView: View {
                                             .font(Design.Typography.body)
                                             .foregroundColor(.primary)
                                         Spacer()
-                                        TextField("kcal", value: $targetCalories, format: .number)
+                                        TextField("kcal", value: $targetCalories, format: .number, onEditingChanged: { editing in
+                                            if !editing {
+                                                saveTargets()
+                                            }
+                                        })
                                             .keyboardType(.decimalPad)
                                             .padding(.horizontal, 12)
                                             .padding(.vertical, 8)
