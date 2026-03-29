@@ -2,9 +2,6 @@
 
 import SwiftUI
 import Combine
-import GoFit_Ai___live_Healthy_Services // For BodyLogManager
-import GoFit_Ai___live_Healthy_Core // For Design
-import GoFit_Ai___live_Healthy_Features_Authentication // For AuthViewModel
 
 struct TargetSettingsView: View {
 
