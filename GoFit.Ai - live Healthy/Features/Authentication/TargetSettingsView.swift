@@ -147,7 +147,7 @@ struct TargetSettingsView: View {
             .foregroundColor(.white)
             .frame(maxWidth: .infinity)
             .padding(.vertical, 16)
-            .background(isLoading ? Color.gray : Design.Colors.primaryGradient)
+            .background(isLoading ? AnyShapeStyle(Color.gray) : AnyShapeStyle(Design.Colors.primaryGradient))
             .cornerRadius(16)
             .shadow(color: Design.Colors.primary.opacity(0.2), radius: 10, x: 0, y: 6)
         }
