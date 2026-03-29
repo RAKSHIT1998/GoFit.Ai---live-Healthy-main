@@ -1,6 +1,15 @@
+
+
 import SwiftUI
+import Combine
+import GoFit_Ai___live_Healthy_Services // For BodyLogManager
+import GoFit_Ai___live_Healthy_Core // For Design
+import GoFit_Ai___live_Healthy_Features_Authentication // For AuthViewModel
 
 struct TargetSettingsView: View {
+
+        @ObservedObject private var bodyLogManager = BodyLogManager.shared
+        @State private var cancellable: AnyCancellable?
     @EnvironmentObject var auth: AuthViewModel
     @Environment(\.dismiss) var dismiss
 
@@ -56,6 +65,15 @@ struct TargetSettingsView: View {
                     isLoadingTargets = true
                     loadCurrentTargets()
                 }
+                // Observe latestWeight and auto-update
+                cancellable = bodyLogManager.$latestWeight.sink { newWeight in
+                    guard let newWeight, newWeight > 0, abs(newWeight - weightKg) > 0.01 else { return }
+                    weightKg = newWeight
+                    recalculateTargets()
+                }
+            }
+            .onDisappear {
+                cancellable?.cancel()
             }
             .alert("Error", isPresented: $showingError, actions: {
                 Button("OK", role: .cancel) {}
