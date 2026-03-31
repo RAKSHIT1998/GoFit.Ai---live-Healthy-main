@@ -1,5 +1,6 @@
 import Foundation
 import SwiftUI
+import Combine
 
 @MainActor
 final class AuthViewModel: ObservableObject {
@@ -22,9 +23,11 @@ final class AuthViewModel: ObservableObject {
     @Published private(set) var userId: String?
 
     private let localKey = "gofit_local_state_v2"
+    private var cancellables = Set<AnyCancellable>()
 
     init() {
         loadLocalState()
+        observeWeightUpdates()
         
         // Skip authentication if enabled in EnvironmentConfig
         if EnvironmentConfig.skipAuthentication {
@@ -109,6 +112,68 @@ final class AuthViewModel: ObservableObject {
         }
     }
 
+    private func observeWeightUpdates() {
+        BodyLogManager.shared.$latestWeight
+            .compactMap { $0 }
+            .removeDuplicates(by: { abs($0 - $1) < 0.01 })
+            .sink { [weak self] latestWeight in
+                guard let self else { return }
+                self.weightKg = latestWeight
+                self.saveLocalState()
+            }
+            .store(in: &cancellables)
+    }
+
+    private func syncProfileState(from me: UserProfile) {
+        userId = me.id
+        email = me.email
+        name = me.name
+        if let serverGoal = me.goals, !serverGoal.isEmpty {
+            goal = serverGoal
+        }
+        if let preferences = me.dietaryPreferences {
+            dietPrefs = preferences
+        }
+        if let pictureURL = me.profilePictureURL {
+            profilePictureURL = pictureURL
+        }
+
+        let metrics = me.metrics
+        if let weight = metrics?.weightKg, weight > 0 {
+            weightKg = weight
+        }
+        if let height = metrics?.heightCm, height > 0 {
+            heightCm = height
+        }
+
+        saveLocalState()
+
+        LocalUserStore.shared.updateBasicInfo(
+            name: me.name,
+            email: me.email,
+            weightKg: metrics?.weightKg,
+            heightCm: metrics?.heightCm,
+            targetWeightKg: metrics?.targetWeightKg,
+            targetTimeWeeks: metrics?.targetTimeWeeks
+        )
+        LocalUserStore.shared.updateGoals(
+            goal: me.goals,
+            activityLevel: me.activityLevel,
+            dietaryPreferences: me.dietaryPreferences
+        )
+        LocalUserStore.shared.updateNutritionTargets(
+            targetCalories: metrics?.targetCalories,
+            targetProtein: metrics?.targetProtein,
+            targetCarbs: metrics?.targetCarbs,
+            targetFat: metrics?.targetFat,
+            liquidIntakeGoal: metrics?.liquidIntakeGoal
+        )
+
+        if let liquidGoal = metrics?.liquidIntakeGoal {
+            WaterIntakeManager.shared.waterGoal = liquidGoal
+        }
+    }
+
     // MARK: - Auth flows (async)
     func login(email: String, password: String) async throws {
         // Validate input
@@ -143,13 +208,7 @@ final class AuthViewModel: ObservableObject {
         
         do {
             let me: UserProfile = try await NetworkManager.shared.request("auth/me", method: "GET", body: nil)
-            self.userId = me.id
-            self.email = me.email
-            self.name = me.name
-            // Update local state with fetched data
-            saveLocalState()
-            // Also save to LocalUserStore - create fresh profile with fetched data
-            LocalUserStore.shared.updateBasicInfo(name: me.name, email: me.email, weightKg: self.weightKg, heightCm: self.heightCm)
+            syncProfileState(from: me)
         } catch {
             // If /me fails, still mark as logged in but log the error
             print("⚠️ Failed to fetch user profile after login: \(error.localizedDescription)")
@@ -222,18 +281,10 @@ final class AuthViewModel: ObservableObject {
         do {
             print("🔵 Fetching user profile from backend...")
             let me: UserProfile = try await NetworkManager.shared.request("auth/me", method: "GET", body: nil)
-            self.userId = me.id
-            self.email = me.email
-            self.name = me.name
-            // Update local state with fetched data
-            saveLocalState()
-            // Also save to LocalUserStore
             if let onboardingData = onboardingData {
-                // Preserve email from fetched profile
                 LocalUserStore.shared.updateOnboardingData(onboardingData, userId: me.id, email: self.email)
-            } else {
-                LocalUserStore.shared.updateBasicInfo(name: me.name, email: me.email, weightKg: self.weightKg, heightCm: self.heightCm)
             }
+            syncProfileState(from: me)
             print("✅ User profile fetched successfully. User ID: \(me.id)")
         } catch {
             // If /me fails, use the data from signup form
@@ -306,24 +357,10 @@ final class AuthViewModel: ObservableObject {
         
         do {
             let me: UserProfile = try await NetworkManager.shared.request("auth/me", method: "GET", body: nil)
-            self.userId = me.id
-            if self.name.isEmpty {
-                self.name = me.name
-            }
-            if self.email.isEmpty {
-                self.email = me.email
-            }
-            // Update local state with fetched data
-            saveLocalState()
-            // Also save to LocalUserStore - check if onboardingData exists first
             if let onboardingData = onboardingData {
-                // Save comprehensive onboarding data if available
-                // Preserve email from fetched profile (don't overwrite with empty string)
                 LocalUserStore.shared.updateOnboardingData(onboardingData, userId: me.id, email: self.email)
-            } else {
-                // Only save name and email - don't persist default weight/height values
-                LocalUserStore.shared.updateBasicInfo(name: self.name, email: self.email)
             }
+            syncProfileState(from: me)
         } catch {
             print("⚠️ Failed to fetch user profile after Apple Sign In: \(error.localizedDescription)")
             // Still save state with what we have
@@ -398,15 +435,7 @@ final class AuthViewModel: ObservableObject {
             let me: UserProfile = try await NetworkManager.shared.request("auth/me", method: "GET", body: nil)
             
             await MainActor.run {
-                self.userId = me.id
-                self.email = me.email
-                self.name = me.name
-                if let pictureURL = me.profilePictureURL {
-                    self.profilePictureURL = pictureURL
-                }
-                saveLocalState()
-                // Also update LocalUserStore
-                LocalUserStore.shared.updateBasicInfo(name: me.name, email: me.email, weightKg: self.weightKg, heightCm: self.heightCm)
+                self.syncProfileState(from: me)
                 print("✅ User profile refreshed successfully")
             }
         } catch {
@@ -549,22 +578,24 @@ struct UserProfile: Codable {
     let id: String
     let email: String
     let name: String
+    let goals: String?
+    let activityLevel: String?
+    let dietaryPreferences: [String]?
     let profilePictureURL: String?
-    
-    enum CodingKeys: String, CodingKey {
-        case id
-        case email
-        case name
-        case profilePictureURL
+
+    struct Metrics: Codable {
+        let weightKg: Double?
+        let heightCm: Double?
+        let targetWeightKg: Double?
+        let targetTimeWeeks: Int?
+        let targetCalories: Double?
+        let targetProtein: Double?
+        let targetCarbs: Double?
+        let targetFat: Double?
+        let liquidIntakeGoal: Double?
     }
-    
-    init(from decoder: Decoder) throws {
-        let container = try decoder.container(keyedBy: CodingKeys.self)
-        id = try container.decode(String.self, forKey: .id)
-        email = try container.decode(String.self, forKey: .email)
-        name = try container.decode(String.self, forKey: .name)
-        profilePictureURL = try container.decodeIfPresent(String.self, forKey: .profilePictureURL)
-    }
+
+    let metrics: Metrics?
 }
 
 // Comprehensive onboarding data structure

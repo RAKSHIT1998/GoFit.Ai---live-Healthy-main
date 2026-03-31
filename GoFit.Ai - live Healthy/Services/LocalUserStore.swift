@@ -26,6 +26,7 @@ final class LocalUserStore: ObservableObject {
         var weightKg: Double
         var heightCm: Double
         var targetWeightKg: Double?
+        var targetTimeWeeks: Int?
         var goal: String // lose, maintain, gain
         var activityLevel: String
         var dietaryPreferences: [String]
@@ -51,13 +52,14 @@ final class LocalUserStore: ObservableObject {
         var workoutMode: String? // "Home" or "Gym"
         var lastUpdated: Date
         
-        init(userId: String? = nil, email: String = "", name: String = "", weightKg: Double = 70, heightCm: Double = 170, targetWeightKg: Double? = nil, goal: String = "maintain", activityLevel: String = "moderate", dietaryPreferences: [String] = [], allergies: [String] = [], fastingPreference: String = "none", workoutPreferences: [String] = [], favoriteCuisines: [String] = [], foodPreferences: [String] = [], workoutTimeAvailability: String = "moderate", lifestyleFactors: [String] = [], favoriteFoods: [String] = [], mealTimingPreference: String = "regular", cookingSkill: String = "intermediate", budgetPreference: String = "moderate", motivationLevel: String = "moderate", drinkingFrequency: String = "never", smokingStatus: String = "never", targetCalories: Double? = nil, targetProtein: Double? = nil, targetCarbs: Double? = nil, targetFat: Double? = nil, liquidIntakeGoal: Double? = 2.5, workoutMode: String? = nil, lastUpdated: Date = Date()) {
+        init(userId: String? = nil, email: String = "", name: String = "", weightKg: Double = 70, heightCm: Double = 170, targetWeightKg: Double? = nil, targetTimeWeeks: Int? = nil, goal: String = "maintain", activityLevel: String = "moderate", dietaryPreferences: [String] = [], allergies: [String] = [], fastingPreference: String = "none", workoutPreferences: [String] = [], favoriteCuisines: [String] = [], foodPreferences: [String] = [], workoutTimeAvailability: String = "moderate", lifestyleFactors: [String] = [], favoriteFoods: [String] = [], mealTimingPreference: String = "regular", cookingSkill: String = "intermediate", budgetPreference: String = "moderate", motivationLevel: String = "moderate", drinkingFrequency: String = "never", smokingStatus: String = "never", targetCalories: Double? = nil, targetProtein: Double? = nil, targetCarbs: Double? = nil, targetFat: Double? = nil, liquidIntakeGoal: Double? = 2.5, workoutMode: String? = nil, lastUpdated: Date = Date()) {
             self.userId = userId
             self.email = email
             self.name = name
             self.weightKg = weightKg
             self.heightCm = heightCm
             self.targetWeightKg = targetWeightKg
+            self.targetTimeWeeks = targetTimeWeeks
             self.goal = goal
             self.activityLevel = activityLevel
             self.dietaryPreferences = dietaryPreferences
@@ -130,7 +132,7 @@ final class LocalUserStore: ObservableObject {
         }
     }
     
-    func updateBasicInfo(name: String? = nil, email: String? = nil, weightKg: Double? = nil, heightCm: Double? = nil, targetWeightKg: Double? = nil) {
+    func updateBasicInfo(name: String? = nil, email: String? = nil, weightKg: Double? = nil, heightCm: Double? = nil, targetWeightKg: Double? = nil, targetTimeWeeks: Int? = nil) {
         storageLock.sync {
             var updated = userProfile ?? UserProfileData()
             if let name = name { updated.name = name }
@@ -138,6 +140,7 @@ final class LocalUserStore: ObservableObject {
             if let weightKg = weightKg { updated.weightKg = weightKg }
             if let heightCm = heightCm { updated.heightCm = heightCm }
             if let targetWeightKg = targetWeightKg { updated.targetWeightKg = targetWeightKg }
+            if let targetTimeWeeks = targetTimeWeeks { updated.targetTimeWeeks = targetTimeWeeks }
             updated.lastUpdated = Date()
             
             DispatchQueue.main.async {

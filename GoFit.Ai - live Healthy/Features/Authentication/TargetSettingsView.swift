@@ -429,7 +429,7 @@ struct TargetSettingsView: View {
         auth.goal = goal
         auth.saveLocalState()
 
-        LocalUserStore.shared.updateBasicInfo(weightKg: weightKg, heightCm: heightCm, targetWeightKg: targetWeightKg)
+        LocalUserStore.shared.updateBasicInfo(weightKg: weightKg, heightCm: heightCm, targetWeightKg: targetWeightKg, targetTimeWeeks: targetTimeWeeks)
         LocalUserStore.shared.updateGoals(goal: goal, activityLevel: activityLevel)
         LocalUserStore.shared.updateNutritionTargets(
             targetCalories: targetCalories,
@@ -524,4 +524,3 @@ struct TargetSettingsView: View {
         }
     }
 }
-

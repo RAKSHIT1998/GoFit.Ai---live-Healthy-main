@@ -72,7 +72,6 @@ final class BodyLogManager: ObservableObject {
         latestWeight = weight
         saveEntries()
         LocalUserStore.shared.updateBasicInfo(weightKg: weight)
-
         Task {
             await syncWeightEntry(entry)
         }
