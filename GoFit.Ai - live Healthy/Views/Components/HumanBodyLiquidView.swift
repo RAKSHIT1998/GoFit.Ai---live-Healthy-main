@@ -103,7 +103,8 @@ struct HumanBodyLiquidView: View {
                 wavePhase = .pi * 2
             }
         }
-        .onChange(of: entries.count) { _ in
+        .onChange(of: entries.count) { oldCount, newCount in
+            guard oldCount != newCount else { return }
             withAnimation(.easeOut(duration: 0.8)) {
                 fillLevel = progress
             }

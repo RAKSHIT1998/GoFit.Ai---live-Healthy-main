@@ -10,6 +10,7 @@ import UserNotifications
 /// - Streak reminders
 /// Works on both iPhone and Apple Watch.
 
+@MainActor
 final class GoFitSmartNotifications {
     static let shared = GoFitSmartNotifications()
     private init() {}
