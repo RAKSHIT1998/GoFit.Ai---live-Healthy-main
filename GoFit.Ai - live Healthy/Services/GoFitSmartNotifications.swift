@@ -29,7 +29,7 @@ final class GoFitSmartNotifications {
         
         scheduleHydrationNudges()
         scheduleMealNudges()
-        scheduleGoalCelebrationCheck()
+        scheduleGoalStatusCheck()
         scheduleWorkoutMotivation()
         scheduleStreakReminder()
         scheduleWeeklySummary()
@@ -117,27 +117,39 @@ final class GoFitSmartNotifications {
         }
     }
     
-    // MARK: - 🏆 Goal Celebration
-    
-    private func scheduleGoalCelebrationCheck() {
-        // Check at 9 PM if goals were met
-        let messages: [(String, String)] = [
-            ("🎉 GOAL CRUSHED!", "You hit your water goal today! Keep the streak alive!"),
-            ("🏆 Champion Move!", "Daily goals complete! You're building amazing habits."),
-            ("⭐ Consistency King!", "Another day of hitting targets. You're unstoppable!"),
-            ("🔥 On Fire!", "Goals smashed! That's the energy we love to see!"),
+    // MARK: - 🏆 Goal Status
+
+    private func scheduleGoalStatusCheck() {
+        let todayLog = LocalDailyLogStore.shared.getTodayLog()
+        let waterGoal = LocalUserStore.shared.getProfile()?.liquidIntakeGoal
+            ?? WaterIntakeManager.shared.waterGoal
+        let currentWater = todayLog.totalLiquid
+
+        // Do not pre-schedule celebratory notifications. Real celebrations are sent
+        // at the moment the user actually hits the goal via sendGoalHitNotification.
+        guard waterGoal > 0, currentWater < waterGoal else { return }
+
+        let remaining = max(0, waterGoal - currentWater)
+        let currentWaterText = String(format: "%.1f", currentWater)
+        let waterGoalText = String(format: "%.1f", waterGoal)
+        let remainingText = String(format: "%.1f", remaining)
+
+        let reminderOptions: [(String, String)] = [
+            ("💧 Water Check-In", "You're at \(currentWaterText)L of \(waterGoalText)L today. \(remainingText)L to go."),
+            ("🌙 Finish Strong", "You still need \(remainingText)L to hit today's hydration goal."),
+            ("⏰ Hydration Reminder", "Logged \(currentWaterText)L so far. One more push toward \(waterGoalText)L.")
         ]
-        
-        guard let msg = messages.randomElement() else { return }
+
+        guard let reminder = reminderOptions.randomElement() else { return }
         scheduleNotification(
-            id: "smart_goal_celebration",
-            title: msg.0,
-            body: msg.1,
+            id: "smart_goal_status",
+            title: reminder.0,
+            body: reminder.1,
             hour: 21,
             minute: 0,
-            repeats: true,
+            repeats: false,
             categoryIdentifier: "GOAL_CELEBRATION",
-            sound: UNNotificationSound(named: UNNotificationSoundName("celebration.caf"))
+            sound: .default
         )
     }
     

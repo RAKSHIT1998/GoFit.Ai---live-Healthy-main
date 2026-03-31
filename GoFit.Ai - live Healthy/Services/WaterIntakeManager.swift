@@ -15,11 +15,20 @@ class WaterIntakeManager: ObservableObject {
     private let lock = DispatchQueue(label: "water.intake.manager.queue")
     
     private init() {
+        loadGoal()
         loadTodaysIntake()
     }
     
     // MARK: - Load from Cache
     
+    private func loadGoal() {
+        if let profile = LocalUserStore.shared.getProfile(),
+           let savedGoal = profile.liquidIntakeGoal,
+           savedGoal > 0 {
+            waterGoal = savedGoal
+        }
+    }
+
     /// Load today's water intake from cache
     private func loadTodaysIntake() {
         // Load from cache on main thread
@@ -60,6 +69,8 @@ class WaterIntakeManager: ObservableObject {
         if !wasGoalMet && isGoalMet {
             GoFitSmartNotifications.shared.sendGoalHitNotification(type: "water")
         }
+
+        GoFitSmartNotifications.shared.scheduleSmartNotifications()
         
         // Background sync
         Task {
@@ -113,6 +124,8 @@ class WaterIntakeManager: ObservableObject {
         Task {
             await syncBeverage(name: name, liters: liters, calories: calories)
         }
+
+        GoFitSmartNotifications.shared.scheduleSmartNotifications()
     }
     
     // MARK: - Sync to Backend
@@ -220,5 +233,4 @@ enum WaterPreset: String, CaseIterable {
         }
     }
 }
-
 
