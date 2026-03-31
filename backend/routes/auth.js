@@ -411,6 +411,7 @@ router.put('/targets', authMiddleware, async (req, res) => {
       weightKg, 
       heightCm, 
       targetWeightKg,
+      targetTimeWeeks,
       targetCalories, 
       targetProtein, 
       targetCarbs, 
@@ -431,6 +432,9 @@ router.put('/targets', authMiddleware, async (req, res) => {
     }
     if (targetWeightKg !== undefined) {
       updateData['metrics.targetWeightKg'] = targetWeightKg;
+    }
+    if (targetTimeWeeks !== undefined) {
+      updateData['metrics.targetTimeWeeks'] = targetTimeWeeks;
     }
     if (targetCalories !== undefined) {
       updateData['metrics.targetCalories'] = targetCalories;

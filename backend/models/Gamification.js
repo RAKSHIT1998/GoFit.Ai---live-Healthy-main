@@ -12,7 +12,8 @@ const gamificationPointsSchema = new mongoose.Schema({
     enum: [
       'share_log', 'create_challenge', 'join_challenge', 'complete_challenge',
       'complete_workout', 'log_meal', 'log_water', 'streak_bonus',
-      'first_workout', 'first_meal', 'invite_friend'
+      'first_workout', 'first_meal', 'invite_friend', 'log_weight',
+      'water_goal_met', 'bonus_reward'
     ],
     required: true
   },

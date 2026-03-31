@@ -71,6 +71,11 @@ final class BodyLogManager: ObservableObject {
         entries.insert(entry, at: 0)
         latestWeight = weight
         saveEntries()
+        LocalUserStore.shared.updateBasicInfo(weightKg: weight)
+
+        Task {
+            await syncWeightEntry(entry)
+        }
 
         // 24x7 friend log sharing
         FriendsService.shared.shareBodyLogEntryToAllFriends(entry) { result in
@@ -150,5 +155,44 @@ final class BodyLogManager: ObservableObject {
     private func saveEntries() {
         guard let data = try? JSONEncoder().encode(entries) else { return }
         UserDefaults.standard.set(data, forKey: storageKey)
+    }
+
+    private func syncWeightEntry(_ entry: BodyLogEntry) async {
+        do {
+            let payload: [String: Any] = [
+                "weightKg": entry.weight,
+                "timestamp": ISO8601DateFormatter().string(from: entry.date),
+                "notes": entry.note ?? ""
+            ]
+            let body = try JSONSerialization.data(withJSONObject: payload, options: [])
+            let response = try await NetworkManager.shared.requestDictionary("health/weight", method: "POST", body: body)
+
+            if let weightLogId = stringValue(response["_id"]) ?? stringValue(response["id"]) {
+                try await shareWeightActivity(weightLogId: weightLogId)
+            }
+        } catch {
+            print("⚠️ Failed to sync weight log to backend: \(error.localizedDescription)")
+        }
+    }
+
+    private func shareWeightActivity(weightLogId: String) async throws {
+        let payload: [String: Any] = [
+            "weightLogId": weightLogId,
+            "visibility": "friends_only",
+            "sharedWith": []
+        ]
+        let body = try JSONSerialization.data(withJSONObject: payload, options: [])
+        _ = try await NetworkManager.shared.requestDictionary("logs/weight/share", method: "POST", body: body)
+    }
+
+    private func stringValue(_ value: Any?) -> String? {
+        switch value {
+        case let string as String:
+            return string
+        case let number as NSNumber:
+            return number.stringValue
+        default:
+            return nil
+        }
     }
 }

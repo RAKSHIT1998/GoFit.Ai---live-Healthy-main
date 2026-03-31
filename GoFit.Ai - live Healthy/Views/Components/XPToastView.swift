@@ -151,10 +151,13 @@ class RewardEngine: ObservableObject {
         static let perfectDay = 50
     }
     
-    func awardXP(_ xp: Int, reason: String) {
+    func awardXP(_ xp: Int, reason: String, actionType: String = "bonus_reward") {
         toastQueue.append((xp: xp, reason: reason))
         StreakManager.shared.awardPoints(xp)
         HapticManager.shared.success()
+        Task {
+            await syncXPEvent(points: xp, actionType: actionType)
+        }
         processQueue()
     }
     
@@ -180,14 +183,14 @@ class RewardEngine: ObservableObject {
         UserDefaults.standard.set(true, forKey: "scanned_today_\(todayKey)")
         
         if isFirst {
-            awardXP(XPValues.firstScanOfDay, reason: "First scan of the day! 📸")
+            awardXP(XPValues.firstScanOfDay, reason: "First scan of the day! 📸", actionType: "first_meal")
         } else {
-            awardXP(XPValues.mealScanned, reason: "Meal scanned! 🍽️")
+            awardXP(XPValues.mealScanned, reason: "Meal scanned! 🍽️", actionType: "log_meal")
         }
     }
     
     func rewardMealLog() {
-        awardXP(XPValues.mealLogged, reason: "Meal logged! ✅")
+        awardXP(XPValues.mealLogged, reason: "Meal logged! ✅", actionType: "log_meal")
     }
     
     func rewardLiquidLog(beverageType: String) {
@@ -199,16 +202,29 @@ class RewardEngine: ObservableObject {
         case "juice": emoji = "🧃"
         default: emoji = "🥤"
         }
-        awardXP(XPValues.liquidLogged, reason: "\(beverageType.capitalized) logged! \(emoji)")
+        awardXP(XPValues.liquidLogged, reason: "\(beverageType.capitalized) logged! \(emoji)", actionType: "log_water")
     }
     
     func rewardWaterGoal() {
-        awardXP(XPValues.waterGoalMet, reason: "Water goal reached! 🎯💧")
+        awardXP(XPValues.waterGoalMet, reason: "Water goal reached! 🎯💧", actionType: "water_goal_met")
     }
     
     private var todayKey: String {
         let formatter = DateFormatter()
         formatter.dateFormat = "yyyy-MM-dd"
         return formatter.string(from: Date())
+    }
+
+    private func syncXPEvent(points: Int, actionType: String) async {
+        do {
+            let payload: [String: Any] = [
+                "actionType": actionType,
+                "points": points
+            ]
+            let body = try JSONSerialization.data(withJSONObject: payload, options: [])
+            _ = try await NetworkManager.shared.requestDictionary("gamification/events", method: "POST", body: body)
+        } catch {
+            print("⚠️ Failed to sync XP event: \(error.localizedDescription)")
+        }
     }
 }

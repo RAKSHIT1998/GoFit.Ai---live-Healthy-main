@@ -97,6 +97,7 @@ const userSchema = new mongoose.Schema({
     weightKg: Number,
     heightCm: Number,
     targetWeightKg: Number,
+    targetTimeWeeks: Number,
     targetCalories: Number,
     targetProtein: Number,
     targetCarbs: Number,
@@ -279,4 +280,3 @@ userSchema.methods.toJSON = function() {
 };
 
 export default mongoose.model('User', userSchema);
-

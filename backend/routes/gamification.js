@@ -1,5 +1,7 @@
 import express from 'express';
+import mongoose from 'mongoose';
 import { GamificationPoints, Badge, Achievement, UserStreak } from '../models/Gamification.js';
+import Friend from '../models/Friend.js';
 import { authenticateToken } from '../middleware/authMiddleware.js';
 
 const router = express.Router();
@@ -41,6 +43,36 @@ function serializeStreak(streak, index) {
     last_updated: toISOStringOrNil(streak.lastActiveDate ?? streak.updatedAt ?? streak.createdAt),
     is_active: Boolean(streak.lastActiveDate)
   };
+}
+
+async function getFriendScopedUserIds(userId) {
+  const friendships = await Friend.find({
+    $or: [
+      { userId, status: 'accepted' },
+      { friendId: userId, status: 'accepted' }
+    ]
+  }).lean();
+
+  const userIds = new Set([userId.toString()]);
+  friendships.forEach(friendship => {
+    const friendUserId =
+      friendship.userId.toString() === userId.toString()
+        ? friendship.friendId.toString()
+        : friendship.userId.toString();
+    userIds.add(friendUserId);
+  });
+
+  return Array.from(userIds);
+}
+
+function getScopeStartDate(scope) {
+  const now = new Date();
+
+  if (scope === 'monthly') {
+    return new Date(now.getFullYear(), now.getMonth(), 1);
+  }
+
+  return new Date(now.getFullYear(), now.getMonth(), now.getDate());
 }
 
 /**
@@ -92,18 +124,26 @@ router.get('/stats', authenticateToken, async (req, res) => {
 });
 
 /**
- * Get global leaderboard
+ * Get friends leaderboard
  * GET /api/gamification/leaderboard
  */
 router.get('/leaderboard', authenticateToken, async (req, res) => {
   try {
-    const { limit = 50, offset = 0 } = req.query;
+    const { limit = 50, offset = 0, scope = 'daily' } = req.query;
     const userId = req.user._id;
     const safeLimit = parseInt(limit, 10) || 50;
     const safeOffset = parseInt(offset, 10) || 0;
+    const safeScope = scope === 'monthly' ? 'monthly' : 'daily';
+    const scopedUserIds = await getFriendScopedUserIds(userId);
+    const startDate = getScopeStartDate(safeScope);
 
-    // Aggregate points per user
     const leaderboard = await GamificationPoints.aggregate([
+      {
+        $match: {
+          userId: { $in: scopedUserIds.map(id => new mongoose.Types.ObjectId(id)) },
+          createdAt: { $gte: startDate }
+        }
+      },
       { $group: { _id: '$userId', totalPoints: { $sum: '$points' } } },
       { $sort: { totalPoints: -1 } },
       { $skip: safeOffset },
@@ -143,11 +183,47 @@ router.get('/leaderboard', authenticateToken, async (req, res) => {
         rank: safeOffset + index + 1,
         is_current_user: row.isCurrentUser
       })),
-      count: leaderboard.length
+      count: leaderboard.length,
+      scope: safeScope
     });
   } catch (error) {
     console.error('Get leaderboard error:', error);
     res.status(500).json({ message: 'Error fetching leaderboard' });
+  }
+});
+
+/**
+ * Record XP event for leaderboard updates
+ * POST /api/gamification/events
+ */
+router.post('/events', authenticateToken, async (req, res) => {
+  try {
+    const { actionType, points } = req.body;
+    const safePoints = Number(points);
+
+    if (!actionType || !Number.isFinite(safePoints) || safePoints <= 0) {
+      return res.status(400).json({ message: 'Valid actionType and positive points are required' });
+    }
+
+    const event = await GamificationPoints.create({
+      userId: req.user._id,
+      actionType,
+      points: safePoints
+    });
+
+    const totals = await GamificationPoints.aggregate([
+      { $match: { userId: req.user._id } },
+      { $group: { _id: null, totalPoints: { $sum: '$points' } } }
+    ]);
+
+    res.status(201).json({
+      message: 'Gamification event recorded',
+      eventId: event._id.toString(),
+      total_points: totals[0]?.totalPoints || safePoints
+    });
+  } catch (error) {
+    console.error('Record gamification event error:', error);
+    res.status(500).json({ message: 'Error recording gamification event' });
   }
 });
 
