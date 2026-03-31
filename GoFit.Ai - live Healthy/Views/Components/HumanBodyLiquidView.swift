@@ -43,23 +43,7 @@ struct HumanBodyLiquidView: View {
         return Color(red: r, green: g, blue: b)
     }
     
-    // Color segments for the visual breakdown strip
-    private var beverageSegments: [(type: LiquidEntry.BeverageType, ratio: CGFloat, color: Color)] {
-        guard totalIntake > 0 else { return [] }
-        
-        var segments: [(type: LiquidEntry.BeverageType, amount: Double)] = []
-        for entry in entries {
-            if let idx = segments.firstIndex(where: { $0.type == entry.beverageType }) {
-                segments[idx].amount += entry.amount
-            } else {
-                segments.append((type: entry.beverageType, amount: entry.amount))
-            }
-        }
-        
-        return segments.map { seg in
-            (type: seg.type, ratio: CGFloat(seg.amount / totalIntake), color: beverageColor(seg.type))
-        }
-    }
+    // Color segments for the visual breakdown strip removed
     
     var body: some View {
         VStack(spacing: 16) {
@@ -69,12 +53,10 @@ struct HumanBodyLiquidView: View {
                 BodySilhouette()
                     .stroke(Color.gray.opacity(0.2), lineWidth: 2)
                     .frame(width: 120, height: 220)
-                
                 // Liquid fill inside body
                 BodySilhouette()
                     .fill(Color.gray.opacity(0.05))
                     .frame(width: 120, height: 220)
-                
                 // Animated fill
                 BodySilhouette()
                     .fill(liquidColor.opacity(0.7))
@@ -98,13 +80,11 @@ struct HumanBodyLiquidView: View {
                                     .offset(y: 110 - (220 * fillLevel) + 110)
                             )
                     )
-                
                 // Percentage label
                 VStack(spacing: 4) {
                     Text("\(Int(progress * 100))%")
                         .font(.system(.title2, design: .rounded).bold())
                         .foregroundColor(progress > 0.4 ? .white : .primary)
-                    
                     Text(String(format: "%.1fL", totalIntake))
                         .font(.system(.caption, design: .rounded))
                         .foregroundColor(progress > 0.4 ? .white.opacity(0.9) : .secondary)
@@ -112,37 +92,7 @@ struct HumanBodyLiquidView: View {
             }
             .frame(height: 220)
             
-            // Beverage breakdown strip
-            if !beverageSegments.isEmpty {
-                VStack(spacing: 8) {
-                    // Segmented bar
-                    GeometryReader { geo in
-                        HStack(spacing: 1) {
-                            ForEach(Array(beverageSegments.enumerated()), id: \.offset) { _, seg in
-                                RoundedRectangle(cornerRadius: 4)
-                                    .fill(seg.color)
-                                    .frame(width: max(geo.size.width * seg.ratio - 1, 4))
-                            }
-                        }
-                    }
-                    .frame(height: 8)
-                    .cornerRadius(4)
-                    
-                    // Legend
-                    HStack(spacing: 12) {
-                        ForEach(Array(beverageSegments.enumerated()), id: \.offset) { _, seg in
-                            HStack(spacing: 4) {
-                                Circle()
-                                    .fill(seg.color)
-                                    .frame(width: 8, height: 8)
-                                Text(seg.type.displayName)
-                                    .font(.system(size: 10, design: .rounded))
-                                    .foregroundColor(.secondary)
-                            }
-                        }
-                    }
-                }
-            }
+            // Beverage breakdown strip removed
         }
         .onAppear {
             withAnimation(.easeOut(duration: 1.2)) {
@@ -153,12 +103,10 @@ struct HumanBodyLiquidView: View {
                 wavePhase = .pi * 2
             }
         }
-        .onChange(of: entries.count) { oldCount, newCount in
+        .onChange(of: entries.count) { _ in
             withAnimation(.easeOut(duration: 0.8)) {
                 fillLevel = progress
             }
-            _ = oldCount
-            _ = newCount
         }
     }
     

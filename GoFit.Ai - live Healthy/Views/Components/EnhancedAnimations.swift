@@ -274,11 +274,10 @@ struct FlipView<Front: View, Back: View>: View {
     var body: some View {
         ZStack {
             front
-                .rotation3DEffect(.degrees(isFlipped ? 180 : 0), axis: (x: 0, y: 1, z: 0))
+                // 3D effect removed
                 .opacity(isFlipped ? 0 : 1)
-            
             back
-                .rotation3DEffect(.degrees(isFlipped ? 0 : -180), axis: (x: 0, y: 1, z: 0))
+                // 3D effect removed
                 .opacity(isFlipped ? 1 : 0)
         }
         .animation(.spring(response: 0.6, dampingFraction: 0.8), value: isFlipped)

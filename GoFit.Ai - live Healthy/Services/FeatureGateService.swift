@@ -51,10 +51,7 @@ class FeatureGateService: ObservableObject {
         return isPremiumUser
     }
     
-    /// Check if user can access advanced analytics
-    var canAccessAdvancedAnalytics: Bool {
-        return isPremiumUser
-    }
+    // ...existing code...
     
     /// Check if user can access full HealthKit integration
     var canAccessFullHealthKit: Bool {
@@ -77,8 +74,7 @@ class FeatureGateService: ObservableObject {
             return "Get 10+ daily recommendations with Premium"
         case .adFree:
             return "Remove all ads with Premium subscription"
-        case .advancedAnalytics:
-            return "Unlock advanced insights with Premium"
+        // ...existing code...
         case .fullHealthKit:
             return "Get full Apple Watch sync with Premium"
         case .customWorkouts:
@@ -90,7 +86,6 @@ class FeatureGateService: ObservableObject {
         case unlimitedScans
         case moreRecommendations
         case adFree
-        case advancedAnalytics
         case fullHealthKit
         case customWorkouts
     }

@@ -207,20 +207,7 @@ struct DailyRewardSpinnerView: View {
                         .blur(radius: isSpinning ? 4 : 1)
                         .opacity(isSpinning ? 0.9 : 0.5)
                     
-                    // Wheel segments
-                    ZStack {
-                        ForEach(0..<slotCount, id: \.self) { index in
-                            WheelSegment(
-                                index: index,
-                                total: slotCount,
-                                reward: displayRewards[index]
-                            )
-                        }
-                    }
-                    .frame(width: 270, height: 270)
-                    .clipShape(Circle())
-                    .rotationEffect(.degrees(rotation))
-                    .shadow(color: .black.opacity(0.5), radius: 20)
+                    // Wheel segments removed (3D/segment effect)
                     
                     // Center hub
                     Circle()

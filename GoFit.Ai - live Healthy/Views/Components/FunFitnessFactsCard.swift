@@ -183,7 +183,7 @@ struct FunFitnessFactsCard: View {
                 )
                 .cornerRadius(16)
                 .shadow(color: Color.primary.opacity(0.06), radius: 10, x: 0, y: 2)
-                .rotation3DEffect(.degrees(cardRotation), axis: (x: 0, y: 1, z: 0))
+                // 3D rotation effect removed
             }
             .buttonStyle(.plain)
         }
