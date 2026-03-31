@@ -29,6 +29,7 @@ import analyticsRoutes from './routes/analytics.js';
 import onboardingRoutes from './routes/onboarding.js';
 import notificationRoutes from './routes/notifications.js';
 import friendsRoutes from './routes/friends.js';
+import gamificationRoutes from './routes/gamification.js';
 import logsRoutes from './routes/logs.js';
 import messagesRoutes from './routes/messages.js';
 
@@ -237,6 +238,7 @@ app.use('/api/analytics', analyticsRoutes);
 app.use('/api/onboarding', onboardingRoutes);
 app.use('/api/notifications', notificationRoutes);
 app.use('/api/friends', friendsRoutes);
+app.use('/api/gamification', gamificationRoutes);
 app.use('/api/messages', messagesRoutes);
 app.use('/api/logs', logsRoutes);
 
@@ -324,4 +326,3 @@ async function startServer() {
 startServer();
 
 export default app;
-

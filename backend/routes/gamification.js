@@ -1,9 +1,47 @@
 import express from 'express';
 import { GamificationPoints, Badge, Achievement, UserStreak } from '../models/Gamification.js';
-import User from '../models/User.js';
 import { authenticateToken } from '../middleware/authMiddleware.js';
 
 const router = express.Router();
+
+function toISOStringOrNil(value) {
+  return value ? new Date(value).toISOString() : null;
+}
+
+function serializeBadge(badge, index) {
+  return {
+    id: index + 1,
+    name: badge.name,
+    description: badge.description ?? null,
+    icon_url: badge.icon ?? null,
+    earned: true,
+    earned_at: toISOStringOrNil(badge.earnedAt)
+  };
+}
+
+function serializeAchievement(achievement, index) {
+  return {
+    id: index + 1,
+    title: achievement.name,
+    description: achievement.description ?? null,
+    icon_url: null,
+    earned: true,
+    earned_at: toISOStringOrNil(achievement.earnedAt),
+    progress: achievement.points ?? null
+  };
+}
+
+function serializeStreak(streak, index) {
+  return {
+    id: index + 1,
+    userId: 1,
+    streak_type: streak.streakType,
+    current_streak: streak.currentDays,
+    best_streak: streak.longestDays,
+    last_updated: toISOStringOrNil(streak.lastActiveDate ?? streak.updatedAt ?? streak.createdAt),
+    is_active: Boolean(streak.lastActiveDate)
+  };
+}
 
 /**
  * Get user's gamification stats (badges, achievements, streaks)
@@ -23,21 +61,29 @@ router.get('/stats', authenticateToken, async (req, res) => {
       ])
     ]);
 
+    const serializedBadges = badges.map(serializeBadge);
+    const serializedAchievements = achievements.map(serializeAchievement);
+    const serializedStreaks = streak ? [serializeStreak(streak, 0)] : [];
+    const totalPoints = pointsAgg.length > 0 ? pointsAgg[0].totalPoints : 0;
+
     res.json({
-      badges: {
-        total: badges.length,
-        recent: badges.slice(0, 5),
-        all: badges
-      },
-      achievements: {
-        total: achievements.length,
-        recent: achievements.slice(0, 5),
-        all: achievements
-      },
-      streaks: {
-        current: streak || null
-      },
-      points: pointsAgg.length > 0 ? pointsAgg[0].totalPoints : 0
+      stats: {
+        total_points: totalPoints,
+        action_count: badges.length + achievements.length + serializedStreaks.length,
+        rank: null,
+        badges: {
+          earned: serializedBadges.length,
+          details: serializedBadges
+        },
+        achievements: {
+          earned: serializedAchievements.length,
+          details: serializedAchievements
+        },
+        streaks: {
+          active: serializedStreaks.filter(item => item.is_active).length,
+          details: serializedStreaks
+        }
+      }
     });
   } catch (error) {
     console.error('Get gamification stats error:', error);
@@ -51,14 +97,17 @@ router.get('/stats', authenticateToken, async (req, res) => {
  */
 router.get('/leaderboard', authenticateToken, async (req, res) => {
   try {
-    const { limit = 50, type = 'points' } = req.query;
+    const { limit = 50, offset = 0 } = req.query;
     const userId = req.user._id;
+    const safeLimit = parseInt(limit, 10) || 50;
+    const safeOffset = parseInt(offset, 10) || 0;
 
     // Aggregate points per user
     const leaderboard = await GamificationPoints.aggregate([
       { $group: { _id: '$userId', totalPoints: { $sum: '$points' } } },
       { $sort: { totalPoints: -1 } },
-      { $limit: parseInt(limit) },
+      { $skip: safeOffset },
+      { $limit: safeLimit },
       {
         $lookup: {
           from: 'users',
@@ -71,21 +120,30 @@ router.get('/leaderboard', authenticateToken, async (req, res) => {
       {
         $project: {
           _id: 0,
-          id: '$_id',
-          name: '$user.name',
-          profilePictureURL: '$user.profilePictureURL',
+          username: '$user.name',
+          email: '$user.email',
+          profile_picture: '$user.profilePictureURL',
           totalPoints: 1,
-          isMe: { $eq: ['$_id', userId] }
+          badgeCount: 0,
+          achievementCount: 0,
+          isCurrentUser: { $eq: ['$_id', userId] }
         }
       }
     ]);
 
     res.json({
       leaderboard: leaderboard.map((row, index) => ({
-        ...row,
-        rank: index + 1
+        id: safeOffset + index + 1,
+        username: row.username,
+        email: row.email ?? null,
+        profile_picture: row.profile_picture ?? null,
+        total_points: row.totalPoints,
+        badge_count: row.badgeCount,
+        achievement_count: row.achievementCount,
+        rank: safeOffset + index + 1,
+        is_current_user: row.isCurrentUser
       })),
-      type
+      count: leaderboard.length
     });
   } catch (error) {
     console.error('Get leaderboard error:', error);
@@ -104,7 +162,7 @@ router.get('/badges', authenticateToken, async (req, res) => {
     const badges = await Badge.find({ userId }).sort({ earnedAt: -1 });
 
     res.json({
-      badges,
+      badges: badges.map(serializeBadge),
       count: badges.length
     });
   } catch (error) {
@@ -124,7 +182,7 @@ router.get('/achievements', authenticateToken, async (req, res) => {
     const achievements = await Achievement.find({ userId }).sort({ earnedAt: -1 });
 
     res.json({
-      achievements,
+      achievements: achievements.map(serializeAchievement),
       count: achievements.length
     });
   } catch (error) {
@@ -144,7 +202,7 @@ router.get('/streaks', authenticateToken, async (req, res) => {
     const streak = await UserStreak.findOne({ userId }).sort({ createdAt: -1 });
 
     res.json({
-      current_streak: streak || null
+      streaks: streak ? [serializeStreak(streak, 0)] : []
     });
   } catch (error) {
     console.error('Get streaks error:', error);
