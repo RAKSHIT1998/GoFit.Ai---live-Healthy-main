@@ -364,18 +364,7 @@ struct TargetSettingsView: View {
             do {
                 let response: [String: Any] = try await NetworkManager.shared.requestDictionary("auth/me", method: "GET", body: nil)
                 await MainActor.run {
-                    if let metrics = response["metrics"] as? [String: Any] {
-                        if let w = metrics["weightKg"] as? Double { weightKg = w }
-                        if let h = metrics["heightCm"] as? Double { heightCm = h }
-                        if let tw = metrics["targetWeightKg"] as? Double { targetWeightKg = tw }
-                        if let tc = metrics["targetCalories"] as? Double { targetCalories = tc }
-                        if let tp = metrics["targetProtein"] as? Double { targetProtein = tp }
-                        if let tcarbs = metrics["targetCarbs"] as? Double { targetCarbs = tcarbs }
-                        if let tf = metrics["targetFat"] as? Double { targetFat = tf }
-                        if let liquid = metrics["liquidIntakeGoal"] as? Double { liquidIntakeGoal = liquid }
-                        if let weeks = metrics["targetTimeWeeks"] as? Int { targetTimeWeeks = weeks }
-                    }
-                    if let activity = response["activityLevel"] as? String { activityLevel = activity }
+                    applyProfileResponse(response)
                     isLoadingTargets = false
                 }
             } catch {
@@ -383,6 +372,73 @@ struct TargetSettingsView: View {
                 isLoadingTargets = false
             }
         }
+    }
+
+    private func numberAsDouble(_ value: Any?) -> Double? {
+        switch value {
+        case let double as Double:
+            return double
+        case let int as Int:
+            return Double(int)
+        case let number as NSNumber:
+            return number.doubleValue
+        case let string as String:
+            return Double(string)
+        default:
+            return nil
+        }
+    }
+
+    private func numberAsInt(_ value: Any?) -> Int? {
+        switch value {
+        case let int as Int:
+            return int
+        case let double as Double:
+            return Int(double)
+        case let number as NSNumber:
+            return number.intValue
+        case let string as String:
+            return Int(string)
+        default:
+            return nil
+        }
+    }
+
+    private func applyProfileResponse(_ response: [String: Any]) {
+        if let metrics = response["metrics"] as? [String: Any] {
+            if let w = numberAsDouble(metrics["weightKg"]) { weightKg = w }
+            if let h = numberAsDouble(metrics["heightCm"]) { heightCm = h }
+            if let tw = numberAsDouble(metrics["targetWeightKg"]) { targetWeightKg = tw }
+            if let tc = numberAsDouble(metrics["targetCalories"]) { targetCalories = tc }
+            if let tp = numberAsDouble(metrics["targetProtein"]) { targetProtein = tp }
+            if let tcarbs = numberAsDouble(metrics["targetCarbs"]) { targetCarbs = tcarbs }
+            if let tf = numberAsDouble(metrics["targetFat"]) { targetFat = tf }
+            if let liquid = numberAsDouble(metrics["liquidIntakeGoal"]) { liquidIntakeGoal = liquid }
+            if let weeks = numberAsInt(metrics["targetTimeWeeks"]) { targetTimeWeeks = weeks }
+        }
+
+        if let savedGoal = response["goals"] as? String, !savedGoal.isEmpty {
+            goal = savedGoal
+        }
+        if let savedActivity = response["activityLevel"] as? String, !savedActivity.isEmpty {
+            activityLevel = savedActivity
+        }
+
+        auth.weightKg = weightKg
+        auth.heightCm = heightCm
+        auth.goal = goal
+        auth.saveLocalState()
+
+        LocalUserStore.shared.updateBasicInfo(weightKg: weightKg, heightCm: heightCm, targetWeightKg: targetWeightKg)
+        LocalUserStore.shared.updateGoals(goal: goal, activityLevel: activityLevel)
+        LocalUserStore.shared.updateNutritionTargets(
+            targetCalories: targetCalories,
+            targetProtein: targetProtein,
+            targetCarbs: targetCarbs,
+            targetFat: targetFat,
+            liquidIntakeGoal: liquidIntakeGoal
+        )
+        WaterIntakeManager.shared.waterGoal = liquidIntakeGoal
     }
 
     private func recalculateTargets() {
@@ -443,15 +499,13 @@ struct TargetSettingsView: View {
                 ]
                 let cleanBody = body.compactMapValues { $0 }
                 let bodyData = try JSONSerialization.data(withJSONObject: cleanBody, options: [])
-                let _: [String: Any] = try await NetworkManager.shared.requestDictionary("auth/targets", method: "PUT", body: bodyData)
+                let response: [String: Any] = try await NetworkManager.shared.requestDictionary("auth/targets", method: "PUT", body: bodyData)
 
                 await MainActor.run {
-                    auth.weightKg = weightKg
-                    auth.heightCm = heightCm
-                    auth.goal = goal
-                    auth.saveLocalState()
-                    LocalUserStore.shared.updateBasicInfo(weightKg: weightKg, heightCm: heightCm, targetWeightKg: targetWeightKg)
-                    LocalUserStore.shared.updateNutritionTargets(targetCalories: targetCalories, targetProtein: targetProtein, targetCarbs: targetCarbs, targetFat: targetFat, liquidIntakeGoal: liquidIntakeGoal)
+                    applyProfileResponse(response)
+                    LocalUserStore.shared.updateGoals(goal: goal, activityLevel: activityLevel)
+                    WaterIntakeManager.shared.waterGoal = liquidIntakeGoal
+                    GoFitSmartNotifications.shared.scheduleSmartNotifications()
                     isLoading = false
                     showingSuccess = true
                     skipLoadOnAppear = true
@@ -470,5 +524,4 @@ struct TargetSettingsView: View {
         }
     }
 }
-
 

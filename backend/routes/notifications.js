@@ -208,6 +208,7 @@ async function getUserContext(userId) {
       targetProtein: user.metrics?.targetProtein || 150,
       targetCarbs: user.metrics?.targetCarbs || 200,
       targetFat: user.metrics?.targetFat || 65,
+      liquidIntakeGoal: user.metrics?.liquidIntakeGoal || (user.metrics?.weightKg ? user.metrics.weightKg * 0.035 : 2.5),
       weightKg: user.metrics?.weightKg || 70,
       heightCm: user.metrics?.heightCm || 170,
       workoutPreferences: user.onboardingData?.workoutPreferences || [],
@@ -300,9 +301,11 @@ router.post('/water-reminder', authenticateToken, async (req, res) => {
     const context = await getUserContext(req.user._id);
     if (!context) return res.status(404).json({ message: 'User not found' });
 
+    const hydrationTarget = context.user.liquidIntakeGoal || 2.5;
+
     const prompt = `You are a friendly health coach. Generate a water reminder for ${context.user.name}.
 USER: Goals=${context.user.goals}, Activity=${context.user.activityLevel}, Weight=${context.user.weightKg}kg
-TODAY: Water=${context.today.water.toFixed(1)}L, Target=${(context.user.weightKg * 0.035).toFixed(1)}L
+TODAY: Water=${context.today.water.toFixed(1)}L, Target=${hydrationTarget.toFixed(1)}L
 Return ONLY JSON: {"title":"max 50 chars","body":"max 100 chars"}`;
 
     const completion = await openai.chat.completions.create({
@@ -389,4 +392,3 @@ Return ONLY JSON: {"title":"max 50 chars","body":"max 100 chars"}`;
 });
 
 export default router;
-

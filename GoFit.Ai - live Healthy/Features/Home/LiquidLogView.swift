@@ -332,6 +332,8 @@ struct LiquidLogView: View {
                 
                 // Reward
                 RewardEngine.shared.rewardLiquidLog(beverageType: beverageType)
+                WaterIntakeManager.shared.waterGoal = liquidGoal
+                GoFitSmartNotifications.shared.scheduleSmartNotifications()
                 
                 showSuccess = true
             }
@@ -386,4 +388,3 @@ struct LiquidLogView: View {
         return round((sugarPerLiter[beverageType] ?? 0) * amount * 10) / 10
     }
 }
-

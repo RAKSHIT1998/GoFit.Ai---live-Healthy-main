@@ -1734,10 +1734,23 @@ struct HomeDashboardView: View {
         
         do {
             let response: [String: Any] = try await NetworkManager.shared.requestDictionary("auth/me", method: "GET", body: nil)
-            if let metrics = response["metrics"] as? [String: Any],
-               let liquid = metrics["liquidIntakeGoal"] as? Double {
-                await MainActor.run {
-                    liquidIntakeGoal = liquid
+            if let metrics = response["metrics"] as? [String: Any] {
+                let liquid: Double?
+                if let value = metrics["liquidIntakeGoal"] as? Double {
+                    liquid = value
+                } else if let value = metrics["liquidIntakeGoal"] as? Int {
+                    liquid = Double(value)
+                } else if let value = metrics["liquidIntakeGoal"] as? NSNumber {
+                    liquid = value.doubleValue
+                } else {
+                    liquid = nil
+                }
+
+                if let liquid {
+                    WaterIntakeManager.shared.waterGoal = liquid
+                    await MainActor.run {
+                        liquidIntakeGoal = liquid
+                    }
                 }
             }
         } catch {
