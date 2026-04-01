@@ -1,4 +1,6 @@
+
 import SwiftUI
+import UIKit
 
 struct MealScannerView2: View {
     @State private var capturedImage: UIImage? = nil
@@ -6,6 +8,7 @@ struct MealScannerView2: View {
     @State private var showPreview = false
     @State private var isUploading = false
     @State private var uploadResult: ServerMealResponse? = nil
+    @State private var openAIResult: [OpenAIFoodNutrition]? = nil
     @State private var errorMsg: String?
 
     var body: some View {
@@ -54,26 +57,21 @@ struct MealScannerView2: View {
 
             if isUploading { ProgressView("Uploading & analyzing...") }
 
-            if let resp = uploadResult {
-                VStack(alignment: .leading, spacing: 8) {
-                    Text("Detected:")
-                        .font(.headline)
-                    if let items = resp.parsedItems {
-                        ForEach(items, id: \.name) { it in
-                            HStack {
-                                Text(it.name)
-                                Spacer()
-                                if let cal = it.calories { Text("\(Int(cal)) kcal") }
-                            }
-                        }
-                    } else {
-                        Text("No parsed items returned.")
-                    }
 
-                    if let rec = resp.recommendations {
-                        Text("Recommendation:")
-                            .font(.headline)
-                        Text(rec)
+            if let openAIResult = openAIResult {
+                VStack(alignment: .leading, spacing: 8) {
+                    Text("OpenAI Nutrition Analysis:")
+                        .font(.headline)
+                    ForEach(openAIResult, id: \ .food) { item in
+                        VStack(alignment: .leading, spacing: 4) {
+                            Text(item.food).bold()
+                            if let cal = item.calories { Text("Calories: \(cal)") }
+                            if let p = item.protein { Text("Protein: \(p)g") }
+                            if let c = item.carbs { Text("Carbs: \(c)g") }
+                            if let f = item.fat { Text("Fat: \(f)g") }
+                            if let d = item.details { Text(d).italic() }
+                        }
+                        Divider()
                     }
                 }
                 .padding()
@@ -116,18 +114,16 @@ struct MealScannerView2: View {
     }
 
     func uploadImage(_ image: UIImage) async {
-        guard let data = image.jpegData(compressionQuality: 0.8) else { return }
         isUploading = true
         errorMsg = nil
+        openAIResult = nil
         defer { isUploading = false }
 
         do {
-            // if you maintain a userId in your local auth, pass it here
-            let userId: String? = nil
-            let resp = try await NetworkManager.shared.uploadMealImage(data: data, filename: "meal.jpg", userId: userId)
-            uploadResult = resp
+            let result = try await OpenAIFoodAnalysisService.shared.analyzeFood(image: image)
+            openAIResult = result
         } catch {
-            errorMsg = "Upload error: \(error.localizedDescription)"
+            errorMsg = "OpenAI error: \(error.localizedDescription)"
         }
     }
 }
