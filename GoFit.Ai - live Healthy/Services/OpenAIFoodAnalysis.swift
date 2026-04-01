@@ -46,8 +46,10 @@ final class OpenAIFoodAnalysisService {
 
         let (data, resp) = try await URLSession.shared.data(for: req)
         guard let httpResponse = resp as? HTTPURLResponse, 200...299 ~= httpResponse.statusCode else {
+            let httpResponse = resp as? HTTPURLResponse
+            let statusCode = httpResponse?.statusCode ?? 0
             let errStr = String(data: data, encoding: .utf8) ?? "Unknown error"
-            throw NSError(domain: "OpenAI", code: httpResponse.statusCode, userInfo: [NSLocalizedDescriptionKey: errStr])
+            throw NSError(domain: "OpenAI", code: statusCode, userInfo: [NSLocalizedDescriptionKey: errStr])
         }
         // Parse OpenAI response
         struct OpenAIResponse: Codable {
