@@ -60,9 +60,9 @@ struct MealScannerView2: View {
 
             if let openAIResult = openAIResult {
                 VStack(alignment: .leading, spacing: 8) {
-                    Text("OpenAI Nutrition Analysis:")
+                    Text("AI Nutrition Analysis:")
                         .font(.headline)
-                    ForEach(openAIResult, id: \ .food) { item in
+                    ForEach(openAIResult, id: \.food) { item in
                         VStack(alignment: .leading, spacing: 4) {
                             Text(item.food).bold()
                             if let cal = item.calories { Text("Calories: \(cal)") }
@@ -123,7 +123,7 @@ struct MealScannerView2: View {
             let result = try await OpenAIFoodAnalysisService.shared.analyzeFood(image: image)
             openAIResult = result
         } catch {
-            errorMsg = "OpenAI error: \(error.localizedDescription)"
+            errorMsg = error.localizedDescription
         }
     }
 }
