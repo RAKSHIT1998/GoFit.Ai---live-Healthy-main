@@ -11,6 +11,7 @@ struct ActivityFeedView: View {
     @EnvironmentObject var auth: AuthViewModel
     @StateObject private var sharingService = LogSharingService()
     @StateObject private var gamification = GamificationService()
+    @ObservedObject private var friendsService = FriendsService.shared
     @State private var feedItems: [ActivityFeed] = []
     @State private var isLoading = true
     @State private var reactedItems: Set<String> = []
@@ -50,6 +51,19 @@ struct ActivityFeedView: View {
                 } else if feedItems.isEmpty {
                     emptyState
                 } else {
+                    // Friends-activity header
+                    HStack(spacing: 6) {
+                        Image(systemName: "person.2.fill")
+                            .font(.caption)
+                            .foregroundColor(Design.Colors.primary)
+                            let friendCount = friendsService.friends.count
+                            Text("Activity from your \(friendCount) friend\(friendCount == 1 ? "" : "s")")
+                            .font(Design.Typography.caption)
+                            .foregroundColor(.secondary)
+                        Spacer()
+                    }
+                    .padding(.horizontal, Design.Spacing.md)
+
                     LazyVStack(spacing: 12) {
                         ForEach(feedItems, id: \.id) { item in
                             feedCard(item)
@@ -71,6 +85,7 @@ struct ActivityFeedView: View {
         .task {
             pendingActivities = loadPendingActivities()
             await retryPendingActivities()
+            friendsService.fetchFriends { _ in }
             await loadFeed()
         }
         .onReceive(WebSocketService.shared.$latestActivityFeed) { feed in
@@ -520,23 +535,43 @@ struct ActivityFeedView: View {
     }
 
     private var emptyState: some View {
-        VStack(spacing: 20) {
-            Image(systemName: "person.3.fill")
+        let hasFriends = !friendsService.friends.isEmpty
+        return VStack(spacing: 20) {
+            Image(systemName: hasFriends ? "person.3.fill" : "person.badge.plus")
                 .font(.system(size: 50))
                 .foregroundColor(Design.Colors.primary.opacity(0.25))
 
             VStack(spacing: 8) {
-                Text("No activity yet")
+                Text(hasFriends ? "No activity yet" : "Add friends to see activity")
                     .font(Design.Typography.headline)
                     .foregroundColor(.secondary)
-                Text("When friends share workouts or meals,\nthey'll appear here!")
-                    .font(Design.Typography.caption)
-                    .foregroundColor(.secondary)
-                    .multilineTextAlignment(.center)
+                Text(
+                    hasFriends
+                        ? "Your friends haven't shared any workouts or meals yet.\nEncourage them to log something!"
+                        : "Your feed shows workouts, meals, and achievements\nfrom your real friends."
+                )
+                .font(Design.Typography.caption)
+                .foregroundColor(.secondary)
+                .multilineTextAlignment(.center)
+            }
+
+            if !hasFriends {
+                NavigationLink(destination: QuickAddFriendSheet().environmentObject(auth)) {
+                    HStack(spacing: 8) {
+                        Image(systemName: "person.badge.plus")
+                        Text("Find Friends")
+                            .fontWeight(.semibold)
+                    }
+                    .foregroundColor(.white)
+                    .padding(.horizontal, 24)
+                    .padding(.vertical, 12)
+                    .background(Design.Colors.primary)
+                    .cornerRadius(14)
+                }
             }
         }
         .frame(maxWidth: .infinity)
-        .padding(.top, 60)
+        .padding(.top, 40)
     }
 
     // MARK: - Data

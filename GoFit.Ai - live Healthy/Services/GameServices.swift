@@ -219,6 +219,7 @@ typealias SocialAchievement = Achievement
 class GamificationService: NSObject, ObservableObject {
     @Published var stats: GamificationStats?
     @Published var leaderboard: [LeaderboardEntry] = []
+    @Published var globalLeaderboard: [LeaderboardEntry] = []
     @Published var badges: [Badge] = []
     @Published var achievements: [SocialAchievement] = []
     @Published var streaks: [UserStreak] = []
@@ -252,14 +253,14 @@ class GamificationService: NSObject, ObservableObject {
         self.stats = response_data["stats"]
     }
 
-    // MARK: - Get Leaderboard
+    // MARK: - Get Leaderboard (Friends)
 
     func getLeaderboard(scope: String = "daily", limit: Int = 50, offset: Int = 0) async throws {
         isLoading = true
         defer { isLoading = false }
 
         let safeScope = scope.lowercased() == "monthly" ? "monthly" : "daily"
-        let endpoint = "\(baseURL)/leaderboard?scope=\(safeScope)&limit=\(limit)&offset=\(offset)"
+        let endpoint = "\(baseURL)/leaderboard?scope=\(safeScope)&type=friends&limit=\(limit)&offset=\(offset)"
         guard let url = URL(string: endpoint) else { throw NetworkError.invalidURL }
 
         var request = URLRequest(url: url)
@@ -275,6 +276,31 @@ class GamificationService: NSObject, ObservableObject {
 
         let response_data = try JSONDecoder().decode(GlobalLeaderboard.self, from: data)
         self.leaderboard = response_data.leaderboard
+    }
+
+    // MARK: - Get Global Leaderboard (All Users)
+
+    func getGlobalLeaderboard(scope: String = "daily", limit: Int = 50, offset: Int = 0) async throws {
+        isLoading = true
+        defer { isLoading = false }
+
+        let safeScope = scope.lowercased() == "monthly" ? "monthly" : "daily"
+        let endpoint = "\(baseURL)/leaderboard?scope=\(safeScope)&type=global&limit=\(limit)&offset=\(offset)"
+        guard let url = URL(string: endpoint) else { throw NetworkError.invalidURL }
+
+        var request = URLRequest(url: url)
+        if let token = AuthService.shared.readToken()?.accessToken {
+            request.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
+        }
+
+        let (data, response) = try await session.data(for: request)
+        guard let httpResponse = response as? HTTPURLResponse, httpResponse.statusCode == 200 else {
+            errorMessage = "Failed to fetch global leaderboard"
+            throw NetworkError.invalidResponse
+        }
+
+        let response_data = try JSONDecoder().decode(GlobalLeaderboard.self, from: data)
+        self.globalLeaderboard = response_data.leaderboard
     }
 
     // MARK: - Get Badges

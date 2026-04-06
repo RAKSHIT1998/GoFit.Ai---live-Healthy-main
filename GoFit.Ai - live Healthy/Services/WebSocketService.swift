@@ -24,6 +24,8 @@ class WebSocketService: ObservableObject {
     @Published var onlineUsers: Set<String> = []
     @Published var latestActivityFeed: ActivityFeed?
     @Published var leaderboardRefreshRequired: Bool = false
+    /// ID of the friend whose chat is currently open; used to suppress OS notifications for that conversation
+    @Published var currentChatFriendId: String? = nil
     
     // MARK: - Private Properties
     private var webSocketTask: URLSessionWebSocketTask?
@@ -460,15 +462,17 @@ case "activity:shared", "activity:update":
         )
 
         self.latestMessage = notification
-        
-        // Show local notification for incoming message
-        Task { @MainActor in
-            NotificationService.shared.showLocalNotification(
-                title: "💬 \(senderName)",
-                body: message
-            )
-            // Schedule a follow-up reminder if user doesn't reply
-            NotificationService.shared.scheduleChatReminder(friendName: senderName)
+
+        // Show local notification only when the user is NOT actively viewing that conversation
+        if currentChatFriendId != senderId {
+            Task { @MainActor in
+                NotificationService.shared.showLocalNotification(
+                    title: "💬 \(senderName)",
+                    body: message
+                )
+                // Schedule a follow-up reminder if user doesn't reply
+                NotificationService.shared.scheduleChatReminder(friendName: senderName)
+            }
         }
         
         // Post notification for in-app banner

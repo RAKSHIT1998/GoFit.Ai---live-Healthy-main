@@ -124,23 +124,33 @@ router.get('/stats', authenticateToken, async (req, res) => {
 });
 
 /**
- * Get friends leaderboard
- * GET /api/gamification/leaderboard
+ * Get leaderboard (friends or global)
+ * GET /api/gamification/leaderboard?scope=daily|monthly&type=friends|global
  */
 router.get('/leaderboard', authenticateToken, async (req, res) => {
   try {
-    const { limit = 50, offset = 0, scope = 'daily' } = req.query;
+    const { limit = 50, offset = 0, scope = 'daily', type = 'friends' } = req.query;
     const userId = req.user._id;
     const safeLimit = parseInt(limit, 10) || 50;
     const safeOffset = parseInt(offset, 10) || 0;
     const safeScope = scope === 'monthly' ? 'monthly' : 'daily';
-    const scopedUserIds = await getFriendScopedUserIds(userId);
+
+    // For friends board: include only the user + accepted friends
+    // For global board: include everyone
+    let userIdFilter;
+    if (type === 'global') {
+      userIdFilter = null; // No userId filter — all users
+    } else {
+      const scopedUserIds = await getFriendScopedUserIds(userId);
+      userIdFilter = scopedUserIds.map(id => new mongoose.Types.ObjectId(id));
+    }
+
     const startDate = getScopeStartDate(safeScope);
 
     const leaderboard = await GamificationPoints.aggregate([
       {
         $match: {
-          userId: { $in: scopedUserIds.map(id => new mongoose.Types.ObjectId(id)) },
+          ...(userIdFilter ? { userId: { $in: userIdFilter } } : {}),
           createdAt: { $gte: startDate }
         }
       },
@@ -184,7 +194,8 @@ router.get('/leaderboard', authenticateToken, async (req, res) => {
         is_current_user: row.isCurrentUser
       })),
       count: leaderboard.length,
-      scope: safeScope
+      scope: safeScope,
+      type: type === 'global' ? 'global' : 'friends'
     });
   } catch (error) {
     console.error('Get leaderboard error:', error);

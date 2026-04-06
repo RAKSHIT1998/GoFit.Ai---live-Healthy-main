@@ -24,6 +24,7 @@ struct SocialHubView: View {
     @State private var showPaywall = false
     @State private var searchText = ""
     @State private var leaderboardMode: LeaderboardMode = .daily
+    @State private var leaderboardBoardType: LeaderboardBoardType = .friends
 
     /// High-level tabs for social features.
     ///
@@ -49,6 +50,20 @@ struct SocialHubView: View {
         case monthly = "Monthly"
 
         var id: String { rawValue }
+    }
+
+    /// Toggle between friends-only and global leaderboard.
+    enum LeaderboardBoardType: String, CaseIterable, Identifiable {
+        case friends = "Friends"
+        case global = "Global"
+
+        var id: String { rawValue }
+        var icon: String {
+            switch self {
+            case .friends: return "person.2.fill"
+            case .global: return "globe"
+            }
+        }
     }
 
     var body: some View {
@@ -276,11 +291,14 @@ struct SocialHubView: View {
     private var rankingsSection: some View {
         ScrollView {
             VStack(spacing: Design.Spacing.lg) {
+                // Header
                 HStack {
                     VStack(alignment: .leading, spacing: 4) {
-                        Text("Friend XP Rankings")
+                        Text(leaderboardBoardType == .friends ? "Friend XP Rankings" : "Global XP Rankings")
                             .font(Design.Typography.headline)
-                        Text("See which friends are leading in XP today or this month")
+                        Text(leaderboardBoardType == .friends
+                             ? "See which friends are leading in XP today or this month"
+                             : "See where you stand among all GoFit users")
                             .font(Design.Typography.caption)
                             .foregroundColor(.secondary)
                     }
@@ -288,6 +306,16 @@ struct SocialHubView: View {
                 }
                 .padding(.horizontal, Design.Spacing.md)
 
+                // Board Type Picker (Friends / Global)
+                Picker("Board", selection: $leaderboardBoardType) {
+                    ForEach(LeaderboardBoardType.allCases) { boardType in
+                        Label(boardType.rawValue, systemImage: boardType.icon).tag(boardType)
+                    }
+                }
+                .pickerStyle(.segmented)
+                .padding(.horizontal, Design.Spacing.md)
+
+                // Period Picker (Daily / Monthly)
                 Picker("Leaderboard Mode", selection: $leaderboardMode) {
                     ForEach(LeaderboardMode.allCases) { mode in
                         Text(mode.rawValue).tag(mode)
@@ -296,13 +324,18 @@ struct SocialHubView: View {
                 .pickerStyle(.segmented)
                 .padding(.horizontal, Design.Spacing.md)
 
-                Text("Top friends by \(leaderboardMode.rawValue) XP")
+                Text("Top \(leaderboardBoardType == .friends ? "friends" : "users") by \(leaderboardMode.rawValue) XP")
                     .font(Design.Typography.caption)
                     .foregroundColor(.secondary)
                     .padding(.horizontal, Design.Spacing.md)
 
-                FriendsLeaderboardCard(period: leaderboardMode.rawValue)
-                    .padding(.horizontal, Design.Spacing.md)
+                if leaderboardBoardType == .friends {
+                    FriendsLeaderboardCard(period: leaderboardMode.rawValue)
+                        .padding(.horizontal, Design.Spacing.md)
+                } else {
+                    GlobalLeaderboardCard(period: leaderboardMode.rawValue)
+                        .padding(.horizontal, Design.Spacing.md)
+                }
             }
             .padding(.vertical, Design.Spacing.md)
         }

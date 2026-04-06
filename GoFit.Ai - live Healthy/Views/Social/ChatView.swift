@@ -235,7 +235,13 @@ struct ChatView: View {
         .navigationTitle(friend.fullName ?? friend.username)
         .navigationBarTitleDisplayMode(.inline)
         .onAppear {
+            WebSocketService.shared.currentChatFriendId = friend.id
             loadMessages()
+        }
+        .onDisappear {
+            if WebSocketService.shared.currentChatFriendId == friend.id {
+                WebSocketService.shared.currentChatFriendId = nil
+            }
         }
         .onChange(of: webSocketService.latestMessage) { _, newValue in
             guard let message = newValue, message.senderId == friend.id else { return }
