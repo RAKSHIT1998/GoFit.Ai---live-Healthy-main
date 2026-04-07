@@ -463,12 +463,17 @@ case "activity:shared", "activity:update":
 
         self.latestMessage = notification
 
-        // Show local notification only when the user is NOT actively viewing that conversation
-        if currentChatFriendId != senderId {
+        let mutedFriendIds = Set(UserDefaults.standard.stringArray(forKey: "mutedConversationFriendIds") ?? [])
+        let isMutedConversation = mutedFriendIds.contains(senderId)
+
+        // Show local notification only when:
+        // 1) user is NOT actively viewing that conversation, and
+        // 2) conversation is not muted
+        if currentChatFriendId != senderId && !isMutedConversation {
             Task { @MainActor in
-                NotificationService.shared.showLocalNotification(
-                    title: "💬 \(senderName)",
-                    body: message
+                NotificationService.shared.showMessageNotification(
+                    senderName: senderName,
+                    messagePreview: message
                 )
                 // Schedule a follow-up reminder if user doesn't reply
                 NotificationService.shared.scheduleChatReminder(friendName: senderName)

@@ -12,7 +12,9 @@ struct ConversationsView: View {
     @State private var showUnreadOnly = false
 
     private var filteredConversations: [ConversationSummary] {
-        var result = conversations
+        var result = conversations.sorted {
+            ($0.lastMessageTime ?? .distantPast) > ($1.lastMessageTime ?? .distantPast)
+        }
         if showUnreadOnly {
             result = result.filter { $0.unreadCount > 0 }
         }

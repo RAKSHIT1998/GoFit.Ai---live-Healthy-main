@@ -3,7 +3,7 @@ import UserNotifications
 import UIKit
 
 @MainActor
-class NotificationService: ObservableObject {
+class NotificationService: NSObject, ObservableObject, UNUserNotificationCenterDelegate {
     static let shared = NotificationService()
     
     @Published var notificationsEnabled: Bool = true  // DEFAULT: ON
@@ -11,7 +11,9 @@ class NotificationService: ObservableObject {
     @Published var waterRemindersEnabled: Bool = true
     @Published var workoutRemindersEnabled: Bool = true
     
-    private init() {
+    private override init() {
+        super.init()
+        UNUserNotificationCenter.current().delegate = self
         loadSettings()
         // Auto-request authorization on first launch (silent request)
         checkAuthorizationStatusAndSchedule()
@@ -365,6 +367,35 @@ class NotificationService: ObservableObject {
                 print("✅ Local notification shown: \(title)")
             }
         }
+    }
+
+    /// Chat-specific local notification with preview text and default ring sound
+    func showMessageNotification(senderName: String, messagePreview: String) {
+        let preview = messagePreview.trimmingCharacters(in: .whitespacesAndNewlines)
+        let body = preview.isEmpty ? "Sent you a new message" : preview
+        showLocalNotification(
+            title: "💬 New message from \(senderName)",
+            body: body,
+            sound: .default
+        )
+    }
+
+    // MARK: - UNUserNotificationCenterDelegate
+
+    nonisolated func userNotificationCenter(
+        _ center: UNUserNotificationCenter,
+        willPresent notification: UNNotification,
+        withCompletionHandler completionHandler: @escaping (UNNotificationPresentationOptions) -> Void
+    ) {
+        completionHandler([.banner, .list, .sound, .badge])
+    }
+
+    nonisolated func userNotificationCenter(
+        _ center: UNUserNotificationCenter,
+        didReceive response: UNNotificationResponse,
+        withCompletionHandler completionHandler: @escaping () -> Void
+    ) {
+        completionHandler()
     }
     
     // MARK: - Social Engagement Notifications (Retention & Virality)

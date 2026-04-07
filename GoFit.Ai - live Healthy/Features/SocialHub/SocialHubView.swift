@@ -262,30 +262,7 @@ struct SocialHubView: View {
 
     // MARK: - Friends Section
     private var friendsChatsSection: some View {
-        ScrollView {
-            VStack(spacing: Design.Spacing.md) {
-                if friendsService.friends.isEmpty {
-                    emptyFriendsState
-                } else {
-                    VStack(alignment: .leading, spacing: 12) {
-                        Text("Friends & Chats")
-                            .font(Design.Typography.headline)
-                            .padding(.horizontal, Design.Spacing.md)
-                        ForEach(friendsService.friends, id: \.id) { friend in
-                            NavigationLink(destination: ChatView(friend: friend, currentUserId: auth.userId ?? "")) {
-                                FriendCardView(friend: friend, currentUserId: auth.userId ?? "")
-                                    .padding(.horizontal, Design.Spacing.md)
-                            }
-                        }
-                    }
-                }
-            }
-            .padding(.vertical, Design.Spacing.md)
-        }
-        .refreshable {
-            friendsService.fetchFriends { _ in }
-            friendsService.fetchFriendRequests { _ in }
-        }
+        ConversationsView()
     }
 
     private var rankingsSection: some View {
