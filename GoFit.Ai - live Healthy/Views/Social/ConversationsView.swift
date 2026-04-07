@@ -10,10 +10,22 @@ struct ConversationsView: View {
     @State private var isLoading = true
     @State private var searchText = ""
     @State private var showUnreadOnly = false
+    @State private var pinnedFriendIds: Set<String> = []
+    @State private var mutedFriendIds: Set<String> = []
+    @State private var isFetchingConversations = false
+    @State private var refreshWorkItem: DispatchWorkItem?
+
+    private let pinnedStorageKey = "pinnedConversationFriendIds"
+    private let mutedStorageKey = "mutedConversationFriendIds"
 
     private var filteredConversations: [ConversationSummary] {
         var result = conversations.sorted {
-            ($0.lastMessageTime ?? .distantPast) > ($1.lastMessageTime ?? .distantPast)
+            let lhsPinned = pinnedFriendIds.contains($0.friendId)
+            let rhsPinned = pinnedFriendIds.contains($1.friendId)
+            if lhsPinned != rhsPinned {
+                return lhsPinned && !rhsPinned
+            }
+            return ($0.lastMessageTime ?? .distantPast) > ($1.lastMessageTime ?? .distantPast)
         }
         if showUnreadOnly {
             result = result.filter { $0.unreadCount > 0 }
@@ -221,17 +233,25 @@ struct ConversationsView: View {
                                 removal: .move(edge: .leading).combined(with: .opacity)
                             ))
                             .swipeActions(edge: .trailing, allowsFullSwipe: false) {
-                                Button(role: .destructive) {
-                                    // Archive placeholder
-                                } label: {
-                                    Label("Archive", systemImage: "archivebox.fill")
-                                }
                                 Button {
-                                    // Mute placeholder
+                                    togglePin(friendId: convo.friendId)
                                 } label: {
-                                    Label("Mute", systemImage: "bell.slash.fill")
+                                    Label(
+                                        pinnedFriendIds.contains(convo.friendId) ? "Unpin" : "Pin",
+                                        systemImage: pinnedFriendIds.contains(convo.friendId) ? "pin.slash.fill" : "pin.fill"
+                                    )
                                 }
-                                .tint(.orange)
+                                .tint(.yellow)
+
+                                Button {
+                                    toggleMute(friendId: convo.friendId)
+                                } label: {
+                                    Label(
+                                        mutedFriendIds.contains(convo.friendId) ? "Unmute" : "Mute",
+                                        systemImage: mutedFriendIds.contains(convo.friendId) ? "bell.fill" : "bell.slash.fill"
+                                    )
+                                }
+                                .tint(mutedFriendIds.contains(convo.friendId) ? .green : .orange)
                             }
                             .listRowSeparator(.hidden)
                             .listRowInsets(EdgeInsets(top: 4, leading: 16, bottom: 4, trailing: 16))
@@ -245,19 +265,25 @@ struct ConversationsView: View {
             }
         }
         .onAppear {
+            loadChatPreferences()
             loadConversations()
         }
         .onChange(of: webSocketService.latestMessage) { oldMessage, newMessage in
-            loadConversations()
+            if let newMessage = newMessage {
+                upsertConversationFromIncomingMessage(newMessage)
+                scheduleBackgroundRefresh()
+            }
             _ = oldMessage
-            _ = newMessage
         }
         .onReceive(NotificationCenter.default.publisher(for: NSNotification.Name("NewMessageReceived"))) { _ in
-            loadConversations()
+            scheduleBackgroundRefresh()
         }
     }
 
     private func loadConversations() {
+        guard !isFetchingConversations else { return }
+        isFetchingConversations = true
+
         // Load from cache first for instant display
         let cached = SocialCacheManager.shared.cachedConversations
         if !cached.isEmpty && conversations.isEmpty {
@@ -268,6 +294,7 @@ struct ConversationsView: View {
         // Then refresh from network in background
         messagesService.fetchConversations { result in
             DispatchQueue.main.async {
+                self.isFetchingConversations = false
                 isLoading = false
                 if case .success(let items) = result {
                     withAnimation(.easeInOut(duration: 0.25)) {
@@ -281,9 +308,13 @@ struct ConversationsView: View {
     }
     
     private func refreshConversations() async {
+        guard !isFetchingConversations else { return }
+        isFetchingConversations = true
+
         await withCheckedContinuation { continuation in
             messagesService.fetchConversations { result in
                 DispatchQueue.main.async {
+                    self.isFetchingConversations = false
                     if case .success(let items) = result {
                         withAnimation(.easeInOut(duration: 0.25)) {
                             conversations = items
@@ -297,6 +328,8 @@ struct ConversationsView: View {
 
     private func conversationRow(_ convo: ConversationSummary) -> some View {
         let isOnline = webSocketService.onlineUsers.contains(convo.friendId)
+        let isPinned = pinnedFriendIds.contains(convo.friendId)
+        let isMuted = mutedFriendIds.contains(convo.friendId)
         
         return HStack(spacing: 12) {
             // Avatar with online indicator
@@ -334,6 +367,18 @@ struct ConversationsView: View {
                         .font(Design.Typography.subheadline)
                         .fontWeight(convo.unreadCount > 0 ? .bold : .regular)
                         .foregroundColor(.primary)
+
+                    if isPinned {
+                        Image(systemName: "pin.fill")
+                            .font(.caption2)
+                            .foregroundColor(.yellow)
+                    }
+
+                    if isMuted {
+                        Image(systemName: "bell.slash.fill")
+                            .font(.caption2)
+                            .foregroundColor(.secondary)
+                    }
                     
                     Spacer()
                     
@@ -407,5 +452,75 @@ struct ConversationsView: View {
         let formatter = DateFormatter()
         formatter.dateStyle = .short
         return formatter.string(from: date)
+    }
+
+    private func loadChatPreferences() {
+        let pinnedArray = UserDefaults.standard.stringArray(forKey: pinnedStorageKey) ?? []
+        let mutedArray = UserDefaults.standard.stringArray(forKey: mutedStorageKey) ?? []
+        pinnedFriendIds = Set(pinnedArray)
+        mutedFriendIds = Set(mutedArray)
+    }
+
+    private func saveChatPreferences() {
+        UserDefaults.standard.set(Array(pinnedFriendIds), forKey: pinnedStorageKey)
+        UserDefaults.standard.set(Array(mutedFriendIds), forKey: mutedStorageKey)
+    }
+
+    private func togglePin(friendId: String) {
+        if pinnedFriendIds.contains(friendId) {
+            pinnedFriendIds.remove(friendId)
+        } else {
+            pinnedFriendIds.insert(friendId)
+        }
+        saveChatPreferences()
+        HapticManager.shared.lightTap()
+    }
+
+    private func toggleMute(friendId: String) {
+        if mutedFriendIds.contains(friendId) {
+            mutedFriendIds.remove(friendId)
+        } else {
+            mutedFriendIds.insert(friendId)
+        }
+        saveChatPreferences()
+        HapticManager.shared.lightTap()
+    }
+
+    private func upsertConversationFromIncomingMessage(_ message: MessageNotification) {
+        if let existingIndex = conversations.firstIndex(where: { $0.friendId == message.senderId }) {
+            let existing = conversations[existingIndex]
+            let updated = ConversationSummary(
+                friendId: existing.friendId,
+                friendName: existing.friendName,
+                friendImage: message.senderImage ?? existing.friendImage,
+                lastMessage: message.message,
+                lastMessageTime: message.timestamp,
+                unreadCount: existing.unreadCount + 1,
+                conversationId: message.conversationId
+            )
+            conversations[existingIndex] = updated
+        } else {
+            let newConversation = ConversationSummary(
+                friendId: message.senderId,
+                friendName: message.senderName,
+                friendImage: message.senderImage,
+                lastMessage: message.message,
+                lastMessageTime: message.timestamp,
+                unreadCount: 1,
+                conversationId: message.conversationId
+            )
+            conversations.append(newConversation)
+        }
+    }
+
+    private func scheduleBackgroundRefresh() {
+        refreshWorkItem?.cancel()
+
+        let workItem = DispatchWorkItem {
+            loadConversations()
+        }
+        refreshWorkItem = workItem
+
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.8, execute: workItem)
     }
 }

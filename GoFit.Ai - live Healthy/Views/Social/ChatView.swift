@@ -256,9 +256,7 @@ struct ChatView: View {
                 isRead: false,
                 createdAt: message.timestamp
             )
-            withAnimation(.spring(response: 0.3, dampingFraction: 0.7)) {
-                messages.append(item)
-            }
+            appendMessageIfNeeded(item)
             HapticManager.shared.lightTap()
         }
     }
@@ -348,9 +346,9 @@ struct ChatView: View {
                         .foregroundColor(isMine ? .secondary : .secondary)
                     
                     if isMine {
-                        Image(systemName: msg.isRead ? "checkmark.circle.fill" : "checkmark.circle")
+                        Image(systemName: msg.isRead ? "checkmark.checkmark" : "checkmark")
                             .font(.system(size: 10))
-                            .foregroundColor(.secondary)
+                            .foregroundColor(msg.isRead ? .blue : .secondary)
                     }
                 }
 
@@ -469,9 +467,7 @@ struct ChatView: View {
             DispatchQueue.main.async {
                 isSending = false
                 if case .success(let msg) = result {
-                    withAnimation(.spring(response: 0.3, dampingFraction: 0.7)) {
-                        messages.append(msg)
-                    }
+                    appendMessageIfNeeded(msg)
                     HapticManager.shared.lightTap()
                 } else {
                     // Put text back if send failed
@@ -511,12 +507,17 @@ struct ChatView: View {
             DispatchQueue.main.async {
                 isSending = false
                 if case .success(let msg) = result {
-                    withAnimation(.spring(response: 0.3, dampingFraction: 0.7)) {
-                        messages.append(msg)
-                    }
+                    appendMessageIfNeeded(msg)
                     HapticManager.shared.success()
                 }
             }
+        }
+    }
+
+    private func appendMessageIfNeeded(_ msg: MessageItem) {
+        guard !messages.contains(where: { $0.id == msg.id }) else { return }
+        withAnimation(.spring(response: 0.3, dampingFraction: 0.7)) {
+            messages.append(msg)
         }
     }
 
