@@ -148,12 +148,14 @@ class StreakManager: ObservableObject {
     func logMeal() {
         awardPoints(PointValues.mealLogged)
         checkDailyGoal(.logMeals)
+        RetentionManager.shared.recordMeaningfulAction(.mealLogged)
         HapticManager.shared.success()
     }
     
     func completeWorkout() {
         awardPoints(PointValues.workoutCompleted)
         checkDailyGoal(.workout)
+        RetentionManager.shared.recordMeaningfulAction(.workoutCompleted)
         HapticManager.shared.success()
     }
     
@@ -161,6 +163,7 @@ class StreakManager: ObservableObject {
         awardPoints(PointValues.waterGoalMet)
         checkDailyGoal(.water)
         unlockAchievement(.hydrationHero)
+        RetentionManager.shared.recordMeaningfulAction(.waterGoalMet)
     }
     
     func meetCalorieGoal() {

@@ -7,6 +7,7 @@ struct HomeDashboardView: View {
     @StateObject private var healthKit = HealthKitService.shared
     @ObservedObject private var streakManager = StreakManager.shared
     @ObservedObject private var fastingModel = FastingTimerModel.shared
+    @ObservedObject private var retentionManager = RetentionManager.shared
     @State private var showingSleepTracker = false
     @State private var showingRunTracker = false
 
@@ -57,6 +58,15 @@ struct HomeDashboardView: View {
                         // ━━━ SECTION 1: Welcome & Core Stats ━━━
                         enhancedWelcomeHeader
                             .delayedAppear(0)
+
+                        if retentionManager.isComebackMode,
+                           let comebackPlan = retentionManager.comebackPlan {
+                            comebackCard(plan: comebackPlan)
+                                .delayedAppear(0.01)
+                        }
+
+                        retentionActionCard
+                            .delayedAppear(0.02)
                         
                         mainStatsCard
                             .delayedAppear(0.04)
@@ -372,6 +382,123 @@ struct HomeDashboardView: View {
             ]
             let dayIndex = Calendar.current.component(.day, from: Date())
             return messages[dayIndex % messages.count]
+        }
+    }
+
+    // MARK: - Retention Next Action Card
+    private var retentionActionCard: some View {
+        VStack(alignment: .leading, spacing: 10) {
+            HStack {
+                Label("Day \(retentionManager.journeyDay) of 7", systemImage: "bolt.heart.fill")
+                    .font(.system(size: 13, weight: .semibold, design: .rounded))
+                    .foregroundColor(Design.Colors.primary)
+
+                Spacer()
+
+                Text("\(Int(retentionManager.completionScore * 100))% done")
+                    .font(.system(size: 12, weight: .semibold, design: .rounded))
+                    .foregroundColor(.secondary)
+            }
+
+            Text(retentionManager.nextAction.title)
+                .font(.system(size: 17, weight: .bold, design: .rounded))
+                .foregroundColor(.primary)
+
+            Text(retentionManager.nextAction.subtitle)
+                .font(.system(size: 13, weight: .medium, design: .rounded))
+                .foregroundColor(.secondary)
+
+            ProgressView(value: retentionManager.completionScore)
+                .tint(Design.Colors.primary)
+
+            Button {
+                HapticManager.shared.lightTap()
+                performRetentionPrimaryAction()
+            } label: {
+                Text(retentionManager.isComebackMode ? "Resume gently" : "Do this now")
+                    .font(.system(size: 13, weight: .bold, design: .rounded))
+                    .foregroundColor(.white)
+                    .frame(maxWidth: .infinity)
+                    .padding(.vertical, 10)
+                    .background(Design.Colors.primary)
+                    .cornerRadius(12)
+            }
+        }
+        .padding(14)
+        .background(
+            RoundedRectangle(cornerRadius: 16, style: .continuous)
+                .fill(Color.white.opacity(0.92))
+        )
+        .overlay(
+            RoundedRectangle(cornerRadius: 16, style: .continuous)
+                .stroke(Design.Colors.primary.opacity(0.12), lineWidth: 1)
+        )
+        .shadow(color: .black.opacity(0.04), radius: 10, y: 4)
+    }
+
+    private func comebackCard(plan: RetentionManager.ComebackPlan) -> some View {
+        VStack(alignment: .leading, spacing: 12) {
+            HStack(alignment: .top) {
+                VStack(alignment: .leading, spacing: 6) {
+                    Text(plan.title)
+                        .font(.system(size: 18, weight: .bold, design: .rounded))
+                        .foregroundColor(.white)
+
+                    Text(plan.message)
+                        .font(.system(size: 13, weight: .medium, design: .rounded))
+                        .foregroundColor(.white.opacity(0.9))
+                }
+
+                Spacer()
+
+                Button {
+                    retentionManager.dismissComebackMode()
+                } label: {
+                    Image(systemName: "xmark.circle.fill")
+                        .font(.system(size: 18))
+                        .foregroundColor(.white.opacity(0.8))
+                }
+            }
+
+            Button {
+                HapticManager.shared.lightTap()
+                performRetentionPrimaryAction(override: plan.recommendedAction)
+                retentionManager.completeComebackSession()
+            } label: {
+                Text(plan.ctaTitle)
+                    .font(.system(size: 13, weight: .bold, design: .rounded))
+                    .foregroundColor(Design.Colors.primary)
+                    .frame(maxWidth: .infinity)
+                    .padding(.vertical, 10)
+                    .background(Color.white)
+                    .cornerRadius(12)
+            }
+        }
+        .padding(16)
+        .background(
+            LinearGradient(
+                colors: [Design.Colors.primary, Design.Colors.primary.opacity(0.75)],
+                startPoint: .topLeading,
+                endPoint: .bottomTrailing
+            )
+        )
+        .cornerRadius(18)
+        .shadow(color: Design.Colors.primary.opacity(0.18), radius: 12, y: 6)
+    }
+
+    private func performRetentionPrimaryAction(override actionOverride: RetentionManager.NextAction? = nil) {
+        let action = actionOverride ?? retentionManager.nextAction
+
+        switch action {
+        case .workout:
+            showingWorkout = true
+        case .meal:
+            showingScanner = true
+        case .water:
+            showingLiquidLog = true
+        case .social:
+            showingShareProgress = true
+            RetentionManager.shared.recordMeaningfulAction(.socialInteraction)
         }
     }
 

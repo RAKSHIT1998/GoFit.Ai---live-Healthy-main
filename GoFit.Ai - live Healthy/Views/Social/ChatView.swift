@@ -543,9 +543,11 @@ struct ChatView: View {
         }
         
         typingTimer?.invalidate()
-        typingTimer = Timer.scheduledTimer(withTimeInterval: 1.5, repeats: false) { [weak self] _ in
-            self?.hasNotifiedTyping = false
-            self?.webSocketService.sendTypingIndicator(to: self?.friend.id ?? "", isTyping: false)
+        let friendId = friend.id
+        let webSocket = webSocketService
+        typingTimer = Timer.scheduledTimer(withTimeInterval: 1.5, repeats: false) { _ in
+            self.hasNotifiedTyping = false
+            webSocket.sendTypingIndicator(to: friendId, isTyping: false)
         }
     }
     

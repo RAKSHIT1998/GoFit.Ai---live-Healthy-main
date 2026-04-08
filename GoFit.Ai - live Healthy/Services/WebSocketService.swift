@@ -27,7 +27,7 @@ class WebSocketService: ObservableObject {
     /// ID of the friend whose chat is currently open; used to suppress OS notifications for that conversation
     @Published var currentChatFriendId: String? = nil
     /// Dictionary of friendId -> isTyping status
-    @Published var typingStatus: [String: Bool] = []
+    @Published var typingStatus: [String: Bool] = [:]
     /// Dictionary of messageId -> isRead status (for read receipts)
     @Published var messageReadStatus: [String: Bool] = [:]
     
@@ -437,31 +437,6 @@ case "activity:shared", "activity:update":
     private func handleLeaderboardUpdate(_ data: [String: Any]) {
         print("🏆 Leaderboard updated")
         self.leaderboardRefreshRequired = true
-    }
-
-    private func handleTypingStart(_ data: [String: Any]) {
-        guard let friendId = data["from"] as? String else { return }
-        print("⌨️ \(friendId) is typing...")
-        typingStatus[friendId] = true
-        
-        // Auto-stop after 3 seconds if no update received
-        DispatchQueue.main.asyncAfter(deadline: .now() + 3.0) {
-            if self.typingStatus[friendId] == true {
-                self.typingStatus[friendId] = false
-            }
-        }
-    }
-
-    private func handleTypingStop(_ data: [String: Any]) {
-        guard let friendId = data["from"] as? String else { return }
-        print("✋ \(friendId) stopped typing")
-        typingStatus[friendId] = false
-    }
-
-    private func handleMessageRead(_ data: [String: Any]) {
-        guard let messageId = data["messageId"] as? String else { return }
-        print("✓✓ Message \(messageId) read")
-        messageReadStatus[messageId] = true
     }
     
     private func handleOnlineList(_ data: [String: Any]) {

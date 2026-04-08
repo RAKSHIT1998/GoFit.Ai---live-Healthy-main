@@ -44,6 +44,8 @@ struct GoFitAiApp: App {
                     
                     // Initialize services
                     _ = NotificationService.shared
+                    _ = RetentionManager.shared
+                    RetentionManager.shared.recordAppOpen()
                     
                     // Register smart notification categories & schedule
                     GoFitSmartNotifications.shared.registerCategories()
@@ -90,6 +92,7 @@ struct GoFitAiApp: App {
 
                     // Show ad every time app becomes active
                     if newPhase == .active && oldPhase != .active {
+                        RetentionManager.shared.recordAppOpen()
                         // Refresh widget with latest data
                         GoFitWidgetDataStore.shared.refresh()
                         
