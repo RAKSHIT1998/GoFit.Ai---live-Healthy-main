@@ -31,6 +31,12 @@ const messageSchema = new mongoose.Schema({
     default: false
   },
   readAt: Date,
+  isDeleted: {
+    type: Boolean,
+    default: false
+  },
+  deletedAt: Date,
+  editedAt: Date,
   createdAt: {
     type: Date,
     default: Date.now,
@@ -42,6 +48,7 @@ const messageSchema = new mongoose.Schema({
 messageSchema.index({ conversationId: 1, createdAt: -1 });
 messageSchema.index({ senderId: 1, createdAt: -1 });
 messageSchema.index({ recipientId: 1, isRead: 1 });
+messageSchema.index({ conversationId: 1, isDeleted: 1 });
 
 const Message = mongoose.model('Message', messageSchema);
 

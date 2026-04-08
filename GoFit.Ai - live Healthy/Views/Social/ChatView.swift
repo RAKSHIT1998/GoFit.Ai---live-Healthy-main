@@ -16,6 +16,8 @@ struct ChatView: View {
     @State private var showReactionPicker: String? = nil
     @State private var reactions: [String: [String]] = [:]  // messageId -> [emoji]
     @State private var isTyping = false
+    @State private var typingTimer: Timer?
+    @State private var hasNotifiedTyping = false
     @FocusState private var isTextFieldFocused: Bool
 
     var body: some View {
@@ -189,6 +191,7 @@ struct ChatView: View {
                                 .fill(Color.secondary)
                                 .frame(width: 4, height: 4)
                                 .opacity(0.6)
+                                .animation(.easeInOut(duration: 0.5).repeatForever(), value: isTyping)
                         }
                     }
                 }
@@ -216,6 +219,9 @@ struct ChatView: View {
                     .textFieldStyle(.roundedBorder)
                     .lineLimit(1...4)
                     .focused($isTextFieldFocused)
+                    .onChange(of: messageText) { _, newValue in
+                        handleTypingInput(newValue)
+                    }
 
                 Button {
                     sendMessage()
@@ -237,11 +243,18 @@ struct ChatView: View {
         .onAppear {
             WebSocketService.shared.currentChatFriendId = friend.id
             loadMessages()
+            markConversationAsRead()
+            observeTypingStatus()
         }
         .onDisappear {
             if WebSocketService.shared.currentChatFriendId == friend.id {
                 WebSocketService.shared.currentChatFriendId = nil
+                webSocketService.sendTypingIndicator(to: friend.id, isTyping: false)
             }
+            typingTimer?.invalidate()
+        }
+        .onChange(of: webSocketService.typingStatus) { _, newStatus in
+            isTyping = newStatus[friend.id] ?? false
         }
         .onChange(of: webSocketService.latestMessage) { _, newValue in
             guard let message = newValue, message.senderId == friend.id else { return }
@@ -520,6 +533,32 @@ struct ChatView: View {
             messages.append(msg)
         }
     }
+    
+    private func handleTypingInput(_ text: String) {
+        let isEmpty = text.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
+        
+        if !isEmpty && !hasNotifiedTyping {
+            hasNotifiedTyping = true
+            webSocketService.sendTypingIndicator(to: friend.id, isTyping: true)
+        }
+        
+        typingTimer?.invalidate()
+        typingTimer = Timer.scheduledTimer(withTimeInterval: 1.5, repeats: false) { [weak self] _ in
+            self?.hasNotifiedTyping = false
+            self?.webSocketService.sendTypingIndicator(to: self?.friend.id ?? "", isTyping: false)
+        }
+    }
+    
+    private func markConversationAsRead() {
+        for msg in messages where msg.senderId != currentUserId && !msg.isRead {
+            webSocketService.sendReadReceipt(for: msg.id, conversationId: msg.id)
+        }
+    }
+    
+    private func observeTypingStatus() {
+        isTyping = webSocketService.typingStatus[friend.id] ?? false
+    }
+
 
     private func formatTime(_ date: Date) -> String {
         let formatter = DateFormatter()

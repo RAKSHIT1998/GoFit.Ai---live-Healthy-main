@@ -142,6 +142,60 @@ final class MessagesService: ObservableObject {
             }
         }.resume()
     }
+
+    func deleteMessage(messageId: String, completion: @escaping (Result<String, Error>) -> Void) {
+        let endpoint = "\(baseURL)/api/messages/\(messageId)"
+        guard let url = URL(string: endpoint) else {
+            completion(.failure(NSError(domain: "Invalid URL", code: -1)))
+            return
+        }
+
+        var request = URLRequest(url: url)
+        request.httpMethod = "DELETE"
+        if let token = AuthService.shared.readToken()?.accessToken, !token.isEmpty {
+            request.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
+        }
+
+        URLSession.shared.dataTask(with: request) { [weak self] data, response, error in
+            DispatchQueue.main.async {
+                if let error = error {
+                    self?.error = error.localizedDescription
+                    completion(.failure(error))
+                    return
+                }
+                completion(.success("Message deleted"))
+            }
+        }.resume()
+    }
+
+    func editMessage(messageId: String, newText: String, completion: @escaping (Result<String, Error>) -> Void) {
+        let endpoint = "\(baseURL)/api/messages/\(messageId)"
+        guard let url = URL(string: endpoint) else {
+            completion(.failure(NSError(domain: "Invalid URL", code: -1)))
+            return
+        }
+
+        var request = URLRequest(url: url)
+        request.httpMethod = "PATCH"
+        request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+        if let token = AuthService.shared.readToken()?.accessToken, !token.isEmpty {
+            request.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
+        }
+
+        let payload: [String: Any] = ["message": newText]
+        request.httpBody = try? JSONSerialization.data(withJSONObject: payload)
+
+        URLSession.shared.dataTask(with: request) { [weak self] data, response, error in
+            DispatchQueue.main.async {
+                if let error = error {
+                    self?.error = error.localizedDescription
+                    completion(.failure(error))
+                    return
+                }
+                completion(.success("Message updated"))
+            }
+        }.resume()
+    }
 }
 
 struct MessageSendResponse: Codable {

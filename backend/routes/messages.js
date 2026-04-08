@@ -132,7 +132,8 @@ router.get('/:friendId', authenticateToken, async (req, res) => {
       {
         conversationId,
         recipientId: userId,
-        isRead: false
+        isRead: false,
+        isDeleted: false
       },
       {
         $set: {
@@ -148,9 +149,11 @@ router.get('/:friendId', authenticateToken, async (req, res) => {
         senderId: msg.senderId._id.toString(),
         senderName: msg.senderId.name,
         senderImage: msg.senderId.profilePictureURL || null,
-        message: msg.message,
+        message: msg.isDeleted ? '[deleted]' : msg.message,
         messageType: msg.messageType,
         isRead: msg.isRead,
+        isDeleted: msg.isDeleted,
+        editedAt: msg.editedAt,
         createdAt: msg.createdAt
       })),
       count: messages.length
@@ -291,6 +294,99 @@ router.post('/:friendId/motivate', authenticateToken, async (req, res) => {
   } catch (error) {
     logger.error(`❌ Error sending motivational message: ${error.message}`);
     res.status(500).json({ error: 'Failed to send motivational message' });
+  }
+});
+
+/**
+ * Delete a message (soft delete)
+ * DELETE /api/messages/:messageId
+ */
+router.delete('/:messageId', authenticateToken, async (req, res) => {
+  const userId = req.user._id.toString();
+  const { messageId } = req.params;
+
+  try {
+    const message = await Message.findById(messageId);
+    if (!message) {
+      return res.status(404).json({ error: 'Message not found' });
+    }
+
+    // Only sender can delete their own message
+    if (message.senderId.toString() !== userId) {
+      return res.status(403).json({ error: 'Cannot delete other user\'s messages' });
+    }
+
+    // Soft delete - mark as deleted instead of removing
+    message.isDeleted = true;
+    message.deletedAt = new Date();
+    await message.save();
+
+    logger.log(`🗑️ Message ${messageId} deleted by ${userId}`);
+
+    // Emit WebSocket notification
+    wsService.emitMessage(message.recipientId.toString(), {
+      messageId: messageId,
+      isDeleted: true,
+      timestamp: new Date()
+    });
+
+    res.status(200).json({ message: 'Message deleted', data: message });
+  } catch (error) {
+    logger.error(`❌ Error deleting message: ${error.message}`);
+    res.status(500).json({ error: 'Failed to delete message' });
+  }
+});
+
+/**
+ * Edit a message
+ * PATCH /api/messages/:messageId
+ */
+router.patch('/:messageId', authenticateToken, async (req, res) => {
+  const userId = req.user._id.toString();
+  const { messageId } = req.params;
+  const { message: newMessage } = req.body;
+
+  try {
+    if (!newMessage || newMessage.trim().length === 0) {
+      return res.status(400).json({ error: 'Message cannot be empty' });
+    }
+
+    const message = await Message.findById(messageId);
+    if (!message) {
+      return res.status(404).json({ error: 'Message not found' });
+    }
+
+    // Only sender can edit their own message
+    if (message.senderId.toString() !== userId) {
+      return res.status(403).json({ error: 'Cannot edit other user\'s messages' });
+    }
+
+    const oldMessage = message.message;
+    message.message = newMessage.trim();
+    message.editedAt = new Date();
+    await message.save();
+
+    logger.log(`✏️ Message ${messageId} edited by ${userId}`);
+
+    // Emit WebSocket notification
+    wsService.emitMessage(message.recipientId.toString(), {
+      messageId: messageId,
+      message: newMessage.trim(),
+      editedAt: message.editedAt,
+      timestamp: new Date()
+    });
+
+    res.status(200).json({ 
+      message: 'Message edited',
+      data: {
+        id: message._id.toString(),
+        message: message.message,
+        editedAt: message.editedAt
+      }
+    });
+  } catch (error) {
+    logger.error(`❌ Error editing message: ${error.message}`);
+    res.status(500).json({ error: 'Failed to edit message' });
   }
 });
 

@@ -26,6 +26,10 @@ class WebSocketService: ObservableObject {
     @Published var leaderboardRefreshRequired: Bool = false
     /// ID of the friend whose chat is currently open; used to suppress OS notifications for that conversation
     @Published var currentChatFriendId: String? = nil
+    /// Dictionary of friendId -> isTyping status
+    @Published var typingStatus: [String: Bool] = []
+    /// Dictionary of messageId -> isRead status (for read receipts)
+    @Published var messageReadStatus: [String: Bool] = [:]
     
     // MARK: - Private Properties
     private var webSocketTask: URLSessionWebSocketTask?
@@ -275,6 +279,15 @@ case "activity:shared", "activity:update":
 
             case "message:received":
                 self.handleMessageReceived(data)
+
+            case "typing:start":
+                self.handleTypingStart(data)
+
+            case "typing:stop":
+                self.handleTypingStop(data)
+
+            case "message:read":
+                self.handleMessageRead(data)
                 
             default:
                 print("⚠️ WebSocket: Unknown event - \(event)")
@@ -425,6 +438,31 @@ case "activity:shared", "activity:update":
         print("🏆 Leaderboard updated")
         self.leaderboardRefreshRequired = true
     }
+
+    private func handleTypingStart(_ data: [String: Any]) {
+        guard let friendId = data["from"] as? String else { return }
+        print("⌨️ \(friendId) is typing...")
+        typingStatus[friendId] = true
+        
+        // Auto-stop after 3 seconds if no update received
+        DispatchQueue.main.asyncAfter(deadline: .now() + 3.0) {
+            if self.typingStatus[friendId] == true {
+                self.typingStatus[friendId] = false
+            }
+        }
+    }
+
+    private func handleTypingStop(_ data: [String: Any]) {
+        guard let friendId = data["from"] as? String else { return }
+        print("✋ \(friendId) stopped typing")
+        typingStatus[friendId] = false
+    }
+
+    private func handleMessageRead(_ data: [String: Any]) {
+        guard let messageId = data["messageId"] as? String else { return }
+        print("✓✓ Message \(messageId) read")
+        messageReadStatus[messageId] = true
+    }
     
     private func handleOnlineList(_ data: [String: Any]) {
         if let userIds = data["users"] as? [String] {
@@ -558,6 +596,41 @@ case "activity:shared", "activity:update":
             "recipientId": userId,
             "isTyping": isTyping
         ])
+    }
+
+    /// Send read receipt for a message
+    func sendReadReceipt(for messageId: String, conversationId: String) {
+        sendEvent("message:markAsRead", data: [
+            "messageId": messageId,
+            "conversationId": conversationId
+        ])
+    }
+    
+    // MARK: - Typing & Read Receipt Handlers
+    
+    private func handleTypingStart(_ data: [String: Any]) {
+        guard let friendId = data["from"] as? String else { return }
+        print("⌨️ \(friendId) is typing...")
+        typingStatus[friendId] = true
+        
+        // Auto-stop after 3 seconds if no update received
+        DispatchQueue.main.asyncAfter(deadline: .now() + 3.0) {
+            if self.typingStatus[friendId] == true {
+                self.typingStatus[friendId] = false
+            }
+        }
+    }
+
+    private func handleTypingStop(_ data: [String: Any]) {
+        guard let friendId = data["from"] as? String else { return }
+        print("✋ \(friendId) stopped typing")
+        typingStatus[friendId] = false
+    }
+
+    private func handleMessageRead(_ data: [String: Any]) {
+        guard let messageId = data["messageId"] as? String else { return }
+        print("✓✓ Message \(messageId) read")
+        messageReadStatus[messageId] = true
     }
     
     private func sendEvent(_ event: String, data: [String: Any]) {
