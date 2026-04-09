@@ -12,6 +12,7 @@ struct AnalyticsDashboardView: View {
     @State private var isLoading = false
     @State private var errorMessage: String?
     @State private var period: String = "weekly"
+    @ObservedObject private var retentionManager = RetentionManager.shared
     
     var body: some View {
         NavigationStack {
@@ -21,6 +22,8 @@ struct AnalyticsDashboardView: View {
                         .font(.largeTitle)
                         .fontWeight(.bold)
                         .padding(.top)
+
+                    retentionOverviewSection
                     
                     if isLoading {
                         ProgressView("Loading analytics...")
@@ -93,6 +96,83 @@ struct AnalyticsDashboardView: View {
             errorMessage = error.localizedDescription
         }
         isLoading = false
+    }
+
+    private var retentionOverviewSection: some View {
+        let insights = retentionManager.insights
+
+        return VStack(alignment: .leading, spacing: 16) {
+            Text("Retention Overview")
+                .font(.title3)
+                .fontWeight(.bold)
+
+            HStack(spacing: 12) {
+                retentionMetricCard(title: "D1 Activation", value: insights.activatedWithinOneDay ? "Yes" : "No", subtitle: insights.isActivated ? "First meaningful action recorded" : "Not activated yet", color: .blue)
+                retentionMetricCard(title: "7-Day Active", value: "\(insights.activeDaysLast7)/7", subtitle: "Weekly consistency \(insights.weeklyConsistencyScore)%", color: .green)
+            }
+
+            HStack(spacing: 12) {
+                retentionMetricCard(title: "30-Day Active", value: "\(insights.activeDaysLast30)/30", subtitle: "Habit depth", color: .orange)
+                retentionMetricCard(title: "Comebacks", value: "\(insights.comebackCount)", subtitle: "Successful reactivations", color: .purple)
+            }
+
+            VStack(alignment: .leading, spacing: 10) {
+                Text("Milestones")
+                    .font(.headline)
+
+                ForEach(insights.milestoneStatus) { milestone in
+                    HStack(spacing: 10) {
+                        Image(systemName: milestone.isReached ? "checkmark.circle.fill" : "circle")
+                            .foregroundColor(milestone.isReached ? .green : .secondary)
+                        Text(milestone.title)
+                            .foregroundColor(.primary)
+                        Spacer()
+                    }
+                }
+            }
+
+            HStack {
+                Label("Best open hour: \(formattedHour(insights.bestOpenHour))", systemImage: "clock.fill")
+                    .font(.subheadline)
+                    .foregroundColor(.secondary)
+                Spacer()
+                Label("Installed \(insights.daysSinceInstall)d ago", systemImage: "calendar")
+                    .font(.subheadline)
+                    .foregroundColor(.secondary)
+            }
+        }
+        .padding()
+        .background(Color.gray.opacity(0.12))
+        .cornerRadius(16)
+    }
+
+    private func retentionMetricCard(title: String, value: String, subtitle: String, color: Color) -> some View {
+        VStack(alignment: .leading, spacing: 8) {
+            Text(title)
+                .font(.caption)
+                .foregroundColor(.secondary)
+            Text(value)
+                .font(.title2)
+                .fontWeight(.bold)
+                .foregroundColor(color)
+            Text(subtitle)
+                .font(.caption2)
+                .foregroundColor(.secondary)
+                .fixedSize(horizontal: false, vertical: true)
+        }
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .padding()
+        .background(Color.white.opacity(0.7))
+        .cornerRadius(14)
+    }
+
+    private func formattedHour(_ hour: Int) -> String {
+        let normalizedHour = max(0, min(23, hour))
+        let formatter = DateFormatter()
+        formatter.dateFormat = "h a"
+        let calendar = Calendar.current
+        let date = calendar.date(from: DateComponents(hour: normalizedHour)) ?? Date()
+        return formatter.string(from: date)
     }
 }
 

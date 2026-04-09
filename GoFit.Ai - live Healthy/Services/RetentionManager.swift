@@ -44,6 +44,25 @@ final class RetentionManager: ObservableObject {
         let recommendedAction: NextAction
     }
 
+    struct RetentionInsights {
+        let isActivated: Bool
+        let activatedWithinOneDay: Bool
+        let activeDaysLast7: Int
+        let activeDaysLast30: Int
+        let weeklyConsistencyScore: Int
+        let comebackCount: Int
+        let bestOpenHour: Int
+        let daysSinceInstall: Int
+        let daysSinceLastOpen: Int
+        let milestoneStatus: [RetentionMilestone]
+    }
+
+    struct RetentionMilestone: Identifiable {
+        let id: String
+        let title: String
+        let isReached: Bool
+    }
+
     @Published var isActivated: Bool = false
     @Published var journeyDay: Int = 1
     @Published var daysSinceLastOpen: Int = 0
@@ -51,6 +70,18 @@ final class RetentionManager: ObservableObject {
     @Published var nextAction: NextAction = .workout
     @Published var isComebackMode: Bool = false
     @Published var comebackPlan: ComebackPlan?
+    @Published var insights: RetentionInsights = RetentionInsights(
+        isActivated: false,
+        activatedWithinOneDay: false,
+        activeDaysLast7: 0,
+        activeDaysLast30: 0,
+        weeklyConsistencyScore: 0,
+        comebackCount: 0,
+        bestOpenHour: 19,
+        daysSinceInstall: 0,
+        daysSinceLastOpen: 0,
+        milestoneStatus: []
+    )
 
     private let defaults = UserDefaults.standard
 
@@ -58,6 +89,9 @@ final class RetentionManager: ObservableObject {
     private let lastOpenDateKey = "retention_last_open_date"
     private let firstMeaningfulActionDateKey = "retention_first_meaningful_action_date"
     private let openHourHistogramKey = "retention_open_hour_histogram"
+    private let activeDayHistoryKey = "retention_active_day_history"
+    private let meaningfulActionHistoryKey = "retention_meaningful_action_history"
+    private let comebackCountKey = "retention_comeback_count"
     private let doneWorkoutDayKey = "retention_done_workout_day"
     private let doneMealDayKey = "retention_done_meal_day"
     private let doneWaterDayKey = "retention_done_water_day"
@@ -78,6 +112,7 @@ final class RetentionManager: ObservableObject {
 
         defaults.set(now, forKey: lastOpenDateKey)
         updateOpenHourHistogram(for: now)
+        markDayActive(now)
         refreshState()
         rescheduleWinBackNotification()
     }
@@ -99,6 +134,12 @@ final class RetentionManager: ObservableObject {
             defaults.set(todayString, forKey: doneWaterDayKey)
         case .socialInteraction:
             break
+        }
+
+        markMeaningfulActionDay(Date())
+
+        if isComebackMode {
+            defaults.set(defaults.integer(forKey: comebackCountKey) + 1, forKey: comebackCountKey)
         }
 
         refreshState()
@@ -140,6 +181,7 @@ final class RetentionManager: ObservableObject {
 
         isComebackMode = daysSinceLastOpen >= 3
         comebackPlan = buildComebackPlan()
+        insights = buildInsights(now: now, installDate: installDate, isActivated: isActivated)
     }
 
     func dismissComebackMode() {
@@ -171,6 +213,20 @@ final class RetentionManager: ObservableObject {
             return hour
         }
         return 19
+    }
+
+    private func markDayActive(_ date: Date) {
+        let dayKey = Self.dayString(for: date)
+        var history = (defaults.dictionary(forKey: activeDayHistoryKey) as? [String: Int]) ?? [:]
+        history[dayKey, default: 0] += 1
+        defaults.set(history, forKey: activeDayHistoryKey)
+    }
+
+    private func markMeaningfulActionDay(_ date: Date) {
+        let dayKey = Self.dayString(for: date)
+        var history = (defaults.dictionary(forKey: meaningfulActionHistoryKey) as? [String: Int]) ?? [:]
+        history[dayKey, default: 0] += 1
+        defaults.set(history, forKey: meaningfulActionHistoryKey)
     }
 
     private func rescheduleWinBackNotification() {
@@ -245,6 +301,54 @@ final class RetentionManager: ObservableObject {
                 ctaTitle: "Share progress",
                 recommendedAction: .social
             )
+        }
+    }
+
+    private func buildInsights(now: Date, installDate: Date, isActivated: Bool) -> RetentionInsights {
+        let activeHistory = (defaults.dictionary(forKey: activeDayHistoryKey) as? [String: Int]) ?? [:]
+        let activeDaysLast7 = countTrackedDays(in: 7, from: now, history: activeHistory)
+        let activeDaysLast30 = countTrackedDays(in: 30, from: now, history: activeHistory)
+        let weeklyConsistencyScore = Int((Double(activeDaysLast7) / 7.0) * 100.0)
+        let bestHour = preferredOpenHour()
+        let comebackCount = defaults.integer(forKey: comebackCountKey)
+        let daysSinceInstall = Calendar.current.dateComponents([.day], from: Calendar.current.startOfDay(for: installDate), to: Calendar.current.startOfDay(for: now)).day ?? 0
+
+        let activatedWithinOneDay: Bool
+        if let firstActionDate = defaults.object(forKey: firstMeaningfulActionDateKey) as? Date {
+            let delta = Calendar.current.dateComponents([.day], from: Calendar.current.startOfDay(for: installDate), to: Calendar.current.startOfDay(for: firstActionDate)).day ?? 99
+            activatedWithinOneDay = delta <= 1
+        } else {
+            activatedWithinOneDay = false
+        }
+
+        let milestones = [
+            RetentionMilestone(id: "d1", title: "D1 Activated", isReached: activatedWithinOneDay),
+            RetentionMilestone(id: "d7", title: "7 Active Days", isReached: activeDaysLast7 >= 4),
+            RetentionMilestone(id: "d30", title: "30-Day Habit", isReached: activeDaysLast30 >= 12)
+        ]
+
+        return RetentionInsights(
+            isActivated: isActivated,
+            activatedWithinOneDay: activatedWithinOneDay,
+            activeDaysLast7: activeDaysLast7,
+            activeDaysLast30: activeDaysLast30,
+            weeklyConsistencyScore: weeklyConsistencyScore,
+            comebackCount: comebackCount,
+            bestOpenHour: bestHour,
+            daysSinceInstall: daysSinceInstall,
+            daysSinceLastOpen: daysSinceLastOpen,
+            milestoneStatus: milestones
+        )
+    }
+
+    private func countTrackedDays(in window: Int, from now: Date, history: [String: Int]) -> Int {
+        let calendar = Calendar.current
+        return (0..<window).reduce(0) { partialResult, offset in
+            guard let date = calendar.date(byAdding: .day, value: -offset, to: now) else {
+                return partialResult
+            }
+            let key = Self.dayString(for: date)
+            return partialResult + (history[key] != nil ? 1 : 0)
         }
     }
 }
