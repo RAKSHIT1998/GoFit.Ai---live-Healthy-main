@@ -4,6 +4,7 @@ import SwiftUI
 /// Compact card showing friend activity on the home dashboard.
 /// Uses existing LogSharingService (activity feed) and ViralEngagementManager (cheers).
 struct SocialActivityCard: View {
+    @Environment(\.scenePhase) private var scenePhase
     @StateObject private var logService = LogSharingService()
     @State private var recentActivity: [FriendActivity] = []
     @State private var isLoading = true
@@ -158,11 +159,13 @@ struct SocialActivityCard: View {
             SocialHubView()
         }
         .onReceive(refreshTimer) { _ in
+            guard scenePhase == .active else { return }
             Task {
                 await loadActivity()
             }
         }
         .onReceive(WebSocketService.shared.$latestActivityFeed) { newActivity in
+            guard scenePhase == .active else { return }
             guard let feed = newActivity else { return }
             let (action, emoji, color) = activityDescription(for: feed.activity.type)
             let item = FriendActivity(
@@ -183,6 +186,12 @@ struct SocialActivityCard: View {
         }
         .task {
             await loadActivity()
+        }
+        .onChange(of: scenePhase) { _, newPhase in
+            guard newPhase == .active else { return }
+            Task {
+                await loadActivity()
+            }
         }
     }
     
@@ -256,6 +265,8 @@ struct SocialActivityCard: View {
     
     // MARK: - Load Activity
     private func loadActivity() async {
+        guard scenePhase == .active else { return }
+
         // Try loading from backend
         do {
             try await logService.getActivityFeed()
@@ -277,9 +288,8 @@ struct SocialActivityCard: View {
                 isLoading = false
             }
         } catch {
-            // Fallback: show sample data to demonstrate the feature
             await MainActor.run {
-                recentActivity = sampleActivity()
+                recentActivity = []
                 isLoading = false
             }
         }
@@ -317,12 +327,4 @@ struct SocialActivityCard: View {
         return "\(Int(interval / 86400))d ago"
     }
     
-    // Sample data when backend is unavailable
-    private func sampleActivity() -> [FriendActivity] {
-        [
-            FriendActivity(id: "1", name: "Alex", action: "completed a workout", emoji: "💪", timeAgo: "12m ago", color: .green),
-            FriendActivity(id: "2", name: "Sarah", action: "logged a healthy meal", emoji: "🥗", timeAgo: "45m ago", color: .orange),
-            FriendActivity(id: "3", name: "Mike", action: "hit a 7-day streak!", emoji: "🔥", timeAgo: "2h ago", color: .red),
-        ]
-    }
 }

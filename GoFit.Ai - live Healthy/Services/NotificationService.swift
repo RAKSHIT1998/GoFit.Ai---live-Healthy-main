@@ -22,6 +22,15 @@ class NotificationService: NSObject, ObservableObject, UNUserNotificationCenterD
     }
     
     // MARK: - Authorization
+
+    private func canPresentNotifications(for status: UNAuthorizationStatus) -> Bool {
+        switch status {
+        case .authorized, .provisional, .ephemeral:
+            return true
+        default:
+            return false
+        }
+    }
     
     /// Silently request authorization on app launch if needed
     private func requestAuthorizationIfNeeded() {
@@ -62,7 +71,7 @@ class NotificationService: NSObject, ObservableObject, UNUserNotificationCenterD
     func checkAuthorizationStatus() {
         UNUserNotificationCenter.current().getNotificationSettings { [weak self] settings in
             Task { @MainActor in
-                self?.notificationsEnabled = settings.authorizationStatus == .authorized
+                self?.notificationsEnabled = self?.canPresentNotifications(for: settings.authorizationStatus) ?? false
             }
         }
     }
@@ -73,7 +82,7 @@ class NotificationService: NSObject, ObservableObject, UNUserNotificationCenterD
             Task { @MainActor in
                 guard let self = self else { return }
                 let wasAuthorized = self.notificationsEnabled
-                self.notificationsEnabled = settings.authorizationStatus == .authorized
+                self.notificationsEnabled = self.canPresentNotifications(for: settings.authorizationStatus)
                 
                 if self.notificationsEnabled && !wasAuthorized {
                     self.scheduleAllNotifications()
@@ -346,25 +355,33 @@ class NotificationService: NSObject, ObservableObject, UNUserNotificationCenterD
             print("⚠️ Notifications disabled, skipping local notification")
             return
         }
-        
-        let content = UNMutableNotificationContent()
-        content.title = title
-        content.body = body
-        content.sound = sound
-        content.badge = 1
-        
-        // Trigger immediately
-        let request = UNNotificationRequest(
-            identifier: UUID().uuidString,
-            content: content,
-            trigger: nil // nil trigger = immediate
-        )
-        
-        UNUserNotificationCenter.current().add(request) { error in
-            if let error = error {
-                print("❌ Failed to show local notification: \(error.localizedDescription)")
-            } else {
-                print("✅ Local notification shown: \(title)")
+
+        UNUserNotificationCenter.current().getNotificationSettings { [weak self] settings in
+            guard let self = self else { return }
+            guard self.canPresentNotifications(for: settings.authorizationStatus) else {
+                print("⚠️ System notification permission not available (status=\(settings.authorizationStatus.rawValue))")
+                return
+            }
+
+            let content = UNMutableNotificationContent()
+            content.title = title
+            content.body = body
+            content.sound = sound
+            content.badge = 1
+
+            // Trigger immediately
+            let request = UNNotificationRequest(
+                identifier: UUID().uuidString,
+                content: content,
+                trigger: nil // nil trigger = immediate
+            )
+
+            UNUserNotificationCenter.current().add(request) { error in
+                if let error = error {
+                    print("❌ Failed to show local notification: \(error.localizedDescription)")
+                } else {
+                    print("✅ Local notification shown: \(title)")
+                }
             }
         }
     }

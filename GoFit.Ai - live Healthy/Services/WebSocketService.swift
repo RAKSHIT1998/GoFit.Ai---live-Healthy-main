@@ -447,14 +447,16 @@ case "activity:shared", "activity:update":
     }
 
     private func handleMessageReceived(_ data: [String: Any]) {
-        guard let messageId = data["messageId"] as? String,
-              let conversationId = data["conversationId"] as? String,
-              let from = data["from"] as? [String: Any],
-              let senderId = from["id"] as? String,
-              let senderName = from["username"] as? String,
-              let message = data["message"] as? String else {
+        guard let messageId = data["messageId"] as? String else {
+            print("⚠️ Message event missing messageId: \(data)")
             return
         }
+
+        let from = data["from"] as? [String: Any]
+        let senderId = (from?["id"] as? String) ?? (data["senderId"] as? String) ?? "unknown"
+        let senderName = (from?["username"] as? String) ?? (from?["name"] as? String) ?? "Friend"
+        let message = (data["message"] as? String) ?? (data["text"] as? String) ?? "Sent you a message"
+        let conversationId = (data["conversationId"] as? String) ?? messageId
 
         let timestamp: Date
         if let ts = data["timestamp"] as? String, let parsed = ISO8601DateFormatter().date(from: ts) {
@@ -468,7 +470,7 @@ case "activity:shared", "activity:update":
             conversationId: conversationId,
             senderId: senderId,
             senderName: senderName,
-            senderImage: from["profileImageUrl"] as? String,
+            senderImage: from?["profileImageUrl"] as? String,
             message: message,
             messageType: data["messageType"] as? String ?? "text",
             timestamp: timestamp
@@ -484,13 +486,23 @@ case "activity:shared", "activity:update":
         // 2) conversation is not muted
         if currentChatFriendId != senderId && !isMutedConversation {
             Task { @MainActor in
-                NotificationService.shared.showMessageNotification(
-                    senderName: senderName,
-                    messagePreview: message
-                )
+                if UIApplication.shared.applicationState == .active {
+                    NotificationBannerManager.shared.show(
+                        title: "💬 New message from \(senderName)",
+                        message: message,
+                        icon: "message.fill"
+                    )
+                } else {
+                    NotificationService.shared.showMessageNotification(
+                        senderName: senderName,
+                        messagePreview: message
+                    )
+                }
                 // Schedule a follow-up reminder if user doesn't reply
                 NotificationService.shared.scheduleChatReminder(friendName: senderName)
             }
+        } else {
+            print("🔕 Message notification suppressed (activeChat=\(currentChatFriendId ?? "nil"), sender=\(senderId), muted=\(isMutedConversation))")
         }
         
         // Post notification for in-app banner

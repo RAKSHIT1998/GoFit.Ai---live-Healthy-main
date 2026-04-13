@@ -8,6 +8,7 @@ import SwiftUI
 /// daily or monthly leaderboard state.
 struct FriendsLeaderboardCard: View {
     let period: String
+    @Environment(\.scenePhase) private var scenePhase
 
         private func friendBubble(entry: LeaderboardEntry) -> some View {
             VStack(spacing: 4) {
@@ -181,11 +182,13 @@ struct FriendsLeaderboardCard: View {
             FullLeaderboardView(entries: entries, currentUserRank: currentUserRank)
         }
         .onReceive(refreshTimer) { _ in
+            guard scenePhase == .active else { return }
             Task {
                 await loadLeaderboard()
             }
         }
         .onReceive(WebSocketService.shared.$leaderboardRefreshRequired) { shouldRefresh in
+            guard scenePhase == .active else { return }
             guard shouldRefresh else { return }
             Task {
                 await loadLeaderboard()
@@ -194,6 +197,12 @@ struct FriendsLeaderboardCard: View {
         }
         .task {
             await loadLeaderboard()
+        }
+        .onChange(of: scenePhase) { _, newPhase in
+            guard newPhase == .active else { return }
+            Task {
+                await loadLeaderboard()
+            }
         }
         .onChange(of: period) { _, _ in
             Task {
@@ -298,6 +307,8 @@ struct FriendsLeaderboardCard: View {
     
     // MARK: - Load Data
     private func loadLeaderboard() async {
+        guard scenePhase == .active else { return }
+
         do {
             let scope = period.lowercased() == "monthly" ? "monthly" : "daily"
             try await gamService.getLeaderboard(scope: scope)
@@ -306,27 +317,18 @@ struct FriendsLeaderboardCard: View {
                 entries = gamService.leaderboard
                 if let me = entries.firstIndex(where: { $0.isCurrentUser }) {
                     currentUserRank = me + 1
+                } else {
+                    currentUserRank = 0
                 }
                 isLoading = false
             }
         } catch {
-            // Fallback sample data
             await MainActor.run {
-                entries = sampleEntries()
-                currentUserRank = 3
+                entries = []
+                currentUserRank = 0
                 isLoading = false
             }
         }
-    }
-    
-    private func sampleEntries() -> [LeaderboardEntry] {
-        [
-            LeaderboardEntry(id: 1, username: "FitnessPro", email: "", profilePicture: nil, totalPoints: 2450, badgeCount: 8, achievementCount: 12, rank: 1, isCurrentUser: false),
-            LeaderboardEntry(id: 2, username: "HealthNut99", email: "", profilePicture: nil, totalPoints: 2100, badgeCount: 6, achievementCount: 9, rank: 2, isCurrentUser: false),
-            LeaderboardEntry(id: 3, username: "You", email: "", profilePicture: nil, totalPoints: 1850, badgeCount: 5, achievementCount: 7, rank: 3, isCurrentUser: true),
-            LeaderboardEntry(id: 4, username: "RunnerGal", email: "", profilePicture: nil, totalPoints: 1600, badgeCount: 4, achievementCount: 5, rank: 4, isCurrentUser: false),
-            LeaderboardEntry(id: 5, username: "GymRat42", email: "", profilePicture: nil, totalPoints: 1200, badgeCount: 3, achievementCount: 4, rank: 5, isCurrentUser: false),
-        ]
     }
 }
 
@@ -495,6 +497,7 @@ struct FullLeaderboardView: View {
 /// Uses `type=global` on the backend so it is NOT filtered to the user's friends.
 struct GlobalLeaderboardCard: View {
     let period: String
+    @Environment(\.scenePhase) private var scenePhase
 
     @StateObject private var gamService = GamificationService()
     @State private var entries: [LeaderboardEntry] = []
@@ -623,8 +626,12 @@ struct GlobalLeaderboardCard: View {
         .sheet(isPresented: $showFullBoard) {
             FullLeaderboardView(entries: entries, currentUserRank: currentUserRank)
         }
-        .onReceive(refreshTimer) { _ in Task { await loadLeaderboard() } }
+        .onReceive(refreshTimer) { _ in
+            guard scenePhase == .active else { return }
+            Task { await loadLeaderboard() }
+        }
         .onReceive(WebSocketService.shared.$leaderboardRefreshRequired) { shouldRefresh in
+            guard scenePhase == .active else { return }
             guard shouldRefresh else { return }
             Task {
                 await loadLeaderboard()
@@ -632,6 +639,10 @@ struct GlobalLeaderboardCard: View {
             }
         }
         .task { await loadLeaderboard() }
+        .onChange(of: scenePhase) { _, newPhase in
+            guard newPhase == .active else { return }
+            Task { await loadLeaderboard() }
+        }
         .onChange(of: period) { _, _ in Task { await loadLeaderboard() } }
     }
 
@@ -684,21 +695,24 @@ struct GlobalLeaderboardCard: View {
     }
 
     private func loadLeaderboard() async {
+        guard scenePhase == .active else { return }
+
         do {
             let scope = period.lowercased() == "monthly" ? "monthly" : "daily"
             try await gamService.getGlobalLeaderboard(scope: scope)
             await MainActor.run {
                 entries = gamService.globalLeaderboard
-                if let me = entries.firstIndex(where: { $0.isCurrentUser }) { currentUserRank = me + 1 }
+                if let me = entries.firstIndex(where: { $0.isCurrentUser }) {
+                    currentUserRank = me + 1
+                } else {
+                    currentUserRank = 0
+                }
                 isLoading = false
             }
         } catch {
             await MainActor.run {
-                entries = [
-                    LeaderboardEntry(id: 1, username: "GlobalChamp", email: "", profilePicture: nil, totalPoints: 9800, badgeCount: 15, achievementCount: 20, rank: 1, isCurrentUser: false),
-                    LeaderboardEntry(id: 2, username: "FitElite", email: "", profilePicture: nil, totalPoints: 8750, badgeCount: 12, achievementCount: 17, rank: 2, isCurrentUser: false),
-                    LeaderboardEntry(id: 3, username: "WellnessGuru", email: "", profilePicture: nil, totalPoints: 7600, badgeCount: 10, achievementCount: 14, rank: 3, isCurrentUser: false),
-                ]
+                entries = []
+                currentUserRank = 0
                 isLoading = false
             }
         }
