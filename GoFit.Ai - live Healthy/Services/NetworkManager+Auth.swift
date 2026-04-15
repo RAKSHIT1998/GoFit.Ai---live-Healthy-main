@@ -5,6 +5,8 @@ final class NetworkManager {
     static let shared = NetworkManager()
     private init() {}
 
+    // Leave enough time for a sleeping free backend to spin back up.
+    private let coldStartTimeout: TimeInterval = 90.0
     let baseURL = URL(string: EnvironmentConfig.apiBaseURL)!
     
     // MARK: - Error Extraction Helpers
@@ -72,7 +74,7 @@ final class NetworkManager {
             req.httpBody = body
             req.setValue("application/json", forHTTPHeaderField: "Content-Type")
         }
-        req.timeoutInterval = 60.0 // 60 second timeout
+        req.timeoutInterval = coldStartTimeout
         
         let (data, resp) = try await URLSession.shared.data(for: req)
         guard let httpResponse = resp as? HTTPURLResponse, 200...299 ~= httpResponse.statusCode else {
@@ -129,7 +131,7 @@ final class NetworkManager {
             req.httpBody = body
             req.setValue("application/json", forHTTPHeaderField: "Content-Type")
         }
-        req.timeoutInterval = 60.0 // 60 second timeout
+        req.timeoutInterval = coldStartTimeout
         
         let (data, resp) = try await URLSession.shared.data(for: req)
         guard let httpResponse = resp as? HTTPURLResponse, 200...299 ~= httpResponse.statusCode else {

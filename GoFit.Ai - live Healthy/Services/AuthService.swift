@@ -4,6 +4,8 @@ final class AuthService {
     static let shared = AuthService()
     private init() {}
 
+    // Free Render instances can take about a minute to wake up after sleeping.
+    private let coldStartTimeout: TimeInterval = 90.0
     private let baseURL = URL(string: EnvironmentConfig.apiBaseURL)!
     private let keychainService = "com.yourcompany.gofit.auth"
     private let keychainAccount = "userToken"
@@ -27,7 +29,7 @@ final class AuthService {
         var req = URLRequest(url: url)
         req.httpMethod = "POST"
         req.setValue("application/json", forHTTPHeaderField: "Content-Type")
-        req.timeoutInterval = 30.0 // 30 second timeout
+        req.timeoutInterval = coldStartTimeout
         
         // Normalize email (trim and lowercase) to match backend expectations
         let normalizedEmail = email.trimmingCharacters(in: .whitespacesAndNewlines).lowercased()
@@ -169,7 +171,7 @@ final class AuthService {
         var req = URLRequest(url: url)
         req.httpMethod = "POST"
         req.setValue("application/json", forHTTPHeaderField: "Content-Type")
-        req.timeoutInterval = 30.0 // 30 second timeout
+        req.timeoutInterval = coldStartTimeout
         
         // Build request body with onboarding data
         var body: [String: Any] = [
@@ -354,7 +356,7 @@ final class AuthService {
         var req = URLRequest(url: url)
         req.httpMethod = "POST"
         req.setValue("application/json", forHTTPHeaderField: "Content-Type")
-        req.timeoutInterval = 30.0
+        req.timeoutInterval = coldStartTimeout
         
         var body: [String: Any?] = [
             "idToken": idToken,
@@ -443,7 +445,7 @@ final class AuthService {
         var req = URLRequest(url: url)
         req.httpMethod = "POST"
         req.setValue("application/json", forHTTPHeaderField: "Content-Type")
-        req.timeoutInterval = 30.0
+        req.timeoutInterval = coldStartTimeout
         
         let body = ["email": email]
         req.httpBody = try JSONEncoder().encode(body)
@@ -469,7 +471,7 @@ final class AuthService {
         var req = URLRequest(url: url)
         req.httpMethod = "POST"
         req.setValue("application/json", forHTTPHeaderField: "Content-Type")
-        req.timeoutInterval = 30.0
+        req.timeoutInterval = coldStartTimeout
         
         let body = ["token": token, "password": newPassword]
         req.httpBody = try JSONEncoder().encode(body)

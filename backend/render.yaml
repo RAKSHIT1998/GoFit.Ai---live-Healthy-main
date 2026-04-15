@@ -2,7 +2,7 @@ services:
   - type: web
     name: gofit-ai-backend
     env: node
-    plan: starter
+    plan: free
     buildCommand: npm install
     startCommand: npm start
     envVars:
@@ -23,4 +23,3 @@ services:
       # - APPLE_SHARED_SECRET
       # - APPLE_BUNDLE_ID
       # - ALLOWED_ORIGINS
-
