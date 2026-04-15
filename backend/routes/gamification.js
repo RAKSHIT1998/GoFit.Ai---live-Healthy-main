@@ -2,7 +2,9 @@ import express from 'express';
 import mongoose from 'mongoose';
 import { GamificationPoints, Badge, Achievement, UserStreak } from '../models/Gamification.js';
 import Friend from '../models/Friend.js';
+import User from '../models/User.js';
 import { authenticateToken } from '../middleware/authMiddleware.js';
+import { getUserSocialStats } from '../utils/socialStats.js';
 
 const router = express.Router();
 
@@ -147,39 +149,81 @@ router.get('/leaderboard', authenticateToken, async (req, res) => {
 
     const startDate = getScopeStartDate(safeScope);
 
-    const leaderboard = await GamificationPoints.aggregate([
-      {
-        $match: {
-          ...(userIdFilter ? { userId: { $in: userIdFilter } } : {}),
-          createdAt: { $gte: startDate }
-        }
-      },
-      { $group: { _id: '$userId', totalPoints: { $sum: '$points' } } },
-      { $sort: { totalPoints: -1 } },
-      { $skip: safeOffset },
-      { $limit: safeLimit },
-      {
-        $lookup: {
-          from: 'users',
-          localField: '_id',
-          foreignField: '_id',
-          as: 'user'
-        }
-      },
-      { $unwind: '$user' },
-      {
-        $project: {
-          _id: 0,
-          username: '$user.name',
-          email: '$user.email',
-          profile_picture: '$user.profilePictureURL',
-          totalPoints: 1,
-          badgeCount: 0,
-          achievementCount: 0,
-          isCurrentUser: { $eq: ['$_id', userId] }
-        }
-      }
-    ]);
+    let leaderboard;
+
+    if (type === 'global') {
+      const rankedUsers = await GamificationPoints.aggregate([
+        {
+          $match: {
+            createdAt: { $gte: startDate }
+          }
+        },
+        { $group: { _id: '$userId', totalPoints: { $sum: '$points' } } },
+        { $sort: { totalPoints: -1 } },
+        { $skip: safeOffset },
+        { $limit: safeLimit },
+        {
+          $lookup: {
+            from: 'users',
+            localField: '_id',
+            foreignField: '_id',
+            as: 'user'
+          }
+        },
+        { $unwind: '$user' }
+      ]);
+
+      const enriched = await Promise.all(
+        rankedUsers.map(async (row) => {
+          const stats = await getUserSocialStats(row._id, { startDate });
+          return {
+            username: row.user.name,
+            email: row.user.email,
+            profile_picture: row.user.profilePictureURL,
+            totalPoints: row.totalPoints,
+            badgeCount: 0,
+            achievementCount: 0,
+            isCurrentUser: row._id.toString() === userId.toString(),
+            totalWorkoutsCompleted: stats.totalWorkoutsCompleted,
+            totalMealsLogged: stats.totalMealsLogged,
+            totalCaloriesBurned: stats.totalCaloriesBurned
+          };
+        })
+      );
+
+      leaderboard = enriched;
+    } else {
+      const scopedUsers = await User.find({
+        _id: { $in: userIdFilter }
+      }).select('name email profilePictureURL');
+
+      const enriched = await Promise.all(
+        scopedUsers.map(async (userDoc) => {
+          const stats = await getUserSocialStats(userDoc._id, { startDate });
+          return {
+            username: userDoc.name,
+            email: userDoc.email,
+            profile_picture: userDoc.profilePictureURL,
+            totalPoints: stats.totalPoints,
+            badgeCount: 0,
+            achievementCount: 0,
+            isCurrentUser: userDoc._id.toString() === userId.toString(),
+            totalWorkoutsCompleted: stats.totalWorkoutsCompleted,
+            totalMealsLogged: stats.totalMealsLogged,
+            totalCaloriesBurned: stats.totalCaloriesBurned
+          };
+        })
+      );
+
+      leaderboard = enriched
+        .sort((a, b) => {
+          if (b.totalPoints !== a.totalPoints) return b.totalPoints - a.totalPoints;
+          if (b.totalCaloriesBurned !== a.totalCaloriesBurned) return b.totalCaloriesBurned - a.totalCaloriesBurned;
+          if (b.totalWorkoutsCompleted !== a.totalWorkoutsCompleted) return b.totalWorkoutsCompleted - a.totalWorkoutsCompleted;
+          return a.username.localeCompare(b.username);
+        })
+        .slice(safeOffset, safeOffset + safeLimit);
+    }
 
     res.json({
       leaderboard: leaderboard.map((row, index) => ({
@@ -190,6 +234,9 @@ router.get('/leaderboard', authenticateToken, async (req, res) => {
         total_points: row.totalPoints,
         badge_count: row.badgeCount,
         achievement_count: row.achievementCount,
+        total_workouts_completed: row.totalWorkoutsCompleted ?? 0,
+        total_meals_logged: row.totalMealsLogged ?? 0,
+        total_calories_burned: row.totalCaloriesBurned ?? 0,
         rank: safeOffset + index + 1,
         is_current_user: row.isCurrentUser
       })),

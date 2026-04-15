@@ -19,6 +19,7 @@ struct ChatView: View {
     @State private var typingTimer: Timer?
     @State private var hasNotifiedTyping = false
     @FocusState private var isTextFieldFocused: Bool
+    private let refreshTimer = Timer.publish(every: 6, on: .main, in: .common).autoconnect()
 
     var body: some View {
         VStack(spacing: 0) {
@@ -272,6 +273,9 @@ struct ChatView: View {
             appendMessageIfNeeded(item)
             HapticManager.shared.lightTap()
         }
+        .onReceive(refreshTimer) { _ in
+            refreshMessagesSilently()
+        }
     }
 
     private func messageBubble(_ msg: MessageItem) -> some View {
@@ -455,6 +459,16 @@ struct ChatView: View {
                     // Save to cache for next time
                     SocialCacheManager.shared.saveMessages(msgs, for: friend.id)
                 }
+            }
+        }
+    }
+
+    private func refreshMessagesSilently() {
+        messagesService.fetchConversation(friendId: friend.id) { result in
+            DispatchQueue.main.async {
+                guard case .success(let msgs) = result else { return }
+                self.messages = msgs
+                SocialCacheManager.shared.saveMessages(msgs, for: friend.id)
             }
         }
     }

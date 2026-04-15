@@ -3,6 +3,7 @@ import User from '../models/User.js';
 import Friend from '../models/Friend.js';
 import { authenticateToken } from '../middleware/authMiddleware.js';
 import { wsService } from '../services/websocketService.js';
+import { getUserSocialStats } from '../utils/socialStats.js';
 
 const router = express.Router();
 const logger = console;
@@ -444,24 +445,27 @@ router.delete('/block/:userId', authenticateToken, async (req, res) => {
  * GET /api/friends/stats/:friendId
  */
 router.get('/stats/:friendId', authenticateToken, async (req, res) => {
+    const userId = req.user._id.toString();
     const { friendId } = req.params;
     
     try {
-        // Get friend's metrics from their user profile
-        const friend = await User.findById(friendId).select('metrics subscription');
-        
+        const friendship = await Friend.findOne({
+            $or: [
+                { userId, friendId, status: 'accepted' },
+                { userId: friendId, friendId: userId, status: 'accepted' }
+            ]
+        });
+
+        if (!friendship) {
+            return res.status(403).json({ error: 'You are not friends with this user' });
+        }
+
+        const friend = await User.findById(friendId).select('_id');
         if (!friend) {
             return res.status(404).json({ error: 'Friend not found' });
         }
-        
-        const metrics = friend.metrics || {};
-        const stats = {
-            totalMealsLogged: metrics.totalMealsLogged || 0,
-            totalWorkoutsCompleted: metrics.totalWorkoutsCompleted || 0,
-            totalCaloriesBurned: metrics.totalCaloriesBurned || 0,
-            lastMealLogged: metrics.lastMealLogged || null,
-            lastWorkoutCompleted: metrics.lastWorkoutCompleted || null
-        };
+
+        const stats = await getUserSocialStats(friend._id);
         
         res.status(200).json({ stats });
     } catch (error) {

@@ -2,6 +2,7 @@ import express from 'express';
 import User from '../models/User.js';
 import WaterLog from '../models/WaterLog.js';
 import WeightLog from '../models/WeightLog.js';
+import { GamificationPoints } from '../models/Gamification.js';
 import { authMiddleware } from '../middleware/authMiddleware.js';
 
 const router = express.Router();
@@ -196,6 +197,14 @@ router.post('/water', authMiddleware, async (req, res) => {
 
     await log.save();
 
+    GamificationPoints.create({
+      userId: req.user._id,
+      actionType: 'log_water',
+      points: 5
+    }).catch(err => {
+      console.error('Gamification water XP error (non-critical):', err);
+    });
+
     res.status(201).json(log);
   } catch (error) {
     console.error('Log water error:', error);
@@ -350,4 +359,3 @@ router.get('/stats', authMiddleware, async (req, res) => {
 });
 
 export default router;
-

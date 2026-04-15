@@ -256,15 +256,21 @@ struct FriendsLeaderboardCard: View {
             
             Spacer()
             
-            // Points
-            HStack(spacing: 3) {
-                Text("\(entry.totalPoints ?? 0)")
-                    .font(Design.Typography.caption)
-                    .fontWeight(.semibold)
-                    .foregroundColor(rank <= 3 ? medalColor(rank) : .secondary)
-                Text("XP")
+            VStack(alignment: .trailing, spacing: 2) {
+                HStack(spacing: 3) {
+                    Text("\(entry.totalPoints ?? 0)")
+                        .font(Design.Typography.caption)
+                        .fontWeight(.semibold)
+                        .foregroundColor(rank <= 3 ? medalColor(rank) : .secondary)
+                    Text("XP")
+                        .font(Design.Typography.caption2)
+                        .foregroundColor(.secondary)
+                }
+
+                Text("\(entry.totalWorkoutsCompleted ?? 0) wk • \(entry.totalCaloriesBurned ?? 0) cal")
                     .font(Design.Typography.caption2)
                     .foregroundColor(.secondary)
+                    .lineLimit(1)
             }
         }
         .padding(.vertical, 4)
@@ -473,6 +479,10 @@ struct FullLeaderboardView: View {
                         .font(Design.Typography.caption2)
                         .foregroundColor(.purple)
                 }
+
+                Text("\(entry.totalWorkoutsCompleted ?? 0) workouts • \(entry.totalMealsLogged ?? 0) meals • \(entry.totalCaloriesBurned ?? 0) cal burned")
+                    .font(Design.Typography.caption2)
+                    .foregroundColor(.secondary)
             }
             
             Spacer()
@@ -668,9 +678,15 @@ struct GlobalLeaderboardCard: View {
                 .foregroundColor(entry.isCurrentUser ? Design.Colors.primary : .primary)
                 .lineLimit(1)
             Spacer()
-            HStack(spacing: 3) {
-                Text("\(entry.totalPoints ?? 0)").font(Design.Typography.caption).fontWeight(.semibold).foregroundColor(rank <= 3 ? medalColor(rank) : .secondary)
-                Text("XP").font(Design.Typography.caption2).foregroundColor(.secondary)
+            VStack(alignment: .trailing, spacing: 2) {
+                HStack(spacing: 3) {
+                    Text("\(entry.totalPoints ?? 0)").font(Design.Typography.caption).fontWeight(.semibold).foregroundColor(rank <= 3 ? medalColor(rank) : .secondary)
+                    Text("XP").font(Design.Typography.caption2).foregroundColor(.secondary)
+                }
+                Text("\(entry.totalWorkoutsCompleted ?? 0) wk • \(entry.totalCaloriesBurned ?? 0) cal")
+                    .font(Design.Typography.caption2)
+                    .foregroundColor(.secondary)
+                    .lineLimit(1)
             }
         }
         .padding(.vertical, 4)

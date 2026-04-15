@@ -394,8 +394,7 @@ private let autoShareKey = "auto_share_body_logs_enabled"
                 }
                 
                 do {
-                    let decoder = JSONDecoder()
-                    decoder.dateDecodingStrategy = .iso8601
+                    let decoder = JSONDecoder.socialDecoder()
                     let response = try decoder.decode(FriendStatsResponse.self, from: data)
                     completion(.success(response.stats))
                 } catch {

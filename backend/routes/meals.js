@@ -1,6 +1,7 @@
 import express from 'express';
 import OpenAI from 'openai';
 import Meal from '../models/Meal.js';
+import { GamificationPoints } from '../models/Gamification.js';
 import { authMiddleware } from '../middleware/authMiddleware.js';
 import mlService from '../services/mlService.js';
 
@@ -104,6 +105,15 @@ router.post('/save', authMiddleware, async (req, res) => {
     });
 
     await meal.save();
+
+    // Award XP for meal logging without blocking the main response.
+    GamificationPoints.create({
+      userId: req.user._id,
+      actionType: 'log_meal',
+      points: 15
+    }).catch(err => {
+      console.error('Gamification meal XP error (non-critical):', err);
+    });
 
     // Learn from this meal for ML (async, don't wait)
     mlService.learnFromMeal(meal, req.user._id).catch(err => {
@@ -230,4 +240,3 @@ router.post('/sync', authMiddleware, async (req, res) => {
 });
 
 export default router;
-

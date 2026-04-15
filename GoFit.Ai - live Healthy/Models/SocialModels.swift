@@ -620,6 +620,9 @@ struct LeaderboardEntry: Identifiable, Codable {
     let totalPoints: Int?
     let badgeCount: Int?
     let achievementCount: Int?
+    let totalWorkoutsCompleted: Int?
+    let totalMealsLogged: Int?
+    let totalCaloriesBurned: Int?
     let rank: Int
     let isCurrentUser: Bool
 
@@ -629,6 +632,9 @@ struct LeaderboardEntry: Identifiable, Codable {
         case totalPoints = "total_points"
         case badgeCount = "badge_count"
         case achievementCount = "achievement_count"
+        case totalWorkoutsCompleted = "total_workouts_completed"
+        case totalMealsLogged = "total_meals_logged"
+        case totalCaloriesBurned = "total_calories_burned"
         case rank
         case isCurrentUser = "is_current_user"
     }

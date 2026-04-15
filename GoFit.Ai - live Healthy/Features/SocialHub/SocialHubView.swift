@@ -313,6 +313,10 @@ struct SocialHubView: View {
                     GlobalLeaderboardCard(period: leaderboardMode.rawValue)
                         .padding(.horizontal, Design.Spacing.md)
                 }
+
+                ShareYourStoryCard()
+                    .environmentObject(auth)
+                    .padding(.horizontal, Design.Spacing.md)
             }
             .padding(.vertical, Design.Spacing.md)
         }

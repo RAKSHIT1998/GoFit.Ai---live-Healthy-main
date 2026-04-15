@@ -115,8 +115,7 @@ final class SocialCacheManager: ObservableObject {
     private func loadCache<T: Decodable>(_ type: T.Type, key: String) -> T? {
         let url = cacheDir.appendingPathComponent("\(key).json")
         guard FileManager.default.fileExists(atPath: url.path) else { return nil }
-        let decoder = JSONDecoder()
-        decoder.dateDecodingStrategy = .iso8601
+        let decoder = JSONDecoder.socialDecoder()
         do {
             let data = try Data(contentsOf: url)
             return try decoder.decode(T.self, from: data)

@@ -14,6 +14,7 @@ struct ConversationsView: View {
     @State private var mutedFriendIds: Set<String> = []
     @State private var isFetchingConversations = false
     @State private var refreshWorkItem: DispatchWorkItem?
+    private let refreshTimer = Timer.publish(every: 20, on: .main, in: .common).autoconnect()
 
     private let pinnedStorageKey = "pinnedConversationFriendIds"
     private let mutedStorageKey = "mutedConversationFriendIds"
@@ -276,6 +277,9 @@ struct ConversationsView: View {
             _ = oldMessage
         }
         .onReceive(NotificationCenter.default.publisher(for: NSNotification.Name("NewMessageReceived"))) { _ in
+            scheduleBackgroundRefresh()
+        }
+        .onReceive(refreshTimer) { _ in
             scheduleBackgroundRefresh()
         }
     }

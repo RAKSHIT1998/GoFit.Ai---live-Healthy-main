@@ -459,7 +459,7 @@ case "activity:shared", "activity:update":
         let conversationId = (data["conversationId"] as? String) ?? messageId
 
         let timestamp: Date
-        if let ts = data["timestamp"] as? String, let parsed = ISO8601DateFormatter().date(from: ts) {
+        if let ts = data["timestamp"] as? String, let parsed = SocialDateCoding.parse(ts) {
             timestamp = parsed
         } else {
             timestamp = Date()

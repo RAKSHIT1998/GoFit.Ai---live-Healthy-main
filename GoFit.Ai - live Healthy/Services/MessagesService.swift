@@ -17,9 +17,7 @@ final class MessagesService: ObservableObject {
     }
 
     private func makeDecoder() -> JSONDecoder {
-        let decoder = JSONDecoder()
-        decoder.dateDecodingStrategy = .iso8601
-        return decoder
+        JSONDecoder.socialDecoder()
     }
 
     func fetchConversations(completion: @escaping (Result<[ConversationSummary], Error>) -> Void) {

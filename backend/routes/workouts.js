@@ -1,5 +1,6 @@
 import express from 'express';
 import Workout from '../models/Workout.js';
+import { GamificationPoints } from '../models/Gamification.js';
 import { authMiddleware } from '../middleware/authMiddleware.js';
 
 const router = express.Router();
@@ -28,6 +29,14 @@ router.post('/save', authMiddleware, async (req, res) => {
     });
 
     await workout.save();
+
+    GamificationPoints.create({
+      userId: req.user._id,
+      actionType: 'complete_workout',
+      points: 25
+    }).catch(err => {
+      console.error('Gamification workout XP error (non-critical):', err);
+    });
 
     res.status(201).json(workout);
   } catch (error) {
@@ -130,5 +139,4 @@ router.delete('/:workoutId', authMiddleware, async (req, res) => {
 });
 
 export default router;
-
 

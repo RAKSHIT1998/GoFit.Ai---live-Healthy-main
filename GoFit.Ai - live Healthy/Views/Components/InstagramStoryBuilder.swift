@@ -362,18 +362,32 @@ struct InstagramStoryBuilderView: View {
     
     // MARK: - Populate Data
     private func populateStoryData() {
+        let broadcaster = NutritionBroadcaster.shared
+        broadcaster.refreshFromLocalStorage()
+
+        let todayLog = LocalDailyLogStore.shared.getTodayLog()
+        let mealCacheTotals = LocalMealCache.shared.getTodayTotals()
+        let fallbackStats = UserDataCache.shared.calculateTodaysStats()
+
+        let caloriesConsumed = max(todayLog.totalCalories, max(mealCacheTotals.calories, fallbackStats.totalCaloriesConsumed))
+        let steps = todayLog.steps ?? fallbackStats.steps
+        let activeCalories = max(todayLog.caloriesBurned, fallbackStats.totalCaloriesBurned)
+        let water = max(todayLog.totalLiquid, fallbackStats.waterIntake)
+        let mealsLogged = max(todayLog.meals.count, max(LocalMealCache.shared.getTodayMeals().count, fallbackStats.mealsLogged))
+        let workoutsThisWeek = fallbackStats.workoutsCompleted
+
         storyData = StoryData(
             userName: auth.name,
-            calories: "2,150",
-            steps: 8743,
-            activeCalories: 420,
-            waterIntake: 2.5,
+            calories: NumberFormatter.localizedString(from: NSNumber(value: Int(caloriesConsumed)), number: .decimal),
+            steps: steps,
+            activeCalories: activeCalories,
+            waterIntake: water,
             streakDays: streakManager.currentStreak,
             level: streakManager.level,
             levelTitle: streakManager.levelTitle,
             totalPoints: streakManager.totalPoints,
-            workoutsThisWeek: 4,
-            mealsLogged: 12,
+            workoutsThisWeek: workoutsThisWeek,
+            mealsLogged: mealsLogged,
             referralCode: referralManager.referralCode
         )
     }
