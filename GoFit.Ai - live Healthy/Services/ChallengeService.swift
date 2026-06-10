@@ -91,36 +91,35 @@ class ChallengeService: NSObject, ObservableObject {
 
     // MARK: - Join Challenge
 
-    func joinChallenge(challengeId: Int) async throws {
+    func joinChallenge(challengeId: String) async throws {
         isLoading = true
         defer { isLoading = false }
 
-        let endpoint = "\(baseURL)/\(challengeId)/join"
-        var request = URLRequest(url: URL(string: endpoint)!)
+        guard let url = URL(string: "\(baseURL)/\(challengeId)/join") else { throw NetworkError.invalidURL }
+        var request = URLRequest(url: url)
         request.httpMethod = "POST"
+        request.setValue("application/json", forHTTPHeaderField: "Content-Type")
         if let token = AuthService.shared.readToken()?.accessToken {
             request.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
         }
 
-        let (_, response) = try await session.data(for: request)
-        guard let httpResponse = response as? HTTPURLResponse, httpResponse.statusCode == 200 else {
+        let (data, response) = try await session.data(for: request)
+        guard let httpResponse = response as? HTTPURLResponse,
+              httpResponse.statusCode == 200 || httpResponse.statusCode == 409 else {
             errorMessage = "Failed to join challenge"
             throw NetworkError.invalidResponse
         }
 
-        // Refresh challenges
         try await getChallenges()
     }
 
     // MARK: - Get Leaderboard
 
-    func getLeaderboard(challengeId: Int) async throws {
+    func getLeaderboard(challengeId: String) async throws {
         isLoading = true
         defer { isLoading = false }
 
-        let endpoint = "\(baseURL)/\(challengeId)/leaderboard"
-        guard let url = URL(string: endpoint) else { throw NetworkError.invalidURL }
-
+        guard let url = URL(string: "\(baseURL)/\(challengeId)/leaderboard") else { throw NetworkError.invalidURL }
         var request = URLRequest(url: url)
         if let token = AuthService.shared.readToken()?.accessToken {
             request.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
@@ -138,12 +137,12 @@ class ChallengeService: NSObject, ObservableObject {
 
     // MARK: - Update Score
 
-    func updateScore(challengeId: Int, scoreValue: Int) async throws {
+    func updateScore(challengeId: String, scoreValue: Int) async throws {
         isLoading = true
         defer { isLoading = false }
 
-        let endpoint = "\(baseURL)/\(challengeId)/score"
-        var request = URLRequest(url: URL(string: endpoint)!)
+        guard let url = URL(string: "\(baseURL)/\(challengeId)/score") else { throw NetworkError.invalidURL }
+        var request = URLRequest(url: url)
         request.httpMethod = "POST"
         request.setValue("application/json", forHTTPHeaderField: "Content-Type")
         if let token = AuthService.shared.readToken()?.accessToken {
@@ -159,7 +158,6 @@ class ChallengeService: NSObject, ObservableObject {
             throw NetworkError.invalidResponse
         }
 
-        // Refresh leaderboard
         try await getLeaderboard(challengeId: challengeId)
     }
 }

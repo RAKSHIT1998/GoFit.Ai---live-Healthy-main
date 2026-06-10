@@ -191,9 +191,8 @@ Return ONLY valid JSON array, no markdown, no code blocks, no explanations, just
 
 If no food is detected, return: []`;
 
-      // Call OpenAI GPT-4o Vision API
       const openaiPromise = openai.chat.completions.create({
-        model: 'gpt-4o',
+        model: process.env.OPENAI_VISION_MODEL || 'gpt-4o-mini',
         messages: [
           {
             role: 'user',
@@ -211,8 +210,8 @@ If no food is detected, return: []`;
             ]
           }
         ],
-        max_tokens: 2000,
-        temperature: 0.3 // Lower temperature for more accurate nutrition data
+        max_tokens: 800,
+        temperature: 0.3
       });
       
       // Race between OpenAI call and timeout

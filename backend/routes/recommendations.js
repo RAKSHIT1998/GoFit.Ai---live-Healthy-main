@@ -88,12 +88,14 @@ router.get('/daily', authMiddleware, async (req, res) => {
 // Generate new recommendation
 // This endpoint uses OpenAI (ChatGPT) to regenerate personalized meal and workout plans
 // It sends ALL customer data collected during onboarding to ChatGPT for personalization
+// Track daily regeneration counts in memory (resets on server restart, good enough for abuse prevention)
+const dailyRegenCounts = new Map();
+
 router.post('/regenerate', authMiddleware, async (req, res) => {
   try {
     // Check if OpenAI is configured before attempting generation
     if (!OPENAI_API_KEY || !openai) {
       console.warn('⚠️ OpenAI not configured - cannot regenerate recommendations');
-      // Return empty recommendation - client will use fallback data
       return res.status(200).json({
         mealPlan: { breakfast: [], lunch: [], dinner: [], snacks: [] },
         workoutPlan: { exercises: [] },
@@ -101,7 +103,16 @@ router.post('/regenerate', authMiddleware, async (req, res) => {
         insights: ['AI recommendations are not available. Using built-in recommendations.']
       });
     }
-    
+
+    // Limit to 3 regenerations per user per day to control OpenAI costs
+    const MAX_DAILY_REGENS = parseInt(process.env.MAX_DAILY_REGENS || '3');
+    const userKey = `${req.user._id}_${new Date().toISOString().slice(0, 10)}`;
+    const regenCount = dailyRegenCounts.get(userKey) || 0;
+    if (regenCount >= MAX_DAILY_REGENS) {
+      return res.status(429).json({ message: 'Daily regeneration limit reached. Try again tomorrow.' });
+    }
+    dailyRegenCounts.set(userKey, regenCount + 1);
+
     // CRITICAL: Delete existing recommendations for today to force new generation
     const today = new Date();
     today.setHours(0, 0, 0, 0);
@@ -697,8 +708,7 @@ Ensure all recommendations are safe, achievable, and aligned with the user's pro
       throw new Error('AI recommendation service initialization failed.');
     }
     
-    // Use OpenAI GPT-4o (ChatGPT) for recommendations (high quality and reliable)
-    const modelPreference = process.env.OPENAI_MODEL || 'gpt-4o';
+    const modelPreference = process.env.OPENAI_MODEL || 'gpt-4o-mini';
     
     console.log(`✅ Using ChatGPT (OpenAI ${modelPreference}) for meal and workout recommendations`);
     console.log(`🤖 Making ChatGPT API request for personalized recommendations (user: ${user._id})...`);
@@ -738,8 +748,8 @@ CRITICAL JSON FORMAT REQUIREMENTS:
           content: prompt
         }
       ],
-        temperature: 0.7, // Balanced creativity and consistency
-      max_tokens: 4000, // Increased for more detailed meal recipes and workout instructions
+        temperature: 0.7,
+      max_tokens: 2500,
       response_format: { type: 'json_object' } // Request JSON format
     });
     

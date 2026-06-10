@@ -31,6 +31,8 @@ import notificationRoutes from './routes/notifications.js';
 import friendsRoutes from './routes/friends.js';
 import gamificationRoutes from './routes/gamification.js';
 import logsRoutes from './routes/logs.js';
+import referralRoutes from './routes/referrals.js';
+import viralRoutes from './routes/viral.js';
 import messagesRoutes from './routes/messages.js';
 
 dotenv.config();
@@ -241,6 +243,8 @@ app.use('/api/friends', friendsRoutes);
 app.use('/api/gamification', gamificationRoutes);
 app.use('/api/messages', messagesRoutes);
 app.use('/api/logs', logsRoutes);
+app.use('/api/referrals', referralRoutes);
+app.use('/api/viral', viralRoutes);
 
 // Clubs and Run Tracker APIs
 import { authMiddleware } from './middleware/authMiddleware.js';

@@ -287,6 +287,76 @@ router.put('/:challengeId/status', authenticateToken, async (req, res) => {
 });
 
 /**
+ * Join a public challenge
+ * POST /api/challenges/:challengeId/join
+ */
+router.post('/:challengeId/join', authenticateToken, async (req, res) => {
+  try {
+    const { challengeId } = req.params;
+    const userId = req.user._id;
+
+    const challenge = await Challenge.findById(challengeId);
+    if (!challenge) return res.status(404).json({ message: 'Challenge not found' });
+    if (!challenge.isPublic) return res.status(403).json({ message: 'Challenge is private' });
+    if (challenge.status !== 'active') return res.status(400).json({ message: 'Challenge is not active' });
+
+    const alreadyJoined = challenge.participants.some(p => p.userId.toString() === userId.toString());
+    if (alreadyJoined) return res.status(409).json({ message: 'Already joined' });
+
+    challenge.participants.push({ userId, score: 0 });
+    await challenge.save();
+
+    await GamificationPoints.create({ userId, actionType: 'join_challenge', points: 10 });
+
+    wsService.emitChallengeUpdate(challenge.userId.toString(), {
+      challengeId: challengeId,
+      event: 'participant_joined',
+      participantId: userId.toString()
+    });
+
+    res.json({ message: 'Joined challenge successfully', challengeId });
+  } catch (error) {
+    console.error('Join challenge error:', error);
+    res.status(500).json({ message: 'Error joining challenge' });
+  }
+});
+
+/**
+ * Get challenge leaderboard
+ * GET /api/challenges/:challengeId/leaderboard
+ */
+router.get('/:challengeId/leaderboard', authenticateToken, async (req, res) => {
+  try {
+    const { challengeId } = req.params;
+
+    const challenge = await Challenge.findById(challengeId).populate('participants.userId', 'name email');
+    if (!challenge) return res.status(404).json({ message: 'Challenge not found' });
+
+    const sorted = [...challenge.participants]
+      .sort((a, b) => b.score - a.score)
+      .map((p, index) => ({
+        id: p._id.toString(),
+        userId: p.userId?._id?.toString() || p.userId?.toString(),
+        username: p.userId?.name || 'Unknown',
+        score: p.score,
+        rank: index + 1,
+        joinedAt: p.joinedAt
+      }));
+
+    // Also include the challenge creator at top if not already a participant
+    res.json({
+      challengeId,
+      challengeName: challenge.name,
+      leaderboard: sorted,
+      count: sorted.length
+    });
+  } catch (error) {
+    console.error('Get challenge leaderboard error:', error);
+    res.status(500).json({ message: 'Error fetching leaderboard' });
+  }
+});
+
+/**
  * Delete a challenge
  * DELETE /api/challenges/:challengeId
  */

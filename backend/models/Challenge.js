@@ -64,6 +64,11 @@ const challengeSchema = new mongoose.Schema({
     type: Boolean,
     default: false
   },
+  participants: [{
+    userId: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
+    joinedAt: { type: Date, default: Date.now },
+    score: { type: Number, default: 0 }
+  }],
   createdAt: {
     type: Date,
     default: Date.now

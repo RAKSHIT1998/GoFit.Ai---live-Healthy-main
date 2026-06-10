@@ -148,23 +148,67 @@ class ReferralManager: ObservableObject {
     }
     
     // MARK: - Referral Code
-    
+
     func generateCode(for userId: String, name: String) -> String {
-        if !referralCode.isEmpty { return referralCode }
-        
-        // Generate a catchy, memorable code
+        if !referralCode.isEmpty {
+            Task { await registerCodeWithBackend(referralCode) }
+            return referralCode
+        }
+
         let cleanName = name.replacingOccurrences(of: " ", with: "")
             .prefix(4).uppercased()
         let shortId = String(userId.prefix(3)).uppercased()
         let code = "GOFIT\(cleanName)\(shortId)"
-        
+
         referralCode = code
         defaults.set(code, forKey: "referral_code_v2")
+        Task { await registerCodeWithBackend(code) }
         return code
     }
-    
+
+    // Sync the local code to the backend so others can apply it
+    func registerCodeWithBackend(_ code: String) async {
+        guard let token = AuthService.shared.readToken()?.accessToken,
+              let url = URL(string: "\(APIConfig.baseURL)/referrals/code") else { return }
+        var request = URLRequest(url: url)
+        request.httpMethod = "POST"
+        request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+        request.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
+        request.httpBody = try? JSONSerialization.data(withJSONObject: ["code": code])
+        if let (data, _) = try? await URLSession.shared.data(for: request),
+           let json = try? JSONSerialization.jsonObject(with: data) as? [String: Any],
+           let confirmedCode = json["code"] as? String {
+            // Backend may have adjusted the code to avoid conflicts
+            if confirmedCode != referralCode {
+                referralCode = confirmedCode
+                defaults.set(confirmedCode, forKey: "referral_code_v2")
+            }
+        }
+    }
+
+    // Sync referral counts from backend (call on app launch)
+    func syncFromBackend() async {
+        guard let token = AuthService.shared.readToken()?.accessToken,
+              let url = URL(string: "\(APIConfig.baseURL)/referrals/status") else { return }
+        var request = URLRequest(url: url)
+        request.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
+        guard let (data, response) = try? await URLSession.shared.data(for: request),
+              let http = response as? HTTPURLResponse, http.statusCode == 200,
+              let json = try? JSONSerialization.jsonObject(with: data) as? [String: Any] else { return }
+
+        await MainActor.run {
+            if let count = json["totalReferrals"] as? Int, count > totalReferrals {
+                // Someone used our code while we were offline
+                let diff = count - totalReferrals
+                for _ in 0..<diff {
+                    processNewReferral(friendName: "A friend")
+                }
+            }
+        }
+    }
+
     // MARK: - Process Referral
-    
+
     func processNewReferral(friendName: String) {
         totalReferrals += 1
         
@@ -213,7 +257,21 @@ class ReferralManager: ObservableObject {
 
         saveData()
 
+        // Tell the backend so the referrer gets their XP too
+        Task { await applyCodeOnBackend(cleanCode) }
+
         return true
+    }
+
+    private func applyCodeOnBackend(_ code: String) async {
+        guard let token = AuthService.shared.readToken()?.accessToken,
+              let url = URL(string: "\(APIConfig.baseURL)/referrals/apply") else { return }
+        var request = URLRequest(url: url)
+        request.httpMethod = "POST"
+        request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+        request.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
+        request.httpBody = try? JSONSerialization.data(withJSONObject: ["code": code])
+        _ = try? await URLSession.shared.data(for: request)
     }
 
     // MARK: - Sharing Streak

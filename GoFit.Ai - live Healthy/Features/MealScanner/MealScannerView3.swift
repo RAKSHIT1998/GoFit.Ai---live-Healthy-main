@@ -257,10 +257,14 @@ struct MealScannerView3: View {
     @ViewBuilder
     private var resultsSection: some View {
         if let resp = uploadResult, let items = resp.parsedItems, !items.isEmpty {
+            let totalCal = items.reduce(0) { $0 + ($1.calories ?? 0) }
+            let topName  = items.first?.name ?? "Meal"
             ScrollView {
                 VStack(spacing: 24) {
                     resultsBubblesHeader(items: items)
                     resultsFoodCards(items: items)
+                    // Calorie Shock banner — fires once per scan
+                    CalorieShockBannerWrapper(mealName: topName, calories: totalCal)
                     resultsActionButtons(resp: resp)
                 }
             }
@@ -766,5 +770,20 @@ struct MealScannerView3: View {
                 // Meal remains in cache with synced=false, can retry later
             }
         }
+    }
+}
+
+// Auto-fires CalorieShockBanner once when the scan result appears
+private struct CalorieShockBannerWrapper: View {
+    let mealName: String
+    let calories: Int
+    @State private var banner = CalorieShockBanner(mealName: "", calories: 0)
+    var body: some View {
+        banner
+            .onAppear {
+                banner = CalorieShockBanner(mealName: mealName, calories: calories)
+                banner.appear()
+            }
+            .padding(.horizontal)
     }
 }

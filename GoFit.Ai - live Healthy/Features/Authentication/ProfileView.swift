@@ -408,6 +408,29 @@ struct ProfileView: View {
                 .background(Design.Colors.primaryGradient)
                 .cornerRadius(16)
             }
+
+            // Viral Features Hub
+            NavigationLink(destination: ViralFeaturesHubView()) {
+                HStack {
+                    Image(systemName: "flame.fill")
+                        .font(.title3)
+                        .foregroundColor(.orange)
+                    Text("Roast My Diet & More 🔥")
+                        .font(Design.Typography.headline)
+                        .foregroundColor(.primary)
+                    Spacer()
+                    Image(systemName: "chevron.right")
+                        .font(.caption)
+                        .foregroundColor(.secondary)
+                }
+                .padding()
+                .background(Color(.secondarySystemGroupedBackground))
+                .cornerRadius(16)
+                .overlay(
+                    RoundedRectangle(cornerRadius: 16)
+                        .stroke(Color.orange.opacity(0.3), lineWidth: 1)
+                )
+            }
         }
     }
 

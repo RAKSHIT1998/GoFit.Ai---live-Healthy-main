@@ -98,6 +98,8 @@ const recommendationSchema = new mongoose.Schema({
 });
 
 recommendationSchema.index({ userId: 1, date: -1 });
+// Auto-delete recommendations older than 7 days to keep MongoDB storage low
+recommendationSchema.index({ createdAt: 1 }, { expireAfterSeconds: 7 * 24 * 60 * 60 });
 
 export default mongoose.model('Recommendation', recommendationSchema);
 

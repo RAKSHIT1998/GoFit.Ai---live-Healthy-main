@@ -326,6 +326,32 @@ router.get('/achievements', authenticateToken, async (req, res) => {
 });
 
 /**
+ * Sync streak from iOS client
+ * POST /api/gamification/streak
+ */
+router.post('/streak', authenticateToken, async (req, res) => {
+  try {
+    const { streakType = 'app_usage', currentDays, longestDays } = req.body;
+    const userId = req.user._id;
+
+    if (typeof currentDays !== 'number' || typeof longestDays !== 'number') {
+      return res.status(400).json({ message: 'currentDays and longestDays are required numbers' });
+    }
+
+    const streak = await UserStreak.findOneAndUpdate(
+      { userId, streakType },
+      { currentDays, longestDays, lastActiveDate: new Date() },
+      { upsert: true, new: true }
+    );
+
+    res.json({ success: true, streak: serializeStreak(streak, 0) });
+  } catch (error) {
+    console.error('Sync streak error:', error);
+    res.status(500).json({ message: 'Error syncing streak' });
+  }
+});
+
+/**
  * Get user's streaks
  * GET /api/gamification/streaks
  */

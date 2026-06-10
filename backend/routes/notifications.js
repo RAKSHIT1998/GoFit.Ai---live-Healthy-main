@@ -256,7 +256,7 @@ MEAL TYPE: ${mealType}
 Return ONLY JSON: {"title":"max 50 chars","body":"max 100 chars"}`;
 
     const completion = await openai.chat.completions.create({
-      model: 'gpt-4o',
+      model: process.env.OPENAI_MODEL || 'gpt-4o-mini',
       messages: [
         { role: 'system', content: 'Return ONLY valid JSON with "title" and "body". No markdown.' },
         { role: 'user', content: prompt }
@@ -309,7 +309,7 @@ TODAY: Water=${context.today.water.toFixed(1)}L, Target=${hydrationTarget.toFixe
 Return ONLY JSON: {"title":"max 50 chars","body":"max 100 chars"}`;
 
     const completion = await openai.chat.completions.create({
-      model: 'gpt-4o',
+      model: process.env.OPENAI_MODEL || 'gpt-4o-mini',
       messages: [
         { role: 'system', content: 'Return ONLY valid JSON with "title" and "body". No markdown.' },
         { role: 'user', content: prompt }
@@ -360,7 +360,7 @@ TODAY: Calories=${context.today.calories}/${context.user.targetCalories}, Water=
 Return ONLY JSON: {"title":"max 50 chars","body":"max 100 chars"}`;
 
     const completion = await openai.chat.completions.create({
-      model: 'gpt-4o',
+      model: process.env.OPENAI_MODEL || 'gpt-4o-mini',
       messages: [
         { role: 'system', content: 'Return ONLY valid JSON with "title" and "body". No markdown.' },
         { role: 'user', content: prompt }

@@ -242,10 +242,29 @@ class StreakManager: ObservableObject {
         UserDefaults.standard.set(longestStreak, forKey: longestStreakKey)
         UserDefaults.standard.set(totalPoints, forKey: totalPointsKey)
         UserDefaults.standard.set(todayPoints, forKey: todayPointsKey)
-        
+
         if let data = try? JSONEncoder().encode(achievements) {
             UserDefaults.standard.set(data, forKey: achievementsKey)
         }
+
+        // Sync to backend silently — don't block the UI
+        Task { await syncStreakToBackend() }
+    }
+
+    private func syncStreakToBackend() async {
+        guard let token = AuthService.shared.readToken()?.accessToken,
+              let url = URL(string: "\(APIConfig.baseURL)/gamification/streak") else { return }
+        var request = URLRequest(url: url)
+        request.httpMethod = "POST"
+        request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+        request.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
+        let payload: [String: Any] = [
+            "streakType": "app_usage",
+            "currentDays": currentStreak,
+            "longestDays": longestStreak
+        ]
+        request.httpBody = try? JSONSerialization.data(withJSONObject: payload)
+        _ = try? await URLSession.shared.data(for: request)
     }
     
     // MARK: - Computed Properties
