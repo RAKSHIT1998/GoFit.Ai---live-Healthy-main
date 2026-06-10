@@ -1,253 +1,221 @@
-//
-//  SplashScreenView.swift
-//  GoFit.Ai - live Healthy
-//
-//  Beautiful animated splash screen for faster perceived loading
-//
-
 import SwiftUI
 
 struct SplashScreenView: View {
-    @State private var isAnimating = false
-    @State private var showPulse = false
-    @State private var showTagline = false
+    @State private var blobsAnimating = false
+    @State private var logoScale: CGFloat = 0.6
+    @State private var logoOpacity: CGFloat = 0
+    @State private var textOpacity: CGFloat = 0
+    @State private var textOffset: CGFloat = 12
+    @State private var taglineOpacity: CGFloat = 0
     @State private var progress: CGFloat = 0
-    
+
     let onComplete: () -> Void
-    
+
     var body: some View {
         ZStack {
-            // Animated gradient background
-            LinearGradient(
-                colors: [
-                    Design.Colors.primary.opacity(0.9),
-                    Design.Colors.primaryDark,
-                    Color.black.opacity(0.2)
-                ],
-                startPoint: isAnimating ? .topLeading : .bottomTrailing,
-                endPoint: isAnimating ? .bottomTrailing : .topLeading
-            )
-            .ignoresSafeArea()
-            .animation(.easeInOut(duration: 2).repeatForever(autoreverses: true), value: isAnimating)
-            
-            // Floating particles
-            FloatingParticlesView()
-            
-            VStack(spacing: 30) {
+            // ── Aurora background ─────────────────────────────
+            Color(red: 0.031, green: 0.043, blue: 0.078)
+                .ignoresSafeArea()
+
+            AuroraBackground(animating: blobsAnimating)
+
+            // ── Content ───────────────────────────────────────
+            VStack(spacing: 0) {
                 Spacer()
-                
-                // App icon with pulse effect
+
+                // Logo mark
                 ZStack {
-                    // Pulse rings
-                    ForEach(0..<3, id: \.self) { index in
+                    // Glow rings
+                    ForEach(0..<2, id: \.self) { i in
                         Circle()
-                            .stroke(Color.white.opacity(0.3 - Double(index) * 0.1), lineWidth: 2)
-                            .frame(width: showPulse ? CGFloat(120 + index * 40) : 80, 
-                                   height: showPulse ? CGFloat(120 + index * 40) : 80)
-                            .scaleEffect(showPulse ? 1.2 : 0.8)
-                            .opacity(showPulse ? 0 : 1)
+                            .stroke(
+                                Design.Colors.primaryGradient,
+                                lineWidth: 1
+                            )
+                            .frame(width: CGFloat(96 + i * 36),
+                                   height: CGFloat(96 + i * 36))
+                            .opacity(blobsAnimating ? 0 : Double(0.3 - Double(i) * 0.12))
+                            .scaleEffect(blobsAnimating ? 1.4 : 0.9)
                             .animation(
-                                .easeOut(duration: 1.5)
-                                .repeatForever(autoreverses: false)
-                                .delay(Double(index) * 0.3),
-                                value: showPulse
+                                .easeOut(duration: 2.0)
+                                    .repeatForever(autoreverses: false)
+                                    .delay(Double(i) * 0.55),
+                                value: blobsAnimating
                             )
                     }
-                    
-                    // Logo
-                    Image(systemName: "heart.circle.fill")
-                        .font(.system(size: 80))
+
+                    // App icon container
+                    ZStack {
+                        Circle()
+                            .fill(Design.Colors.primaryGradient)
+                            .frame(width: 80, height: 80)
+
+                        Circle()
+                            .fill(
+                                LinearGradient(
+                                    colors: [Color.white.opacity(0.22), Color.clear],
+                                    startPoint: .top,
+                                    endPoint: .center
+                                )
+                            )
+                            .frame(width: 80, height: 80)
+
+                        Image(systemName: "bolt.heart.fill")
+                            .font(.system(size: 34, weight: .semibold))
+                            .foregroundStyle(.white)
+                    }
+                    .shadow(color: Design.Colors.primary.opacity(0.55), radius: 24, x: 0, y: 0)
+                }
+                .scaleEffect(logoScale)
+                .opacity(logoOpacity)
+
+                // App name
+                VStack(spacing: 6) {
+                    Text("GoFit.Ai")
+                        .font(.system(size: 40, weight: .heavy, design: .default))
                         .foregroundStyle(
                             LinearGradient(
-                                colors: [.white, .white.opacity(0.8)],
+                                colors: [.white, Color(white: 0.88)],
                                 startPoint: .top,
                                 endPoint: .bottom
                             )
                         )
-                        .shadow(color: .white.opacity(0.5), radius: 20)
-                        .scaleEffect(isAnimating ? 1.1 : 1.0)
-                        .animation(.easeInOut(duration: 1).repeatForever(autoreverses: true), value: isAnimating)
+
+                    Text(tagline)
+                        .font(.system(size: 15, weight: .medium, design: .rounded))
+                        .foregroundStyle(Color.white.opacity(0.55))
+                        .opacity(taglineOpacity)
                 }
-                
-                // App name with animated reveal
-                VStack(spacing: 8) {
-                    Text("GoFit.Ai")
-                        .font(.system(size: 42, weight: .bold, design: .rounded))
-                        .foregroundColor(.white)
-                        .shadow(color: .black.opacity(0.3), radius: 10)
-                    
-                    if showTagline {
-                        Text(funLoadingTagline())
-                            .font(.system(size: 18, weight: .medium, design: .rounded))
-                            .foregroundColor(.white.opacity(0.9))
-                            .transition(.opacity.combined(with: .scale))
-                    }
-                }
-                
+                .padding(.top, 24)
+                .offset(y: textOffset)
+                .opacity(textOpacity)
+
                 Spacer()
-                
-                // Loading progress bar
-                VStack(spacing: 12) {
+
+                // Progress bar
+                VStack(spacing: 10) {
                     GeometryReader { geo in
                         ZStack(alignment: .leading) {
-                            RoundedRectangle(cornerRadius: 6)
-                                .fill(Color.white.opacity(0.2))
-                            
-                            RoundedRectangle(cornerRadius: 6)
-                                .fill(
-                                    LinearGradient(
-                                        colors: [.white, .white.opacity(0.7)],
-                                        startPoint: .leading,
-                                        endPoint: .trailing
-                                    )
-                                )
+                            Capsule()
+                                .fill(Color.white.opacity(0.10))
+                            Capsule()
+                                .fill(Design.Colors.primaryGradient)
                                 .frame(width: geo.size.width * progress)
-                                .animation(.easeInOut(duration: 0.3), value: progress)
+                                .animation(.easeInOut(duration: 0.25), value: progress)
                         }
                     }
-                    .frame(height: 6)
-                    .frame(maxWidth: 200)
-                    
-                    Text(funLoadingMessage())
-                        .font(.caption)
-                        .foregroundColor(.white.opacity(0.7))
+                    .frame(height: 3)
+                    .frame(maxWidth: 180)
+
+                    Text(loadingMessage)
+                        .font(.system(size: 12, weight: .medium, design: .rounded))
+                        .foregroundStyle(Color.white.opacity(0.35))
                 }
-                .padding(.bottom, 60)
+                .padding(.bottom, 52)
             }
         }
-        .onAppear {
-            startAnimations()
-        }
+        .onAppear { launch() }
     }
-    
-    // Fun randomized taglines
-    private func funLoadingTagline() -> String {
-        let taglines = [
-            "Live Healthy • Be Happy 💚",
-            "Your AI Fitness Bestie 🤖💪",
-            "Eat Smart • Train Hard • Win Big 🏆",
-            "Level Up Your Health Game ⚡️",
-            "Where Fitness Meets Fun 🎮🔥"
+
+    // MARK: - Computed content
+
+    private var tagline: String {
+        let lines = [
+            "Live Healthy · Feel Electric",
+            "AI-Powered Fitness Coach",
+            "Eat Smart · Train Hard · Win Big",
+            "Level Up Your Health Game",
         ]
-        let dayIndex = Calendar.current.component(.minute, from: Date())
-        return taglines[dayIndex % taglines.count]
+        return lines[Calendar.current.component(.minute, from: Date()) % lines.count]
     }
-    
-    // Fun randomized loading messages
-    private func funLoadingMessage() -> String {
-        let messages = [
-            "Warming up your gains... 🏋️",
-            "Counting your muscles... 💪",
-            "Charging your fitness energy... ⚡️",
-            "Preparing your daily rewards... 🎁",
-            "Feeding the AI brain... 🧠✨",
-            "Unlocking beast mode... 🦁",
-            "Loading your fitness adventure... 🚀",
-            "Calibrating awesomeness... 🌟"
+
+    private var loadingMessage: String {
+        let msgs = [
+            "Warming up your gains...",
+            "Charging your fitness energy...",
+            "Feeding the AI brain...",
+            "Calibrating awesomeness...",
+            "Unlocking beast mode...",
         ]
-        let index = Calendar.current.component(.second, from: Date())
-        return messages[index % messages.count]
+        return msgs[Calendar.current.component(.second, from: Date()) % msgs.count]
     }
-    
-    private func startAnimations() {
-        // Start background animation immediately
-        withAnimation {
-            isAnimating = true
+
+    // MARK: - Animation sequence
+
+    private func launch() {
+        blobsAnimating = true
+
+        withAnimation(.spring(response: 0.55, dampingFraction: 0.72).delay(0.1)) {
+            logoScale = 1.0
+            logoOpacity = 1.0
         }
-        
-        // Start pulse effect
-        DispatchQueue.main.asyncAfter(deadline: .now() + 0.2) {
-            showPulse = true
+        withAnimation(.easeOut(duration: 0.5).delay(0.30)) {
+            textOpacity = 1.0
+            textOffset = 0
         }
-        
-        // Show tagline
-        DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
-            withAnimation(.spring(response: 0.5, dampingFraction: 0.7)) {
-                showTagline = true
-            }
+        withAnimation(.easeOut(duration: 0.4).delay(0.55)) {
+            taglineOpacity = 1.0
         }
-        
-        // Animate progress bar
-        simulateLoading()
-    }
-    
-    private func simulateLoading() {
-        // Fast initial progress (perceived speed)
-        withAnimation(.easeOut(duration: 0.3)) {
-            progress = 0.3
-        }
-        
-        DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
-            withAnimation(.easeInOut(duration: 0.4)) {
-                progress = 0.6
-            }
-        }
-        
-        DispatchQueue.main.asyncAfter(deadline: .now() + 0.7) {
-            withAnimation(.easeInOut(duration: 0.3)) {
-                progress = 0.85
-            }
-        }
-        
-        DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) {
-            withAnimation(.easeInOut(duration: 0.2)) {
-                progress = 1.0
-            }
-        }
-        
-        // Complete splash after animation
-        DispatchQueue.main.asyncAfter(deadline: .now() + 1.3) {
-            onComplete()
-        }
+
+        // Progress simulation
+        withAnimation(.easeOut(duration: 0.28).delay(0.05)) { progress = 0.28 }
+        withAnimation(.easeInOut(duration: 0.35).delay(0.35)) { progress = 0.62 }
+        withAnimation(.easeInOut(duration: 0.28).delay(0.72)) { progress = 0.88 }
+        withAnimation(.easeInOut(duration: 0.20).delay(1.02)) { progress = 1.00 }
+
+        DispatchQueue.main.asyncAfter(deadline: .now() + 1.35) { onComplete() }
     }
 }
 
-// MARK: - Floating Particles
-struct FloatingParticlesView: View {
-    @State private var particles: [Particle] = []
-    
+// MARK: - Aurora blobs
+
+private struct AuroraBackground: View {
+    let animating: Bool
+
     var body: some View {
         GeometryReader { geo in
-            ForEach(particles) { particle in
-                Circle()
-                    .fill(Color.white.opacity(particle.opacity))
-                    .frame(width: particle.size, height: particle.size)
-                    .position(particle.position)
-                    .blur(radius: 1)
+            ZStack {
+                // Indigo blob — top left
+                Ellipse()
+                    .fill(Color(red: 0.310, green: 0.275, blue: 0.898).opacity(0.28))
+                    .frame(width: geo.size.width * 0.85, height: geo.size.height * 0.55)
+                    .offset(
+                        x: animating ? -geo.size.width * 0.15 : -geo.size.width * 0.10,
+                        y: animating ? -geo.size.height * 0.20 : -geo.size.height * 0.15
+                    )
+                    .blur(radius: 60)
+                    .animation(.easeInOut(duration: 5).repeatForever(autoreverses: true), value: animating)
+
+                // Violet blob — bottom right
+                Ellipse()
+                    .fill(Color(red: 0.486, green: 0.231, blue: 0.929).opacity(0.22))
+                    .frame(width: geo.size.width * 0.75, height: geo.size.height * 0.50)
+                    .offset(
+                        x: animating ? geo.size.width * 0.18 : geo.size.width * 0.12,
+                        y: animating ? geo.size.height * 0.22 : geo.size.height * 0.16
+                    )
+                    .blur(radius: 70)
+                    .animation(.easeInOut(duration: 6.5).repeatForever(autoreverses: true), value: animating)
+
+                // Fuchsia accent — bottom left
+                Ellipse()
+                    .fill(Color(red: 0.839, green: 0.290, blue: 0.682).opacity(0.14))
+                    .frame(width: geo.size.width * 0.55, height: geo.size.height * 0.35)
+                    .offset(
+                        x: animating ? -geo.size.width * 0.22 : -geo.size.width * 0.16,
+                        y: animating ? geo.size.height * 0.30 : geo.size.height * 0.24
+                    )
+                    .blur(radius: 55)
+                    .animation(.easeInOut(duration: 4.5).repeatForever(autoreverses: true), value: animating)
             }
         }
-        .onAppear {
-            createParticles()
-            animateParticles()
-        }
+        .ignoresSafeArea()
     }
-    
-    private func createParticles() {
-        particles = (0..<20).map { _ in
-            Particle(
-                position: CGPoint(
-                    x: CGFloat.random(in: 0...UIScreen.main.bounds.width),
-                    y: CGFloat.random(in: 0...UIScreen.main.bounds.height)
-                ),
-                size: CGFloat.random(in: 4...12),
-                opacity: Double.random(in: 0.1...0.4)
-            )
-        }
-    }
-    
-    private func animateParticles() {
-        Timer.scheduledTimer(withTimeInterval: 0.05, repeats: true) { _ in
-            for i in particles.indices {
-                particles[i].position.y -= CGFloat.random(in: 0.5...2)
-                particles[i].position.x += CGFloat.random(in: -0.5...0.5)
-                
-                if particles[i].position.y < -20 {
-                    particles[i].position.y = UIScreen.main.bounds.height + 20
-                    particles[i].position.x = CGFloat.random(in: 0...UIScreen.main.bounds.width)
-                }
-            }
-        }
-    }
+}
+
+// MARK: - Legacy alias (kept so FloatingParticlesView usages compile)
+struct FloatingParticlesView: View {
+    var body: some View { EmptyView() }
 }
 
 struct Particle: Identifiable {
