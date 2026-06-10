@@ -2,6 +2,7 @@ import SwiftUI
 
 // MARK: - Story Template Type
 enum StoryTemplate: String, CaseIterable, Identifiable {
+    case ambassador = "ambassador"   // ← NEW: VIP brand ambassador card
     case workoutBeast = "workout"
     case streakFire = "streak"
     case mealScan = "meal"
@@ -10,44 +11,49 @@ enum StoryTemplate: String, CaseIterable, Identifiable {
     case challengeWin = "challenge"
     case beforeAfter = "transformation"
     case dailyProgress = "daily"
-    
+
     var id: String { rawValue }
+
+    var isNew: Bool { self == .ambassador }
     
     var title: String {
         switch self {
+        case .ambassador:   return "Ambassador"
         case .workoutBeast: return "Workout Beast"
-        case .streakFire: return "Streak on Fire"
-        case .mealScan: return "Meal Scan"
-        case .weeklyRecap: return "Weekly Recap"
-        case .levelUp: return "Level Up"
+        case .streakFire:   return "Streak Fire"
+        case .mealScan:     return "Meal Scan"
+        case .weeklyRecap:  return "Weekly Recap"
+        case .levelUp:      return "Level Up"
         case .challengeWin: return "Challenge Won"
-        case .beforeAfter: return "My Journey"
+        case .beforeAfter:  return "My Journey"
         case .dailyProgress: return "Daily Progress"
         }
     }
-    
+
     var icon: String {
         switch self {
+        case .ambassador:   return "star.circle.fill"
         case .workoutBeast: return "figure.run"
-        case .streakFire: return "flame.fill"
-        case .mealScan: return "fork.knife"
-        case .weeklyRecap: return "chart.bar.fill"
-        case .levelUp: return "arrow.up.circle.fill"
+        case .streakFire:   return "flame.fill"
+        case .mealScan:     return "fork.knife"
+        case .weeklyRecap:  return "chart.bar.fill"
+        case .levelUp:      return "arrow.up.circle.fill"
         case .challengeWin: return "trophy.fill"
-        case .beforeAfter: return "arrow.right.arrow.left"
+        case .beforeAfter:  return "arrow.right.arrow.left"
         case .dailyProgress: return "chart.line.uptrend.xyaxis"
         }
     }
-    
+
     var gradientColors: [Color] {
         switch self {
+        case .ambassador:   return [Color(red: 0.310, green: 0.275, blue: 0.898), Color(red: 0.486, green: 0.231, blue: 0.929), Color(red: 0.839, green: 0.290, blue: 0.682)]
         case .workoutBeast: return [Color(red: 0.0, green: 0.8, blue: 0.5), Color(red: 0.0, green: 0.4, blue: 0.9)]
-        case .streakFire: return [Color(red: 1.0, green: 0.3, blue: 0.0), Color(red: 1.0, green: 0.7, blue: 0.0)]
-        case .mealScan: return [Color(red: 0.2, green: 0.85, blue: 0.4), Color(red: 0.0, green: 0.6, blue: 0.3)]
-        case .weeklyRecap: return [Color(red: 0.4, green: 0.2, blue: 1.0), Color(red: 0.7, green: 0.3, blue: 1.0)]
-        case .levelUp: return [Color(red: 1.0, green: 0.84, blue: 0.0), Color(red: 1.0, green: 0.5, blue: 0.0)]
+        case .streakFire:   return [Color(red: 1.0, green: 0.3, blue: 0.0), Color(red: 1.0, green: 0.7, blue: 0.0)]
+        case .mealScan:     return [Color(red: 0.2, green: 0.85, blue: 0.4), Color(red: 0.0, green: 0.6, blue: 0.3)]
+        case .weeklyRecap:  return [Color(red: 0.4, green: 0.2, blue: 1.0), Color(red: 0.7, green: 0.3, blue: 1.0)]
+        case .levelUp:      return [Color(red: 1.0, green: 0.84, blue: 0.0), Color(red: 1.0, green: 0.5, blue: 0.0)]
         case .challengeWin: return [Color(red: 0.9, green: 0.2, blue: 0.5), Color(red: 0.5, green: 0.0, blue: 0.8)]
-        case .beforeAfter: return [Color(red: 0.1, green: 0.1, blue: 0.3), Color(red: 0.3, green: 0.1, blue: 0.5)]
+        case .beforeAfter:  return [Color(red: 0.1, green: 0.1, blue: 0.3), Color(red: 0.3, green: 0.1, blue: 0.5)]
         case .dailyProgress: return [Color(red: 0.0, green: 0.6, blue: 0.9), Color(red: 0.0, green: 0.3, blue: 0.7)]
         }
     }
@@ -82,6 +88,8 @@ struct InstagramStoryBuilderView: View {
     @State private var showShareSheet = false
     @State private var isRendering = false
     @State private var previewScale: CGFloat = 0.9
+    @State private var showSharedCelebration = false
+    @State private var sharedXP = 0
     
     @ObservedObject private var streakManager = StreakManager.shared
     @ObservedObject private var referralManager = ReferralManager.shared
@@ -94,73 +102,122 @@ struct InstagramStoryBuilderView: View {
     var body: some View {
         NavigationView {
             ZStack {
-                Color.black.ignoresSafeArea()
-                
+                // PULSE dark background
+                Color(red: 0.031, green: 0.043, blue: 0.078).ignoresSafeArea()
+
+                // Ambient glow behind preview
+                Ellipse()
+                    .fill(Design.Colors.primary.opacity(0.12))
+                    .frame(width: 260, height: 180)
+                    .blur(radius: 60)
+                    .offset(y: -40)
+
                 VStack(spacing: 0) {
-                    // Template picker (horizontal scroll)
-                    templatePicker
-                        .padding(.top, 8)
-                    
+                    // Ambassador rank strip
+                    ambassadorStrip.padding(.top, 8)
+
+                    // Template picker
+                    templatePicker.padding(.top, 10)
+
                     // Story preview
                     GeometryReader { geo in
-                        let previewWidth = min(geo.size.width - 40, 340)
+                        let previewWidth = min(geo.size.width - 40, 300)
                         let previewHeight = previewWidth * (16.0 / 9.0)
-                        
+
                         ScrollView(.vertical, showsIndicators: false) {
                             VStack(spacing: 20) {
                                 storyPreview(width: previewWidth, height: previewHeight)
                                     .scaleEffect(previewScale)
                                     .onAppear {
-                                        withAnimation(.spring(response: 0.5, dampingFraction: 0.7)) {
-                                            previewScale = 1.0
-                                        }
+                                        withAnimation(Design.Animation.spring) { previewScale = 1.0 }
                                     }
                                     .onChange(of: selectedTemplate) {
-                                        previewScale = 0.9
-                                        withAnimation(.spring(response: 0.5, dampingFraction: 0.7)) {
-                                            previewScale = 1.0
-                                        }
+                                        previewScale = 0.88
+                                        withAnimation(Design.Animation.spring) { previewScale = 1.0 }
                                     }
                             }
                             .frame(maxWidth: .infinity)
                             .padding(.vertical, 12)
                         }
                     }
-                    
-                    // Action buttons
-                    actionButtons
-                        .padding(.bottom, 20)
+
+                    actionButtons.padding(.bottom, 24)
+                }
+
+                // Post-share XP celebration overlay
+                if showSharedCelebration {
+                    VStack {
+                        Spacer()
+                        HStack(spacing: 10) {
+                            Text("⚡")
+                                .font(.title2)
+                            VStack(alignment: .leading, spacing: 2) {
+                                Text("+\(sharedXP) XP Earned!")
+                                    .font(Design.Typography.bodyBold)
+                                    .foregroundStyle(.white)
+                                Text("Your code is on the story — keep sharing!")
+                                    .font(Design.Typography.caption)
+                                    .foregroundStyle(.white.opacity(0.75))
+                            }
+                        }
+                        .padding(.horizontal, 20)
+                        .padding(.vertical, 14)
+                        .background(
+                            Capsule()
+                                .fill(Design.Colors.primaryGradient)
+                                .shadow(color: Design.Colors.primary.opacity(0.4), radius: 12)
+                        )
+                        .padding(.bottom, 100)
+                        .transition(.move(edge: .bottom).combined(with: .opacity))
+                    }
                 }
             }
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .navigationBarLeading) {
-                    Button {
-                        dismiss()
-                    } label: {
+                    Button { dismiss() } label: {
                         Image(systemName: "xmark.circle.fill")
                             .font(.title2)
-                            .foregroundColor(.white.opacity(0.7))
+                            .foregroundStyle(Color.white.opacity(0.5))
                     }
                 }
                 ToolbarItem(placement: .principal) {
-                    Text("Create Story")
+                    Text("Story Studio")
                         .font(Design.Typography.headline)
-                        .foregroundColor(.white)
+                        .foregroundStyle(.white)
                 }
             }
-            .onAppear {
-                populateStoryData()
-            }
+            .onAppear { populateStoryData() }
             .sheet(isPresented: $showShareSheet) {
                 if let image = renderedImage {
                     ShareSheet(items: [
                         image,
-                        "Check out my fitness progress! 💪 Track yours with GoFit.Ai #GoFitAi #Fitness"
+                        "Crushing my fitness goals with @GoFit.Ai 💪 Code: \(storyData.referralCode) #GoFitAi #Fitness"
                     ])
                 }
             }
         }
+    }
+
+    // MARK: - Ambassador strip
+    private var ambassadorStrip: some View {
+        HStack(spacing: 8) {
+            Image(systemName: "bolt.fill")
+                .font(.system(size: 11, weight: .bold))
+                .foregroundStyle(Design.Colors.primary)
+            Text("GoFit.Ai Ambassador")
+                .font(.system(size: 12, weight: .bold, design: .rounded))
+                .foregroundStyle(.white)
+            Spacer()
+            Text(referralManager.currentTier.emoji + " " + referralManager.currentTier.name)
+                .font(.system(size: 11, weight: .semibold, design: .rounded))
+                .foregroundStyle(Color.white.opacity(0.7))
+        }
+        .padding(.horizontal, 20)
+        .padding(.vertical, 8)
+        .background(Color.white.opacity(0.06))
+        .clipShape(Capsule())
+        .padding(.horizontal, 16)
     }
     
     // MARK: - Template Picker
@@ -169,14 +226,12 @@ struct InstagramStoryBuilderView: View {
             HStack(spacing: 10) {
                 ForEach(StoryTemplate.allCases) { template in
                     Button {
-                        withAnimation(.spring(response: 0.3, dampingFraction: 0.7)) {
-                            selectedTemplate = template
-                        }
+                        withAnimation(Design.Animation.spring) { selectedTemplate = template }
                         HapticManager.impact(style: .light)
                     } label: {
                         VStack(spacing: 6) {
-                            ZStack {
-                                RoundedRectangle(cornerRadius: 12, style: .continuous)
+                            ZStack(alignment: .topTrailing) {
+                                RoundedRectangle(cornerRadius: 14, style: .continuous)
                                     .fill(
                                         LinearGradient(
                                             colors: template.gradientColors,
@@ -184,23 +239,42 @@ struct InstagramStoryBuilderView: View {
                                             endPoint: .bottomTrailing
                                         )
                                     )
-                                    .frame(width: 52, height: 52)
+                                    .frame(width: 54, height: 54)
                                     .overlay(
-                                        RoundedRectangle(cornerRadius: 12, style: .continuous)
+                                        RoundedRectangle(cornerRadius: 14, style: .continuous)
                                             .strokeBorder(
-                                                selectedTemplate == template ? Color.white : Color.clear,
-                                                lineWidth: 2
+                                                selectedTemplate == template
+                                                    ? Color.white
+                                                    : Color.white.opacity(0.12),
+                                                lineWidth: selectedTemplate == template ? 2.5 : 1
                                             )
                                     )
-                                
-                                Image(systemName: template.icon)
-                                    .font(.system(size: 20))
-                                    .foregroundColor(.white)
+                                    .shadow(
+                                        color: template.gradientColors.first?.opacity(selectedTemplate == template ? 0.5 : 0.0) ?? .clear,
+                                        radius: 10
+                                    )
+                                    .overlay(
+                                        Image(systemName: template.icon)
+                                            .font(.system(size: 20))
+                                            .foregroundStyle(.white)
+                                    )
+
+                                // "NEW" badge on ambassador
+                                if template.isNew {
+                                    Text("NEW")
+                                        .font(.system(size: 7, weight: .black, design: .rounded))
+                                        .foregroundStyle(.white)
+                                        .padding(.horizontal, 4)
+                                        .padding(.vertical, 2)
+                                        .background(Color(red: 0.937, green: 0.267, blue: 0.267))
+                                        .clipShape(Capsule())
+                                        .offset(x: 4, y: -4)
+                                }
                             }
-                            
+
                             Text(template.title)
-                                .font(.system(size: 10, weight: .medium, design: .rounded))
-                                .foregroundColor(selectedTemplate == template ? .white : .white.opacity(0.5))
+                                .font(.system(size: 10, weight: selectedTemplate == template ? .bold : .medium, design: .rounded))
+                                .foregroundStyle(selectedTemplate == template ? Color.white : Color.white.opacity(0.45))
                                 .lineLimit(1)
                         }
                     }
@@ -216,6 +290,8 @@ struct InstagramStoryBuilderView: View {
     private func storyPreview(width: CGFloat, height: CGFloat) -> some View {
         ZStack {
             switch selectedTemplate {
+            case .ambassador:
+                AmbassadorStory(data: storyData, tier: referralManager.currentTier, size: CGSize(width: width, height: height))
             case .workoutBeast:
                 WorkoutBeastStory(data: storyData, size: CGSize(width: width, height: height))
             case .streakFire:
@@ -241,52 +317,93 @@ struct InstagramStoryBuilderView: View {
     
     // MARK: - Action Buttons
     private var actionButtons: some View {
-        HStack(spacing: 16) {
-            // Share to Instagram Stories
+        VStack(spacing: 10) {
+            // Primary: Instagram Stories
             Button {
                 renderAndShareToInstagram()
             } label: {
-                HStack(spacing: 8) {
+                HStack(spacing: 10) {
                     Image(systemName: "camera.fill")
-                        .font(.body)
-                    Text("Instagram Story")
+                        .font(.system(size: 15, weight: .semibold))
+                    Text("Share to Instagram Story")
                         .font(Design.Typography.headline)
                 }
-                .foregroundColor(.white)
+                .foregroundStyle(.white)
                 .frame(maxWidth: .infinity)
                 .padding(.vertical, 16)
                 .background(
                     LinearGradient(
-                        colors: [.purple, .pink, .orange],
-                        startPoint: .leading,
-                        endPoint: .trailing
+                        colors: [Color(red: 0.49, green: 0.16, blue: 0.82), Color(red: 0.95, green: 0.24, blue: 0.56), Color(red: 0.99, green: 0.62, blue: 0.04)],
+                        startPoint: .leading, endPoint: .trailing
                     )
                 )
                 .clipShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
+                .overlay(
+                    RoundedRectangle(cornerRadius: 16, style: .continuous)
+                        .fill(LinearGradient(colors: [Color.white.opacity(0.15), Color.clear], startPoint: .top, endPoint: .center))
+                )
+                .shadow(color: Color(red: 0.95, green: 0.24, blue: 0.56).opacity(0.4), radius: 12, y: 4)
             }
-            
-            // Share general
-            Button {
-                renderAndShare()
-            } label: {
-                HStack(spacing: 8) {
-                    Image(systemName: "square.and.arrow.up")
-                        .font(.body)
-                    Text("Share")
-                        .font(Design.Typography.headline)
+            .buttonStyle(AnimatedButtonStyle(color: .pink, isPrimary: true))
+
+            // Secondary row
+            HStack(spacing: 10) {
+                // General share
+                Button {
+                    renderAndShare()
+                } label: {
+                    HStack(spacing: 6) {
+                        Image(systemName: "square.and.arrow.up")
+                            .font(.system(size: 14))
+                        Text("Share")
+                            .font(Design.Typography.subheadline)
+                    }
+                    .foregroundStyle(.white)
+                    .frame(maxWidth: .infinity)
+                    .padding(.vertical, 13)
+                    .background(Color.white.opacity(0.10))
+                    .clipShape(RoundedRectangle(cornerRadius: 14))
+                    .overlay(
+                        RoundedRectangle(cornerRadius: 14)
+                            .stroke(Color.white.opacity(0.12), lineWidth: 1)
+                    )
                 }
-                .foregroundColor(.white)
-                .frame(width: 100)
-                .padding(.vertical, 16)
-                .background(Color.white.opacity(0.2))
-                .clipShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
+
+                // Copy referral code quick action
+                if !storyData.referralCode.isEmpty {
+                    Button {
+                        UIPasteboard.general.string = storyData.referralCode
+                        UIImpactFeedbackGenerator(style: .medium).impactOccurred()
+                    } label: {
+                        HStack(spacing: 6) {
+                            Image(systemName: "doc.on.doc")
+                                .font(.system(size: 14))
+                            Text("Copy Code")
+                                .font(Design.Typography.subheadline)
+                        }
+                        .foregroundStyle(Design.Colors.primary)
+                        .frame(maxWidth: .infinity)
+                        .padding(.vertical, 13)
+                        .background(Design.Colors.primary.opacity(0.12))
+                        .clipShape(RoundedRectangle(cornerRadius: 14))
+                    }
+                }
             }
         }
         .padding(.horizontal, 20)
     }
     
     // MARK: - Render & Share
-    
+
+    private func showXPCelebration() {
+        sharedXP = 50
+        withAnimation(Design.Animation.spring) { showSharedCelebration = true }
+        UINotificationFeedbackGenerator().notificationOccurred(.success)
+        DispatchQueue.main.asyncAfter(deadline: .now() + 3.0) {
+            withAnimation { showSharedCelebration = false }
+        }
+    }
+
     private func renderAndShare() {
         isRendering = true
         let size = CGSize(width: 1080, height: 1920)
@@ -294,31 +411,32 @@ struct InstagramStoryBuilderView: View {
         isRendering = false
         showShareSheet = true
         ReferralManager.shared.recordShare()
+        showXPCelebration()
     }
-    
+
     private func renderAndShareToInstagram() {
         let size = CGSize(width: 1080, height: 1920)
         guard let image = renderStoryToImage(size: size) else { return }
-        
-        // Try to share to Instagram Stories via URL scheme
+
         if let imageData = image.pngData() {
             let pasteboardItems: [String: Any] = [
                 "com.instagram.sharedSticker.backgroundImage": imageData,
                 "com.instagram.sharedSticker.contentURL": "https://apps.apple.com/app/gofit-ai"
             ]
-            
             UIPasteboard.general.setItems([pasteboardItems], options: [
                 .expirationDate: Date().addingTimeInterval(60 * 5)
             ])
-            
+
             if let url = URL(string: "instagram-stories://share?source_application=com.gofit.ai"),
                UIApplication.shared.canOpenURL(url) {
                 UIApplication.shared.open(url)
                 ReferralManager.shared.recordShare()
+                showXPCelebration()
             } else {
-                // Fallback to regular share
                 renderedImage = image
                 showShareSheet = true
+                ReferralManager.shared.recordShare()
+                showXPCelebration()
             }
         }
     }
@@ -328,6 +446,8 @@ struct InstagramStoryBuilderView: View {
         let storyView: AnyView
         
         switch selectedTemplate {
+        case .ambassador:
+            storyView = AnyView(AmbassadorStory(data: storyData, tier: referralManager.currentTier, size: size))
         case .workoutBeast:
             storyView = AnyView(WorkoutBeastStory(data: storyData, size: size))
         case .streakFire:
@@ -1601,4 +1721,204 @@ struct DailyProgressStory: View {
                 .strokeBorder(color.opacity(0.2), lineWidth: 1)
         )
     }
+}
+
+
+// ============================================================
+// 9. AMBASSADOR / REFERRAL VIP STORY  ← NEW
+// ============================================================
+struct AmbassadorStory: View {
+    let data: StoryData
+    let tier: ReferralTier
+    let size: CGSize
+
+    private var scale: CGFloat { size.width / 1080.0 }
+
+    var body: some View {
+        ZStack {
+            // PULSE aurora background
+            Color(red: 0.031, green: 0.043, blue: 0.078)
+
+            // Aurora blobs
+            Ellipse()
+                .fill(Color(red: 0.310, green: 0.275, blue: 0.898).opacity(0.35))
+                .frame(width: size.width * 0.9, height: size.height * 0.45)
+                .offset(x: -size.width * 0.12, y: -size.height * 0.22)
+                .blur(radius: 70 * scale)
+
+            Ellipse()
+                .fill(Color(red: 0.486, green: 0.231, blue: 0.929).opacity(0.28))
+                .frame(width: size.width * 0.7, height: size.height * 0.40)
+                .offset(x: size.width * 0.15, y: size.height * 0.18)
+                .blur(radius: 80 * scale)
+
+            Ellipse()
+                .fill(Color(red: 0.839, green: 0.290, blue: 0.682).opacity(0.18))
+                .frame(width: size.width * 0.55, height: size.height * 0.30)
+                .offset(x: -size.width * 0.20, y: size.height * 0.28)
+                .blur(radius: 60 * scale)
+
+            // Subtle dot grid
+            Canvas { ctx, cSize in
+                let spacing: CGFloat = 36 * scale
+                for x in stride(from: 0, to: cSize.width, by: spacing) {
+                    for y in stride(from: 0, to: cSize.height, by: spacing) {
+                        let rect = CGRect(x: x - 1, y: y - 1, width: 2, height: 2)
+                        ctx.fill(Path(ellipseIn: rect), with: .color(Color.white.opacity(0.06)))
+                    }
+                }
+            }
+
+            VStack(spacing: 0) {
+                Spacer().frame(height: size.height * 0.07)
+
+                // "Official Ambassador" badge
+                HStack(spacing: 6 * scale) {
+                    Image(systemName: "bolt.fill")
+                        .font(.system(size: 11 * scale, weight: .black))
+                        .foregroundStyle(Color(red: 0.310, green: 0.275, blue: 0.898))
+                    Text("GOFIT.AI AMBASSADOR")
+                        .font(.system(size: 11 * scale, weight: .black, design: .rounded))
+                        .foregroundStyle(.white)
+                        .kerning(1.5)
+                }
+                .padding(.horizontal, 16 * scale)
+                .padding(.vertical, 8 * scale)
+                .background(
+                    Capsule()
+                        .fill(Color.white.opacity(0.09))
+                        .overlay(Capsule().stroke(Color(red: 0.310, green: 0.275, blue: 0.898).opacity(0.5), lineWidth: 1))
+                )
+
+                Spacer().frame(height: size.height * 0.04)
+
+                // Tier emoji + name
+                VStack(spacing: 4 * scale) {
+                    Text(tier.emoji)
+                        .font(.system(size: 64 * scale))
+                    Text(tier.name.uppercased() + " TIER")
+                        .font(.system(size: 13 * scale, weight: .black, design: .rounded))
+                        .foregroundStyle(
+                            LinearGradient(
+                                colors: tier.gradientColors,
+                                startPoint: .leading,
+                                endPoint: .trailing
+                            )
+                        )
+                        .kerning(3)
+                }
+
+                Spacer().frame(height: size.height * 0.03)
+
+                // Headline
+                VStack(spacing: 6 * scale) {
+                    Text("I use GoFit.Ai")
+                        .font(.system(size: 28 * scale, weight: .bold, design: .default))
+                        .foregroundStyle(Color.white.opacity(0.65))
+                    Text("and you should too.")
+                        .font(.system(size: 38 * scale, weight: .black, design: .default))
+                        .foregroundStyle(.white)
+                }
+                .multilineTextAlignment(.center)
+                .padding(.horizontal, 32 * scale)
+
+                Spacer().frame(height: size.height * 0.04)
+
+                // VIP Referral Code card
+                VStack(spacing: 10 * scale) {
+                    Text("USE MY EXCLUSIVE CODE")
+                        .font(.system(size: 10 * scale, weight: .bold, design: .rounded))
+                        .foregroundStyle(Color(red: 0.506, green: 0.545, blue: 0.973))
+                        .kerning(2)
+
+                    // Code display with dashed border
+                    ZStack {
+                        RoundedRectangle(cornerRadius: 16 * scale)
+                            .fill(Color.white.opacity(0.06))
+                            .overlay(
+                                RoundedRectangle(cornerRadius: 16 * scale)
+                                    .stroke(
+                                        LinearGradient(
+                                            colors: [Color(red: 0.310, green: 0.275, blue: 0.898).opacity(0.6), Color(red: 0.486, green: 0.231, blue: 0.929).opacity(0.3)],
+                                            startPoint: .topLeading, endPoint: .bottomTrailing
+                                        ),
+                                        style: StrokeStyle(lineWidth: 1.5, dash: [8 * scale, 4 * scale])
+                                    )
+                            )
+
+                        HStack(spacing: 12 * scale) {
+                            Spacer()
+                            Text(data.referralCode.isEmpty ? "GOFIT" : data.referralCode)
+                                .font(.system(size: 32 * scale, weight: .black, design: .monospaced))
+                                .foregroundStyle(.white)
+                                .kerning(4)
+                            Spacer()
+                        }
+                        .padding(.vertical, 18 * scale)
+                    }
+                    .padding(.horizontal, 28 * scale)
+
+                    Text("Both of us get FREE XP when you sign up!")
+                        .font(.system(size: 11 * scale, weight: .semibold, design: .rounded))
+                        .foregroundStyle(Color.white.opacity(0.55))
+                }
+
+                Spacer().frame(height: size.height * 0.04)
+
+                // Stats pill row
+                HStack(spacing: 10 * scale) {
+                    ambassadorStat(emoji: "🔥", value: "\(data.streakDays)d", label: "Streak")
+                    ambassadorStat(emoji: "⚡", value: "\(data.totalPoints)", label: "XP")
+                    ambassadorStat(emoji: "🏆", value: "Lv.\(data.level)", label: tier.name)
+                }
+                .padding(.horizontal, 28 * scale)
+
+                Spacer()
+
+                // Bottom brand bar
+                VStack(spacing: 5 * scale) {
+                    HStack(spacing: 0) {
+                        Text("GoFit")
+                            .font(.system(size: 22 * scale, weight: .black, design: .default))
+                            .foregroundStyle(.white)
+                        Text(".Ai")
+                            .font(.system(size: 22 * scale, weight: .black, design: .default))
+                            .foregroundStyle(
+                                LinearGradient(
+                                    colors: [Color(red: 0.310, green: 0.275, blue: 0.898), Color(red: 0.486, green: 0.231, blue: 0.929)],
+                                    startPoint: .leading, endPoint: .trailing
+                                )
+                            )
+                    }
+                    Text("AI-Powered Fitness · Free on App Store")
+                        .font(.system(size: 10 * scale, weight: .medium, design: .rounded))
+                        .foregroundStyle(Color.white.opacity(0.35))
+                }
+
+                Spacer().frame(height: size.height * 0.06)
+            }
+        }
+        .frame(width: size.width, height: size.height)
+    }
+
+    private func ambassadorStat(emoji: String, value: String, label: String) -> some View {
+        VStack(spacing: 3 * scale) {
+            Text(emoji).font(.system(size: 18 * scale))
+            Text(value)
+                .font(.system(size: 16 * scale, weight: .bold, design: .rounded))
+                .foregroundStyle(.white)
+            Text(label)
+                .font(.system(size: 9 * scale, weight: .semibold, design: .rounded))
+                .foregroundStyle(Color.white.opacity(0.45))
+        }
+        .frame(maxWidth: .infinity)
+        .padding(.vertical, 12 * scale)
+        .background(Color.white.opacity(0.07))
+        .clipShape(RoundedRectangle(cornerRadius: 14 * scale))
+        .overlay(
+            RoundedRectangle(cornerRadius: 14 * scale)
+                .stroke(Color.white.opacity(0.08), lineWidth: 1)
+        )
+    }
+}
 }
